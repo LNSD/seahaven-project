@@ -1,0 +1,12 @@
+[package]
+name = "seahaven-cli"
+description = "Seahaven CLI"
+version = "0.1.0"
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+edition.workspace = true
+rust-version = "1.85.0"
+
+[dependencies]
+clap = "4.5"

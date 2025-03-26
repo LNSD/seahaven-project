@@ -1,0 +1,82 @@
+name: ci
+on:
+  pull_request:
+  merge_group:
+  push:
+    branches:
+    - "main"
+    - "renovate/lock-file-maintenance"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: full
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Setup Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@9399c7bb15d4c7d47b27263d024f0a4978346ba4 # v1
+        with:
+          toolchain: nightly
+          components: rustfmt
+          cache: false
+          rustflags: ''
+
+      - run: cargo +nightly fmt --all -- --check
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+
+      ## Setup
+      - name: Setup Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@9399c7bb15d4c7d47b27263d024f0a4978346ba4 # v1
+        with:
+          components: clippy
+          cache: false
+          rustflags: ''
+
+      - name: Cache rust build files
+        uses: Leafwing-Studios/cargo-cache@a0709d80dd96c8734ac8f186c1f238c8f528d198 # v2
+
+      - name: Install Cargo LLVM cov
+        uses: baptiste0928/cargo-install@9f6037ed331dcf7da101461a20656273fa72abf0 # v3
+        with:
+          crate: cargo-llvm-cov
+
+      ## Linting
+      - name: Cargo clippy
+        run: cargo clippy --all-features --tests -- -D warnings --force-warn deprecated --force-warn dead-code
+
+      ## Tests
+      - name: Run unit tests
+        run: cargo llvm-cov test --lib --lcov --output-path unit-lcov.info
+
+      - name: Run integration tests
+        run: cargo llvm-cov test --test '*' --lcov --output-path it-lcov.info
+
+      - name: Upload unit tests coverage report to codecov
+        uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          files: unit-lcov.info
+          flags: unit
+
+      - name: Upload integration tests coverage report to codecov
+        uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          files: it-lcov.info
+          flags: integration

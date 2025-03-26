@@ -1,0 +1,11 @@
+[workspace]
+resolver = "3"
+members = [
+    "seahaven-cli",
+]
+
+[workspace.package]
+authors = ["Lorenzo Delgado (LNSD) <lorenzo@edgeandnode.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/LNSD/seahaven-project"
+edition = "2024"
