@@ -3,6 +3,7 @@ resolver = "3"
 members = [
     "seahaven-cli",
     "seahaven-conf",
+    "testlib/conf-testdata",
 ]
 
 [workspace.package]
