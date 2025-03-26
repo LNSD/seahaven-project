@@ -42,7 +42,7 @@ jobs:
       - name: Setup Rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@9399c7bb15d4c7d47b27263d024f0a4978346ba4 # v1
         with:
-          components: clippy
+          components: clippy,llvm-tools
           cache: false
           rustflags: ''
 
