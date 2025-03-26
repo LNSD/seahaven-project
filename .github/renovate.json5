@@ -4,70 +4,66 @@
     'config:recommended',
     ':semanticCommits',
     ':semanticCommitTypeAll(chore)',
-    'helpers:pinGitHubActionDigests'
+    'helpers:pinGitHubActionDigests',
   ],
   timezone: 'Europe/Madrid',
   schedule: [
-    'before 8am on Monday'
+    'before 8am on Monday',
   ],
   configMigration: true,
   rebaseWhen: 'behind-base-branch',
   lockFileMaintenance: {
     enabled: true,
     automerge: true,
-    automergeType: 'branch'
+    automergeType: 'branch',
   },
   packageRules: [
     {
-      description: "Automerge non-major updates",
+      description: 'Automerge non-major updates',
       matchUpdateTypes: [
-        "minor",
-        "patch"
+        'minor',
+        'patch',
       ],
-      matchCurrentVersion: "!/^0/",
-      automerge: true
+      matchCurrentVersion: '!/^0/',
+      automerge: true,
     },
     {
       groupName: 'futures crates',
       groupSlug: 'futures',
       matchManagers: [
-        'cargo'
+        'cargo',
       ],
       matchPackageNames: [
-        'futures'
+        'futures',
+        'futures-{/,}**',
+        'futures_{/,}**',
       ],
-      matchPackagePrefixes: [
-        'futures-',
-        'futures_'
-      ]
     },
     {
       groupName: 'serde crates',
       groupSlug: 'serde',
       matchManagers: [
-        'cargo'
+        'cargo',
       ],
       matchPackageNames: [
-        'serde'
+        'serde',
+        'serde-{/,}**',
+        'serde_{/,}**',
       ],
-      matchPackagePrefixes: [
-        'serde-',
-        'serde_'
-      ]
     },
     {
       groupName: 'tracing crates',
       groupSlug: 'tracing',
       matchManagers: [
-        'cargo'
+        'cargo',
       ],
-      matchSourceUrlPrefixes: [
-        'https://github.com/tokio-rs/tracing'
+      matchSourceUrls: [
+        'https://github.com/tokio-rs/tracing{/,}**',
       ],
-      matchPackagePrefixes: [
-        'tracing-',
-        'tracing_'
-      ]
+      matchPackageNames: [
+        'tracing-{/,}**',
+        'tracing_{/,}**',
+      ],
     },
     {
       groupName: 'async-graphql crates',
@@ -77,9 +73,7 @@
       ],
       matchPackageNames: [
         'async-graphql',
-      ],
-      matchPackagePrefixes: [
-        'async-graphql-',
+        'async-graphql-{/,}**',
       ],
     },
   ],
@@ -87,14 +81,14 @@
     {
       customType: 'regex',
       fileMatch: [
-        '^rust-toolchain(\\.toml)?$'
+        '^rust-toolchain(\\.toml)?$',
       ],
       matchStrings: [
-        'channel\\s*=\\s*"(?<currentValue>\\d+\\.\\d+\\.\\d+)"'
+        'channel\\s*=\\s*"(?<currentValue>\\d+\\.\\d+\\.\\d+)"',
       ],
       depNameTemplate: 'rust',
       packageNameTemplate: 'rust-lang/rust',
-      datasourceTemplate: 'github-releases'
-    }
-  ]
+      datasourceTemplate: 'github-releases',
+    },
+  ],
 }
