@@ -3,6 +3,7 @@ resolver = "3"
 members = [
     "seahaven-cli",
     "seahaven-conf",
+    "seahaven-docker",
     "testlib/conf-testdata",
 ]
 
