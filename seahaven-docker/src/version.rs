@@ -34,7 +34,7 @@ pub async fn get_docker_version(bin: &Executable) -> anyhow::Result<DockerVersio
         }"#
     };
 
-    let output = DockerCmd::with_binary(bin)
+    let output = DockerCmd::with_executable(bin)
         .version()
         .with_custom_format(DOCKER_VERSION_FMT)
         .into_command()
@@ -79,7 +79,7 @@ pub async fn get_docker_plugin_versions(bin: &Executable) -> anyhow::Result<Dock
         }"#
     };
 
-    let output = DockerCmd::with_binary(bin)
+    let output = DockerCmd::with_executable(bin)
         .system()
         .info()
         .with_custom_format(DOCKER_SYSTEM_INFO_FMT)

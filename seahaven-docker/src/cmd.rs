@@ -16,3 +16,11 @@ pub mod version;
 
 pub use common::IntoCommand;
 pub use root::DockerCmd;
+
+#[cfg(test)]
+mod tests {
+    mod common;
+    mod it_root;
+    mod it_system;
+    mod it_version;
+}
