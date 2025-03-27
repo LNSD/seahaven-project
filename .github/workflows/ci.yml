@@ -80,3 +80,40 @@ jobs:
         with:
           files: it-lcov.info
           flags: integration
+
+  test-docker:
+    needs: test
+    runs-on: ubuntu-latest
+    container:
+      image: docker:28.0.4-cli
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      ## Setup
+      - name: Setup Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@9399c7bb15d4c7d47b27263d024f0a4978346ba4 # v1
+        with:
+          components: clippy,llvm-tools
+          cache: false
+          rustflags: ''
+
+      - name: Cache rust build files
+        uses: Leafwing-Studios/cargo-cache@a0709d80dd96c8734ac8f186c1f238c8f528d198 # v2
+
+      - name: Install Cargo LLVM cov
+        uses: baptiste0928/cargo-install@91c5da15570085bcde6f4d7aed98cb82d6769fd3 # v3
+        with:
+          crate: cargo-llvm-cov
+
+      ## Tests
+      - name: Run docker integration tests
+        run: cargo llvm-cov test -p seahaven-docker --test '*' --lcov --output-path it-docker-lcov.info
+
+      - name: Upload docker integration tests coverage report to codecov
+        uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          files: it-docker-lcov.info
+          flags: integration

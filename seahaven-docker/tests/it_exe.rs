@@ -3,7 +3,7 @@ use seahaven_docker::{
     exe::{Executable, resolve_cli_executable},
 };
 
-#[test_with::no_env(CI)]
+#[test_with::executable(docker)]
 #[test]
 fn resolve_invalid_executable() {
     //* Given
@@ -19,7 +19,7 @@ fn resolve_invalid_executable() {
     );
 }
 
-#[test_with::no_env(CI)]
+#[test_with::executable(docker)]
 #[test]
 fn executable_display_and_debug() {
     //* Given
@@ -34,7 +34,7 @@ fn executable_display_and_debug() {
     assert!(debug_str.contains("docker"));
 }
 
-#[test_with::no_env(CI)]
+#[test_with::executable(docker)]
 #[test]
 fn docker_cmd_default() {
     //* Given

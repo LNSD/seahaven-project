@@ -1,6 +1,6 @@
 use seahaven_docker::{exe::resolve_cli_executable, version};
 
-#[test_with::no_env(CI)]
+#[test_with::executable(docker)]
 #[tokio::test]
 async fn resolve_docker_version() {
     //* Given
