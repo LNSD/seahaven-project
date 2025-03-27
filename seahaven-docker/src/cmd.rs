@@ -1,4 +1,18 @@
-//! Docker CLI command wrapper
+//! Docker command builder
+//!
+//! Supported commands:
+//! - `docker version`
+//! - `docker system info`
+//! - `docker system prune`
+//! - `docker compose build`
+//! - `docker compose up`
+//! - `docker compose down`
 
-pub mod bin;
+mod common;
+pub mod compose;
+mod root;
+pub mod system;
 pub mod version;
+
+pub use common::IntoCommand;
+pub use root::DockerCmd;
