@@ -16,7 +16,7 @@ impl Default for DockerCmd {
     /// This function will panic if the docker CLI binary is not found.
     fn default() -> Self {
         let bin = resolve_cli_executable().expect("Docker CLI binary not found");
-        Self::with_binary(bin)
+        Self::with_executable(bin)
     }
 }
 
@@ -32,12 +32,21 @@ impl DockerCmd {
         Self::default()
     }
 
-    /// Create a new docker command with a custom binary
-    pub fn with_binary<B>(bin: B) -> Self
+    /// Create a new docker command with a custom executable
+    pub fn with_executable<B>(bin: B) -> Self
     where
         B: Borrow<Executable>,
     {
         Self(tokio::process::Command::new(bin.borrow()))
+    }
+
+    /// Create a new docker command with a custom executable
+    #[cfg(test)]
+    pub fn with_test_executable<E>(exe: E) -> Self
+    where
+        E: AsRef<std::ffi::OsStr>,
+    {
+        Self(tokio::process::Command::new(exe))
     }
 }
 
