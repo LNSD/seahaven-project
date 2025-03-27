@@ -34,7 +34,7 @@ async fn run_docker_version_with_json_format() {
     let output = res.expect("Failed to run docker version");
     let args = parse_fixture_output(&output);
 
-    assert_eq!(args, ["--format", "json", "version"]);
+    assert_eq!(args, ["version", "--format", "json"]);
 }
 
 #[tokio::test]
@@ -54,5 +54,5 @@ async fn run_docker_version_with_custom_format() {
     let output = res.expect("Failed to run docker version");
     let args = parse_fixture_output(&output);
 
-    assert_eq!(args, ["--format", "version", fmt_str]);
+    assert_eq!(args, ["version", "--format", fmt_str]);
 }

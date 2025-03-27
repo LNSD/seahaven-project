@@ -33,7 +33,7 @@ async fn run_docker_system_info() {
     let output = res.expect("Failed to run docker system info");
     let args = parse_fixture_output(&output);
 
-    assert_eq!(args, ["info", "system"]);
+    assert_eq!(args, ["system", "info"]);
 }
 
 #[tokio::test]
@@ -52,7 +52,7 @@ async fn run_docker_system_info_with_json_format() {
     let output = res.expect("Failed to run docker system info with json format");
     let args = parse_fixture_output(&output);
 
-    assert_eq!(args, ["--format", "info", "json", "system"]);
+    assert_eq!(args, ["system", "info", "--format", "json"]);
 }
 
 #[tokio::test]
@@ -73,7 +73,7 @@ async fn run_docker_system_info_with_custom_format() {
     let output = res.expect("Failed to run docker system info with custom format");
     let args = parse_fixture_output(&output);
 
-    assert_eq!(args, ["--format", "info", "system", fmt_str]);
+    assert_eq!(args, ["system", "info", "--format", fmt_str]);
 }
 
 #[tokio::test]
@@ -91,7 +91,7 @@ async fn run_docker_system_prune() {
     let output = res.expect("Failed to run docker system prune");
     let args = parse_fixture_output(&output);
 
-    assert_eq!(args, ["prune", "system"]);
+    assert_eq!(args, ["system", "prune"]);
 }
 
 #[tokio::test]
@@ -110,7 +110,7 @@ async fn run_docker_system_prune_with_volumes() {
     let output = res.expect("Failed to run docker system prune with volumes");
     let args = parse_fixture_output(&output);
 
-    assert_eq!(args, ["--volumes", "prune", "system"]);
+    assert_eq!(args, ["system", "prune", "--volumes"]);
 }
 
 #[tokio::test]
@@ -129,7 +129,7 @@ async fn run_docker_system_prune_with_all() {
     let output = res.expect("Failed to run docker system prune with all");
     let args = parse_fixture_output(&output);
 
-    assert_eq!(args, ["--all", "prune", "system"]);
+    assert_eq!(args, ["system", "prune", "--all"]);
 }
 
 #[tokio::test]
@@ -148,7 +148,7 @@ async fn run_docker_system_prune_with_force() {
     let output = res.expect("Failed to run docker system prune with force");
     let args = parse_fixture_output(&output);
 
-    assert_eq!(args, ["--force", "prune", "system"]);
+    assert_eq!(args, ["system", "prune", "--force"]);
 }
 
 #[tokio::test]
@@ -169,6 +169,6 @@ async fn run_docker_system_prune_with_all_options() {
     let output = res.expect("Failed to run docker system prune with all options");
     let args = parse_fixture_output(&output);
 
-    // The mocker.sh script sorts all arguments alphabetically
-    assert_eq!(args, ["--all", "--force", "--volumes", "prune", "system"]);
+    // The arguments will appear in the order they were added
+    assert_eq!(args, ["system", "prune", "--volumes", "--all", "--force"]);
 }
