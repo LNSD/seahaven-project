@@ -1,75 +1,77 @@
-use serde_with::{DisplayFromStr, serde_as};
+use std::marker::PhantomData;
 
-use super::bin::CliBinary;
+use super::common::IntoCommand;
 
-/// The go template to use to format the output of the `docker version` command into JSON
-const DOCKER_VERSION_GO_TEMPLATE: &str = r#"{"client":"{{.Client.Version}}","client_api":"{{.Client.APIVersion}}","engine":"{{range .Server.Components}}{{if eq .Name "Engine"}}{{.Version}}{{end}}{{end}}","engine_api":"{{range .Server.Components}}{{if eq .Name "Engine"}}{{.Details.ApiVersion}}{{end}}{{end}}"}"#;
-
-/// The go template to use to format the output of the `docker system info` command into JSON
-const DOCKER_SYSTEM_INFO_GO_TEMPLATE: &str = r#"{"compose":"{{range .ClientInfo.Plugins}}{{if eq .Name "compose"}}{{.Version}}{{end}}{{end}}","buildx":"{{range .ClientInfo.Plugins}}{{if eq .Name "buildx"}}{{.Version}}{{end}}{{end}}"}"#;
-
-/// The version of the docker CLI
-///
-/// This struct is used to parse the output of the `docker version` command.
-#[derive(Debug, Clone, serde::Deserialize)]
-pub struct DockerVersion {
-    /// The docker client version
-    pub client: semver::Version,
-    /// The docker engine version
-    pub engine: semver::Version,
+pub struct DockerVersionCmd<F = NoFormatOpt> {
+    cmd: tokio::process::Command,
+    _format: PhantomData<F>,
 }
 
-/// Get the version of the docker CLI
-///
-/// Run the `docker version` command and return the output.
-pub async fn get_docker_version(bin: &CliBinary) -> anyhow::Result<DockerVersion> {
-    let output = tokio::process::Command::new(bin)
-        .arg("version")
-        .arg("--format")
-        .arg(DOCKER_VERSION_GO_TEMPLATE)
-        .kill_on_drop(true)
-        .output()
-        .await
-        .map_err(|err| anyhow::anyhow!("Failed to run `docker version`: {}", err))?;
-
-    serde_json::from_slice(&output.stdout)
-        .map_err(|err| anyhow::anyhow!("Failed to parse `docker version` output: {}", err))
+impl<F> DockerVersionCmd<F> {
+    /// Create a new `docker version` command
+    pub(crate) fn new(cmd: tokio::process::Command) -> Self {
+        Self {
+            cmd,
+            _format: PhantomData,
+        }
+    }
 }
 
-/// The version of the docker plugins
-///
-/// This struct is used to parse the output of the `docker system info` command.
-#[serde_as]
-#[derive(Debug, Clone, serde::Deserialize)]
-pub struct DockerPluginVersions {
-    /// The version of the docker compose plugin
+impl<F> IntoCommand for DockerVersionCmd<F> {
+    fn into_command(self) -> tokio::process::Command {
+        self.cmd
+    }
+}
+
+impl DockerVersionCmd<NoFormatOpt> {
+    /// Create a new `docker version` command with the `json` format.
     ///
-    /// If the plugin is not installed, this will be `None`.
-    #[serde_as(as = "Option<DisplayFromStr>")]
-    #[serde(default)]
-    pub compose: Option<semver::Version>,
-    /// The version of the docker buildx plugin
+    /// See the [Docker CLI documentation](https://docs.docker.com/engine/reference/commandline/version/#options)
+    /// for more information.
+    pub fn with_json_format(self) -> DockerVersionCmd<JsonFormatOpt> {
+        let mut cmd = self.cmd;
+        cmd.arg("--format");
+        cmd.arg("json");
+        DockerVersionCmd {
+            cmd,
+            _format: PhantomData,
+        }
+    }
+
+    /// Create a new `docker version` command with a custom template format.
     ///
-    /// If the plugin is not installed, this will be `None`.
-    #[serde_as(as = "Option<DisplayFromStr>")]
-    #[serde(default)]
-    pub buildx: Option<semver::Version>,
+    /// See the [Docker CLI documentation](https://docs.docker.com/engine/reference/commandline/version/#options)
+    /// for more information.
+    pub fn with_custom_format(self, format: &str) -> DockerVersionCmd<WithCustomFormat> {
+        let mut cmd = self.cmd;
+        cmd.arg("--format");
+        cmd.arg(format);
+        DockerVersionCmd {
+            cmd,
+            _format: PhantomData,
+        }
+    }
 }
 
-/// Get the `docker compose` version
-///
-/// Run the `docker compose version` command and return the output.
-pub async fn get_docker_plugin_versions(bin: &CliBinary) -> anyhow::Result<DockerPluginVersions> {
-    let output = tokio::process::Command::new(bin)
-        .arg("system")
-        .arg("info")
-        .arg("--format")
-        .arg(DOCKER_SYSTEM_INFO_GO_TEMPLATE)
-        .kill_on_drop(true)
-        .output()
-        .await
-        .map_err(|err| anyhow::anyhow!("Failed to run `docker compose version`: {}", err))?;
+/// A trait that represents a format option for the `docker version` command.
+pub trait FormatOpt: _priv::Sealed {}
 
-    serde_json::from_slice(&output.stdout)
-        .map_err(|err| anyhow::anyhow!("Failed to parse `docker compose version` output: {}", err))
+pub struct NoFormatOpt;
+
+impl FormatOpt for NoFormatOpt {}
+impl _priv::Sealed for NoFormatOpt {}
+
+pub struct JsonFormatOpt;
+
+impl FormatOpt for JsonFormatOpt {}
+impl _priv::Sealed for JsonFormatOpt {}
+
+pub struct WithCustomFormat;
+
+impl FormatOpt for WithCustomFormat {}
+impl _priv::Sealed for WithCustomFormat {}
+
+mod _priv {
+    #![allow(dead_code)]
+    pub trait Sealed {}
 }

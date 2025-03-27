@@ -603,6 +603,7 @@ name = "seahaven-docker"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "indoc",
  "semver",
  "serde",
  "serde_json",
