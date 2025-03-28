@@ -1,10 +1,4 @@
-pub use self::{
-    info::{DefaultFormat, DockerSystemInfoCmd, FormatOpt, WithCustomFormat, WithJsonFormat},
-    prune::{
-        All, AllOpt, DockerSystemPruneCmd, Force, ForceOpt, NoForce, NoVolumes, NotAll, Volumes,
-        VolumesOpt,
-    },
-};
+use self::{info::DockerSystemInfoCmd, prune::DockerSystemPruneCmd};
 use super::common::IntoCommand;
 
 pub struct DockerSystemCmd(tokio::process::Command);
@@ -36,7 +30,7 @@ impl IntoCommand for DockerSystemCmd {
     }
 }
 
-mod info {
+pub mod info {
     use std::marker::PhantomData;
 
     use super::IntoCommand;
@@ -116,7 +110,7 @@ mod info {
     }
 }
 
-mod prune {
+pub mod prune {
     use std::marker::PhantomData;
 
     use super::IntoCommand;

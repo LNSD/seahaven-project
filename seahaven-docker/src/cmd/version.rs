@@ -1,10 +1,11 @@
 use std::marker::PhantomData;
 
+use self::opts::{JsonFormatOpt, NoFormatOpt, WithCustomFormat};
 use super::common::IntoCommand;
 
 pub struct DockerVersionCmd<F = NoFormatOpt> {
     cmd: tokio::process::Command,
-    _format: PhantomData<F>,
+    _args: PhantomData<F>,
 }
 
 impl<F> DockerVersionCmd<F> {
@@ -12,7 +13,7 @@ impl<F> DockerVersionCmd<F> {
     pub(crate) fn new(cmd: tokio::process::Command) -> Self {
         Self {
             cmd,
-            _format: PhantomData,
+            _args: PhantomData,
         }
     }
 }
@@ -34,7 +35,7 @@ impl DockerVersionCmd<NoFormatOpt> {
         cmd.arg("json");
         DockerVersionCmd {
             cmd,
-            _format: PhantomData,
+            _args: PhantomData,
         }
     }
 
@@ -48,30 +49,32 @@ impl DockerVersionCmd<NoFormatOpt> {
         cmd.arg(format);
         DockerVersionCmd {
             cmd,
-            _format: PhantomData,
+            _args: PhantomData,
         }
     }
 }
 
-/// A trait that represents a format option for the `docker version` command.
-pub trait FormatOpt: _priv::Sealed {}
+pub mod opts {
+    /// A trait that represents a format option for the `docker version` command.
+    pub trait FormatOpt: _priv::Sealed {}
 
-pub struct NoFormatOpt;
+    pub struct NoFormatOpt;
 
-impl FormatOpt for NoFormatOpt {}
-impl _priv::Sealed for NoFormatOpt {}
+    impl FormatOpt for NoFormatOpt {}
+    impl _priv::Sealed for NoFormatOpt {}
 
-pub struct JsonFormatOpt;
+    pub struct JsonFormatOpt;
 
-impl FormatOpt for JsonFormatOpt {}
-impl _priv::Sealed for JsonFormatOpt {}
+    impl FormatOpt for JsonFormatOpt {}
+    impl _priv::Sealed for JsonFormatOpt {}
 
-pub struct WithCustomFormat;
+    pub struct WithCustomFormat;
 
-impl FormatOpt for WithCustomFormat {}
-impl _priv::Sealed for WithCustomFormat {}
+    impl FormatOpt for WithCustomFormat {}
+    impl _priv::Sealed for WithCustomFormat {}
 
-mod _priv {
-    #![allow(dead_code)]
-    pub trait Sealed {}
+    #[allow(dead_code)]
+    mod _priv {
+        pub trait Sealed {}
+    }
 }
