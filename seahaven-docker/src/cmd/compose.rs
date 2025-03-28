@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-pub use self::{
+use self::{
     build::DockerComposeBuildCmd,
     down::DockerComposeDownCmd,
     opts::{
