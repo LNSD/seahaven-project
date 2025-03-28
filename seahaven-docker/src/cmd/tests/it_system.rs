@@ -1,19 +1,19 @@
-use super::common::{MOCKER_SH_PATH, parse_fixture_output};
+use super::common::{fixture_exe, parse_fixture_exe_output};
 use crate::cmd::{DockerCmd, IntoCommand};
 
 #[tokio::test]
 async fn run_docker_system() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
-        .system()
-        .into_command();
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe).system().into_command();
 
     //* When
     let res = cmd.kill_on_drop(true).output().await;
 
     //* Then
     let output = res.expect("Failed to run docker system");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["system"]);
 }
@@ -21,7 +21,9 @@ async fn run_docker_system() {
 #[tokio::test]
 async fn run_docker_system_info() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .system()
         .info()
         .into_command();
@@ -31,7 +33,7 @@ async fn run_docker_system_info() {
 
     //* Then
     let output = res.expect("Failed to run docker system info");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["system", "info"]);
 }
@@ -39,7 +41,9 @@ async fn run_docker_system_info() {
 #[tokio::test]
 async fn run_docker_system_info_with_json_format() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .system()
         .info()
         .with_json_format()
@@ -50,7 +54,7 @@ async fn run_docker_system_info_with_json_format() {
 
     //* Then
     let output = res.expect("Failed to run docker system info with json format");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["system", "info", "--format", "json"]);
 }
@@ -58,9 +62,11 @@ async fn run_docker_system_info_with_json_format() {
 #[tokio::test]
 async fn run_docker_system_info_with_custom_format() {
     //* Given
+    let exe = fixture_exe();
+
     let fmt_str = "{{.ServerVersion}}";
 
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let mut cmd = DockerCmd::with_executable(exe)
         .system()
         .info()
         .with_custom_format(fmt_str)
@@ -71,7 +77,7 @@ async fn run_docker_system_info_with_custom_format() {
 
     //* Then
     let output = res.expect("Failed to run docker system info with custom format");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["system", "info", "--format", fmt_str]);
 }
@@ -79,7 +85,9 @@ async fn run_docker_system_info_with_custom_format() {
 #[tokio::test]
 async fn run_docker_system_prune() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .system()
         .prune()
         .into_command();
@@ -89,7 +97,7 @@ async fn run_docker_system_prune() {
 
     //* Then
     let output = res.expect("Failed to run docker system prune");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["system", "prune"]);
 }
@@ -97,7 +105,9 @@ async fn run_docker_system_prune() {
 #[tokio::test]
 async fn run_docker_system_prune_with_volumes() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .system()
         .prune()
         .with_volumes()
@@ -108,7 +118,7 @@ async fn run_docker_system_prune_with_volumes() {
 
     //* Then
     let output = res.expect("Failed to run docker system prune with volumes");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["system", "prune", "--volumes"]);
 }
@@ -116,7 +126,9 @@ async fn run_docker_system_prune_with_volumes() {
 #[tokio::test]
 async fn run_docker_system_prune_with_all() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .system()
         .prune()
         .with_all()
@@ -127,7 +139,7 @@ async fn run_docker_system_prune_with_all() {
 
     //* Then
     let output = res.expect("Failed to run docker system prune with all");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["system", "prune", "--all"]);
 }
@@ -135,7 +147,9 @@ async fn run_docker_system_prune_with_all() {
 #[tokio::test]
 async fn run_docker_system_prune_with_force() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .system()
         .prune()
         .with_force()
@@ -146,7 +160,7 @@ async fn run_docker_system_prune_with_force() {
 
     //* Then
     let output = res.expect("Failed to run docker system prune with force");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["system", "prune", "--force"]);
 }
@@ -154,7 +168,9 @@ async fn run_docker_system_prune_with_force() {
 #[tokio::test]
 async fn run_docker_system_prune_with_all_options() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .system()
         .prune()
         .with_volumes()
@@ -167,7 +183,7 @@ async fn run_docker_system_prune_with_all_options() {
 
     //* Then
     let output = res.expect("Failed to run docker system prune with all options");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     // The arguments will appear in the order they were added
     assert_eq!(args, ["system", "prune", "--volumes", "--all", "--force"]);

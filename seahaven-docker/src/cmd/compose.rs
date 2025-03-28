@@ -18,7 +18,8 @@ pub struct DockerComposeCmd<N = NoProjectName, P = ProgressAuto, A = AnsiAuto>(
 );
 
 impl<N, P, A> DockerComposeCmd<N, P, A> {
-    pub(crate) fn new(cmd: tokio::process::Command) -> Self {
+    pub(crate) fn new(mut cmd: tokio::process::Command) -> Self {
+        cmd.arg("compose");
         Self(cmd, PhantomData)
     }
 
@@ -250,8 +251,7 @@ pub mod build {
     where
         S: ServicesOpt,
     {
-        pub(crate) fn new(cmd: tokio::process::Command) -> Self {
-            let mut cmd = cmd;
+        pub(crate) fn new(mut cmd: tokio::process::Command) -> Self {
             cmd.arg("build");
             Self {
                 cmd,
@@ -364,8 +364,7 @@ pub mod up {
         B: BuildOpt,
         S: ServicesOpt,
     {
-        pub(crate) fn new(cmd: tokio::process::Command) -> Self {
-            let mut cmd = cmd;
+        pub(crate) fn new(mut cmd: tokio::process::Command) -> Self {
             cmd.arg("up");
             Self {
                 cmd,
@@ -518,8 +517,7 @@ pub mod down {
     where
         V: VolumesOpt,
     {
-        pub(crate) fn new(cmd: tokio::process::Command) -> Self {
-            let mut cmd = cmd;
+        pub(crate) fn new(mut cmd: tokio::process::Command) -> Self {
             cmd.arg("down");
             Self {
                 cmd,
@@ -578,8 +576,7 @@ pub mod pull {
     pub struct DockerComposePullCmd(tokio::process::Command);
 
     impl DockerComposePullCmd {
-        pub(crate) fn new(cmd: tokio::process::Command) -> Self {
-            let mut cmd = cmd;
+        pub(crate) fn new(mut cmd: tokio::process::Command) -> Self {
             cmd.arg("pull");
             Self(cmd)
         }

@@ -1,19 +1,19 @@
-use super::common::{MOCKER_SH_PATH, parse_fixture_output};
+use super::common::{fixture_exe, parse_fixture_exe_output};
 use crate::cmd::{DockerCmd, IntoCommand};
 
 #[tokio::test]
 async fn run_docker_compose() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
-        .compose()
-        .into_command();
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe).compose().into_command();
 
     //* When
     let res = cmd.kill_on_drop(true).output().await;
 
     //* Then
     let output = res.expect("Failed to run docker compose");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose"]);
 }
@@ -21,7 +21,9 @@ async fn run_docker_compose() {
 #[tokio::test]
 async fn run_docker_compose_down() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .down()
         .into_command();
@@ -31,7 +33,7 @@ async fn run_docker_compose_down() {
 
     //* Then
     let output = res.expect("Failed to run docker compose down");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "down"]);
 }
@@ -39,7 +41,9 @@ async fn run_docker_compose_down() {
 #[tokio::test]
 async fn run_docker_compose_down_with_volumes() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .down()
         .with_volumes()
@@ -50,7 +54,7 @@ async fn run_docker_compose_down_with_volumes() {
 
     //* Then
     let output = res.expect("Failed to run docker compose down with volumes");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "down", "--volumes"]);
 }
@@ -58,7 +62,9 @@ async fn run_docker_compose_down_with_volumes() {
 #[tokio::test]
 async fn run_docker_compose_pull() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .pull()
         .into_command();
@@ -68,7 +74,7 @@ async fn run_docker_compose_pull() {
 
     //* Then
     let output = res.expect("Failed to run docker compose pull");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "pull"]);
 }
@@ -76,7 +82,9 @@ async fn run_docker_compose_pull() {
 #[tokio::test]
 async fn run_docker_compose_with_plain_progress() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .with_plain_progress()
         .up()
@@ -87,7 +95,7 @@ async fn run_docker_compose_with_plain_progress() {
 
     //* Then
     let output = res.expect("Failed to run docker compose with plain progress");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "--progress", "plain", "up"]);
 }
@@ -95,7 +103,9 @@ async fn run_docker_compose_with_plain_progress() {
 #[tokio::test]
 async fn run_docker_compose_with_quiet_progress() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .with_quiet_progress()
         .pull()
@@ -106,7 +116,7 @@ async fn run_docker_compose_with_quiet_progress() {
 
     //* Then
     let output = res.expect("Failed to run docker compose with quiet progress");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "--progress", "quiet", "pull"]);
 }
@@ -114,7 +124,9 @@ async fn run_docker_compose_with_quiet_progress() {
 #[tokio::test]
 async fn run_docker_compose_with_project_name() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .with_project_name("test-project")
         .up()
@@ -125,7 +137,7 @@ async fn run_docker_compose_with_project_name() {
 
     //* Then
     let output = res.expect("Failed to run docker compose with project name");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "--project-name", "test-project", "up"]);
 }
@@ -133,7 +145,9 @@ async fn run_docker_compose_with_project_name() {
 #[tokio::test]
 async fn run_docker_compose_with_project_name_and_progress() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .with_project_name("test-project")
         .with_json_progress()
@@ -145,7 +159,7 @@ async fn run_docker_compose_with_project_name_and_progress() {
 
     //* Then
     let output = res.expect("Failed to run docker compose with project name and progress");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(
         args,
@@ -163,7 +177,9 @@ async fn run_docker_compose_with_project_name_and_progress() {
 #[tokio::test]
 async fn run_docker_compose_with_progress_and_project_name() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .with_plain_progress()
         .with_project_name("test-project")
@@ -175,7 +191,7 @@ async fn run_docker_compose_with_progress_and_project_name() {
 
     //* Then
     let output = res.expect("Failed to run docker compose with progress and project name");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(
         args,
@@ -193,7 +209,9 @@ async fn run_docker_compose_with_progress_and_project_name() {
 #[tokio::test]
 async fn run_docker_compose_with_file() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .with_file("docker-compose.prod.yml")
         .up()
@@ -204,7 +222,7 @@ async fn run_docker_compose_with_file() {
 
     //* Then
     let output = res.expect("Failed to run docker compose with file option");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "--file", "docker-compose.prod.yml", "up"]);
 }
@@ -212,7 +230,9 @@ async fn run_docker_compose_with_file() {
 #[tokio::test]
 async fn run_docker_compose_with_multiple_files() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .with_files(["docker-compose.yml", "docker-compose.override.yml"])
         .up()
@@ -223,7 +243,7 @@ async fn run_docker_compose_with_multiple_files() {
 
     //* Then
     let output = res.expect("Failed to run docker compose with multiple files");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(
         args,
@@ -241,7 +261,9 @@ async fn run_docker_compose_with_multiple_files() {
 #[tokio::test]
 async fn run_docker_compose_with_env_file() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .with_env_file(".env.prod")
         .up()
@@ -252,7 +274,7 @@ async fn run_docker_compose_with_env_file() {
 
     //* Then
     let output = res.expect("Failed to run docker compose with env file");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "--env-file", ".env.prod", "up"]);
 }
@@ -260,7 +282,9 @@ async fn run_docker_compose_with_env_file() {
 #[tokio::test]
 async fn run_docker_compose_with_tty_progress() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .with_tty_progress()
         .up()
@@ -271,7 +295,7 @@ async fn run_docker_compose_with_tty_progress() {
 
     //* Then
     let output = res.expect("Failed to run docker compose with tty progress");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "--progress", "tty", "up"]);
 }
@@ -279,7 +303,9 @@ async fn run_docker_compose_with_tty_progress() {
 #[tokio::test]
 async fn run_docker_compose_with_json_progress() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .with_json_progress()
         .up()
@@ -290,7 +316,7 @@ async fn run_docker_compose_with_json_progress() {
 
     //* Then
     let output = res.expect("Failed to run docker compose with json progress");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "--progress", "json", "up"]);
 }
@@ -298,7 +324,9 @@ async fn run_docker_compose_with_json_progress() {
 #[tokio::test]
 async fn run_docker_compose_with_all_options() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .with_file("docker-compose.prod.yml")
         .with_env_file(".env.prod")
@@ -312,7 +340,7 @@ async fn run_docker_compose_with_all_options() {
 
     //* Then
     let output = res.expect("Failed to run docker compose with all options");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(
         args,
@@ -334,7 +362,9 @@ async fn run_docker_compose_with_all_options() {
 #[tokio::test]
 async fn run_docker_compose_with_file_and_env_file() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .with_file("docker-compose.dev.yml")
         .with_env_file(".env.dev")
@@ -346,7 +376,7 @@ async fn run_docker_compose_with_file_and_env_file() {
 
     //* Then
     let output = res.expect("Failed to run docker compose with file and env file");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(
         args,
@@ -364,7 +394,9 @@ async fn run_docker_compose_with_file_and_env_file() {
 #[tokio::test]
 async fn run_docker_compose_with_ansi_always() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .with_ansi_always()
         .up()
@@ -375,7 +407,7 @@ async fn run_docker_compose_with_ansi_always() {
 
     //* Then
     let output = res.expect("Failed to run docker compose with ansi always");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "--ansi", "always", "up"]);
 }
@@ -383,7 +415,9 @@ async fn run_docker_compose_with_ansi_always() {
 #[tokio::test]
 async fn run_docker_compose_with_ansi_never() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .with_ansi_never()
         .up()
@@ -394,7 +428,7 @@ async fn run_docker_compose_with_ansi_never() {
 
     //* Then
     let output = res.expect("Failed to run docker compose with ansi never");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "--ansi", "never", "up"]);
 }
@@ -402,7 +436,9 @@ async fn run_docker_compose_with_ansi_never() {
 #[tokio::test]
 async fn run_docker_compose_with_ansi_and_progress() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .with_ansi_always()
         .with_plain_progress()
@@ -414,7 +450,7 @@ async fn run_docker_compose_with_ansi_and_progress() {
 
     //* Then
     let output = res.expect("Failed to run docker compose with ansi and progress");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(
         args,
@@ -425,7 +461,9 @@ async fn run_docker_compose_with_ansi_and_progress() {
 #[tokio::test]
 async fn run_docker_compose_with_ansi_and_project_name() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .with_ansi_never()
         .with_project_name("test-project")
@@ -437,7 +475,7 @@ async fn run_docker_compose_with_ansi_and_project_name() {
 
     //* Then
     let output = res.expect("Failed to run docker compose with ansi and project name");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(
         args,
@@ -455,7 +493,9 @@ async fn run_docker_compose_with_ansi_and_project_name() {
 #[tokio::test]
 async fn run_docker_compose_with_all_options_including_ansi() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .with_file("docker-compose.prod.yml")
         .with_env_file(".env.prod")
@@ -470,7 +510,7 @@ async fn run_docker_compose_with_all_options_including_ansi() {
 
     //* Then
     let output = res.expect("Failed to run docker compose with all options including ansi");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(
         args,

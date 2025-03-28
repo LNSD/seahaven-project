@@ -1,19 +1,19 @@
-use super::common::{MOCKER_SH_PATH, parse_fixture_output};
+use super::common::{fixture_exe, parse_fixture_exe_output};
 use crate::cmd::{DockerCmd, IntoCommand};
 
 #[tokio::test]
 async fn run_docker_version() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
-        .version()
-        .into_command();
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe).version().into_command();
 
     //* When
     let res = cmd.kill_on_drop(true).output().await;
 
     //* Then
     let output = res.expect("Failed to run docker version");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["version"]);
 }
@@ -21,7 +21,9 @@ async fn run_docker_version() {
 #[tokio::test]
 async fn run_docker_version_with_json_format() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .version()
         .with_json_format()
         .into_command();
@@ -32,7 +34,7 @@ async fn run_docker_version_with_json_format() {
     //* Then
     // Parse the fixture output
     let output = res.expect("Failed to run docker version");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["version", "--format", "json"]);
 }
@@ -40,9 +42,11 @@ async fn run_docker_version_with_json_format() {
 #[tokio::test]
 async fn run_docker_version_with_custom_format() {
     //* Given
+    let exe = fixture_exe();
+
     let fmt_str = "{{.Server.Version}}";
 
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let mut cmd = DockerCmd::with_executable(exe)
         .version()
         .with_custom_format(fmt_str)
         .into_command();
@@ -52,7 +56,7 @@ async fn run_docker_version_with_custom_format() {
 
     //* Then
     let output = res.expect("Failed to run docker version");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["version", "--format", fmt_str]);
 }

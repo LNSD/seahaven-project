@@ -15,8 +15,8 @@ impl Default for DockerCmd {
     ///
     /// This function will panic if the docker CLI binary is not found.
     fn default() -> Self {
-        let bin = resolve_cli_executable().expect("Docker CLI binary not found");
-        Self::with_executable(bin)
+        let exe = resolve_cli_executable().expect("Docker CLI binary not found");
+        Self::with_executable(exe)
     }
 }
 
@@ -33,43 +33,28 @@ impl DockerCmd {
     }
 
     /// Create a new `docker` command with a custom executable
-    pub fn with_executable<B>(bin: B) -> Self
+    pub fn with_executable<B>(exe: B) -> Self
     where
         B: Borrow<Executable>,
     {
-        Self(tokio::process::Command::new(bin.borrow()))
-    }
-
-    /// Create a new `docker` command with a custom executable
-    #[cfg(test)]
-    pub fn with_test_executable<E>(exe: E) -> Self
-    where
-        E: AsRef<std::ffi::OsStr>,
-    {
-        Self(tokio::process::Command::new(exe))
+        Self(tokio::process::Command::new(exe.borrow()))
     }
 }
 
 impl DockerCmd {
     /// Create a new `docker version` command
     pub fn version(self) -> DockerVersionCmd {
-        let mut cmd = self.0;
-        cmd.arg("version");
-        DockerVersionCmd::new(cmd)
+        DockerVersionCmd::new(self.0)
     }
 
     /// Create a new `docker system` command
     pub fn system(self) -> DockerSystemCmd {
-        let mut cmd = self.0;
-        cmd.arg("system");
-        DockerSystemCmd::new(cmd)
+        DockerSystemCmd::new(self.0)
     }
 
     /// Create a new `docker compose` command
     pub fn compose(self) -> DockerComposeCmd {
-        let mut cmd = self.0;
-        cmd.arg("compose");
-        DockerComposeCmd::new(cmd)
+        DockerComposeCmd::new(self.0)
     }
 }
 

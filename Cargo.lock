@@ -92,12 +92,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "anyhow"
-version = "1.0.97"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dcfed56ad506cb2c684a14971b8861fdc3baaaae314b9e5f9bb532cbe3ba7a4f"
-
-[[package]]
 name = "autocfg"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -602,13 +596,13 @@ version = "0.1.0"
 name = "seahaven-docker"
 version = "0.1.0"
 dependencies = [
- "anyhow",
  "indoc",
  "semver",
  "serde",
  "serde_json",
  "serde_with",
  "test-with",
+ "thiserror",
  "tokio",
  "which",
 ]
@@ -735,6 +729,26 @@ version = "0.0.0"
 dependencies = [
  "indoc",
  "minijinja",
+]
+
+[[package]]
+name = "thiserror"
+version = "2.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "567b8a2dae586314f7be2a752ec7474332959c6460e02bde30d702a66d488708"
+dependencies = [
+ "thiserror-impl",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "2.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f7cf42b4507d8ea322120659672cf1b9dbb93f8f2d4ecfd6e51350ff5b17a1d"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
