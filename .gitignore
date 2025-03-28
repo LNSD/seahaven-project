@@ -2,8 +2,12 @@
 .idea/
 .vscode/
 
+## Obsidian
+.obsidian/
+
 ## Rust
 debug/
 target/
 **/*.rs.bk
 *.pdb
+
