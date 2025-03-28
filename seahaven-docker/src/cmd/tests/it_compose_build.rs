@@ -1,10 +1,12 @@
-use super::common::{MOCKER_SH_PATH, parse_fixture_output};
+use super::common::{fixture_exe, parse_fixture_exe_output};
 use crate::cmd::{DockerCmd, IntoCommand};
 
 #[tokio::test]
 async fn run_docker_compose_build() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .build()
         .into_command();
@@ -14,7 +16,7 @@ async fn run_docker_compose_build() {
 
     //* Then
     let output = res.expect("Failed to run docker compose build");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "build"]);
 }
@@ -22,9 +24,11 @@ async fn run_docker_compose_build() {
 #[tokio::test]
 async fn run_docker_compose_build_with_services() {
     //* Given
+    let exe = fixture_exe();
+
     let services = ["service1", "service2"];
 
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .build()
         .with_services(services)
@@ -35,7 +39,7 @@ async fn run_docker_compose_build_with_services() {
 
     //* Then
     let output = res.expect("Failed to run docker compose build with services");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "build", "service1", "service2"]);
 }
@@ -43,9 +47,11 @@ async fn run_docker_compose_build_with_services() {
 #[tokio::test]
 async fn run_docker_compose_build_with_build_arg() {
     //* Given
+    let exe = fixture_exe();
+
     let arg = "FOO=bar";
 
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .build()
         .with_build_arg(arg)
@@ -56,7 +62,7 @@ async fn run_docker_compose_build_with_build_arg() {
 
     //* Then
     let output = res.expect("Failed to run docker compose build with build arg");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "build", "--build-arg", "FOO=bar"]);
 }
@@ -64,9 +70,11 @@ async fn run_docker_compose_build_with_build_arg() {
 #[tokio::test]
 async fn run_docker_compose_build_with_multiple_build_args() {
     //* Given
+    let exe = fixture_exe();
+
     let build_args = ["FOO=bar", "BAZ=qux"];
 
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .build()
         .with_build_args(build_args)
@@ -77,7 +85,7 @@ async fn run_docker_compose_build_with_multiple_build_args() {
 
     //* Then
     let output = res.expect("Failed to run docker compose build with multiple build args");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(
         args,
@@ -95,10 +103,12 @@ async fn run_docker_compose_build_with_multiple_build_args() {
 #[tokio::test]
 async fn run_docker_compose_build_with_single_service_and_build_arg() {
     //* Given
+    let exe = fixture_exe();
+
     let service = "api-service";
     let arg = "NODE_ENV=production";
 
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .build()
         .with_build_arg(arg)
@@ -110,7 +120,7 @@ async fn run_docker_compose_build_with_single_service_and_build_arg() {
 
     //* Then
     let output = res.expect("Failed to run docker compose build with service and build arg");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(
         args,
@@ -127,10 +137,12 @@ async fn run_docker_compose_build_with_single_service_and_build_arg() {
 #[tokio::test]
 async fn run_docker_compose_build_with_multiple_services_and_build_args() {
     //* Given
+    let exe = fixture_exe();
+
     let services = ["api-service", "web-service"];
     let build_args = ["NODE_ENV=production", "DEBUG=false"];
 
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .build()
         .with_build_args(build_args)
@@ -143,7 +155,7 @@ async fn run_docker_compose_build_with_multiple_services_and_build_args() {
     //* Then
     let output =
         res.expect("Failed to run docker compose build with multiple services and build args");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(
         args,

@@ -1,6 +1,13 @@
-//! This module contains the code for the `version` command.
+//! Version information retrieval
 //!
-//! It is used to get the version of the docker CLI and the required plugins.
+//! This module provides functionality to retrieve version details from different Docker components:
+//! - The Docker client version (CLI)
+//! - The Docker engine version (server)
+//! - Docker plugins versions
+//!
+//! This version information is essential for ensuring compatibility and for troubleshooting issues.
+
+use std::borrow::Borrow;
 
 use serde_with::{DisplayFromStr, serde_as};
 
@@ -9,21 +16,92 @@ use crate::{
     exe::Executable,
 };
 
-/// The docker version
+/// The Docker version
 ///
-/// This struct is used to parse the output of the `docker version` command.
+/// This struct contains the version information of the Docker client, engine, and plugins.
+///
+/// See [`fetch`] for more information.
+#[derive(Debug, Clone)]
+pub struct Version {
+    /// The client version
+    pub client: semver::Version,
+    /// The engine version
+    pub engine: semver::Version,
+    /// The compose plugin version
+    ///
+    /// If the plugin is not installed, this will be `None`.
+    pub plugin_compose: Option<semver::Version>,
+    /// The buildx plugin version
+    ///
+    /// If the plugin is not installed, this will be `None`.
+    pub plugin_buildx: Option<semver::Version>,
+}
+
+/// Errors that can occur when retrieving Docker version information
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    /// Failed to execute the Docker command
+    #[error("Failed to execute '{cmd}': {src}")]
+    CommandExecution {
+        cmd: &'static str,
+        #[source]
+        src: std::io::Error,
+    },
+
+    /// Failed to parse the Docker version output
+    #[error("Failed to parse '{cmd}' output: {src}")]
+    OutputParsing {
+        cmd: &'static str,
+        #[source]
+        src: serde_json::Error,
+    },
+
+    /// Failed to parse a version string
+    #[error("Failed to parse '{cmd}' version string: {src}")]
+    VersionParsing {
+        cmd: &'static str,
+        #[source]
+        src: semver::Error,
+    },
+}
+
+/// Fetch the Docker version
+///
+/// This function retrieves the version of the Docker client and engine, as well as the versions of the Docker compose and buildx plugins.
+///
+/// # Errors
+///
+/// This function will return an error if the `docker version` command fails to execute, or if the output cannot be parsed.
+pub async fn fetch<E>(bin: &E) -> Result<Version, Error>
+where
+    E: Borrow<Executable>,
+{
+    let (version, system_info) = tokio::try_join!(
+        get_docker_version_versions(bin.borrow()),
+        get_docker_system_info_versions(bin.borrow())
+    )?;
+
+    Ok(Version {
+        client: version.client,
+        engine: version.engine,
+        plugin_compose: system_info.plugin_compose,
+        plugin_buildx: system_info.plugin_buildx,
+    })
+}
+
+/// The versions retrieved from the `docker version` command
 #[derive(Debug, Clone, serde::Deserialize)]
-pub struct DockerVersion {
+pub(crate) struct DockerVersionVersions {
     /// The client version
     pub client: semver::Version,
     /// The engine version
     pub engine: semver::Version,
 }
 
-/// Get the version of the docker CLI
-///
-/// Run the `docker version` command and return the output.
-pub async fn get_docker_version(bin: &Executable) -> anyhow::Result<DockerVersion> {
+/// Get the versions from the `docker version` command
+pub(crate) async fn get_docker_version_versions(
+    bin: &Executable,
+) -> Result<DockerVersionVersions, Error> {
     // The go template to use to format the output of the `docker version` command into JSON
     const DOCKER_VERSION_FMT: &str = indoc::indoc! {
         r#"{
@@ -41,41 +119,44 @@ pub async fn get_docker_version(bin: &Executable) -> anyhow::Result<DockerVersio
         .kill_on_drop(true)
         .output()
         .await
-        .map_err(|err| anyhow::anyhow!("Failed to run `docker version`: {}", err))?;
+        .map_err(|err| Error::CommandExecution {
+            cmd: "docker version",
+            src: err,
+        })?;
 
-    serde_json::from_slice(&output.stdout)
-        .map_err(|err| anyhow::anyhow!("Failed to parse `docker version` output: {}", err))
+    serde_json::from_slice(&output.stdout).map_err(|err| Error::OutputParsing {
+        cmd: "docker version",
+        src: err,
+    })
 }
 
-/// The version of the docker plugins
-///
-/// This struct is used to parse the output of the `docker system info` command.
+/// The versions retrieved from the `docker system info` command
 #[serde_as]
 #[derive(Debug, Clone, serde::Deserialize)]
-pub struct DockerPluginVersions {
-    /// The version of the docker compose plugin
+pub(crate) struct DockerSystemInfoVersions {
+    /// The version of the Docker compose plugin
     ///
     /// If the plugin is not installed, this will be `None`.
     #[serde_as(as = "Option<DisplayFromStr>")]
     #[serde(default)]
-    pub compose: Option<semver::Version>,
-    /// The version of the docker buildx plugin
+    pub plugin_compose: Option<semver::Version>,
+    /// The version of the Docker buildx plugin
     ///
     /// If the plugin is not installed, this will be `None`.
     #[serde_as(as = "Option<DisplayFromStr>")]
     #[serde(default)]
-    pub buildx: Option<semver::Version>,
+    pub plugin_buildx: Option<semver::Version>,
 }
 
-/// Get the `docker compose` version
-///
-/// Run the `docker compose version` command and return the output.
-pub async fn get_docker_plugin_versions(bin: &Executable) -> anyhow::Result<DockerPluginVersions> {
+/// Get the versions from the `docker system info` command
+pub(crate) async fn get_docker_system_info_versions(
+    bin: &Executable,
+) -> Result<DockerSystemInfoVersions, Error> {
     // The go template to use to format the output of the `docker system info` command into JSON
     const DOCKER_SYSTEM_INFO_FMT: &str = indoc::indoc! {
         r#"{
-          "compose":"{{range .ClientInfo.Plugins}}{{if eq .Name "compose"}}{{.Version}}{{end}}{{end}}",
-          "buildx":"{{range .ClientInfo.Plugins}}{{if eq .Name "buildx"}}{{.Version}}{{end}}{{end}}"
+          "plugin_compose":"{{range .ClientInfo.Plugins}}{{if eq .Name "compose"}}{{.Version}}{{end}}{{end}}",
+          "plugin_buildx":"{{range .ClientInfo.Plugins}}{{if eq .Name "buildx"}}{{.Version}}{{end}}{{end}}"
         }"#
     };
 
@@ -87,8 +168,13 @@ pub async fn get_docker_plugin_versions(bin: &Executable) -> anyhow::Result<Dock
         .kill_on_drop(true)
         .output()
         .await
-        .map_err(|err| anyhow::anyhow!("Failed to run `docker compose version`: {}", err))?;
+        .map_err(|err| Error::CommandExecution {
+            cmd: "docker system info",
+            src: err,
+        })?;
 
-    serde_json::from_slice(&output.stdout)
-        .map_err(|err| anyhow::anyhow!("Failed to parse `docker compose version` output: {}", err))
+    serde_json::from_slice(&output.stdout).map_err(|err| Error::OutputParsing {
+        cmd: "docker system info",
+        src: err,
+    })
 }

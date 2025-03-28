@@ -1,10 +1,12 @@
-use super::common::{MOCKER_SH_PATH, parse_fixture_output};
+use super::common::{fixture_exe, parse_fixture_exe_output};
 use crate::cmd::{DockerCmd, IntoCommand};
 
 #[tokio::test]
 async fn run_docker_compose_up() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
         .into_command();
@@ -14,7 +16,7 @@ async fn run_docker_compose_up() {
 
     //* Then
     let output = res.expect("Failed to run docker compose up");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "up"]);
 }
@@ -22,7 +24,9 @@ async fn run_docker_compose_up() {
 #[tokio::test]
 async fn run_docker_compose_up_detached() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
         .with_detached()
@@ -33,7 +37,7 @@ async fn run_docker_compose_up_detached() {
 
     //* Then
     let output = res.expect("Failed to run docker compose up with detached flag");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "up", "--detached"]);
 }
@@ -41,7 +45,9 @@ async fn run_docker_compose_up_detached() {
 #[tokio::test]
 async fn run_docker_compose_up_with_build() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
         .with_build()
@@ -52,7 +58,7 @@ async fn run_docker_compose_up_with_build() {
 
     //* Then
     let output = res.expect("Failed to run docker compose up with build flag");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "up", "--build"]);
 }
@@ -60,9 +66,11 @@ async fn run_docker_compose_up_with_build() {
 #[tokio::test]
 async fn run_docker_compose_up_with_services() {
     //* Given
+    let exe = fixture_exe();
+
     let services = ["service1", "service2"];
 
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
         .with_services(services)
@@ -73,7 +81,7 @@ async fn run_docker_compose_up_with_services() {
 
     //* Then
     let output = res.expect("Failed to run docker compose up with services");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "up", "service1", "service2"]);
 }
@@ -81,9 +89,11 @@ async fn run_docker_compose_up_with_services() {
 #[tokio::test]
 async fn run_docker_compose_up_with_single_service() {
     //* Given
+    let exe = fixture_exe();
+
     let service = "api-service";
 
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
         .with_service(service)
@@ -94,7 +104,7 @@ async fn run_docker_compose_up_with_single_service() {
 
     //* Then
     let output = res.expect("Failed to run docker compose up with a single service");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "up", "api-service"]);
 }
@@ -102,7 +112,9 @@ async fn run_docker_compose_up_with_single_service() {
 #[tokio::test]
 async fn run_docker_compose_up_detached_with_build() {
     //* Given
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
         .with_build()
@@ -114,7 +126,7 @@ async fn run_docker_compose_up_detached_with_build() {
 
     //* Then
     let output = res.expect("Failed to run docker compose up with build and detached flags");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "up", "--build", "--detached"]);
 }
@@ -122,9 +134,11 @@ async fn run_docker_compose_up_detached_with_build() {
 #[tokio::test]
 async fn run_docker_compose_up_detached_with_services() {
     //* Given
+    let exe = fixture_exe();
+
     let services = ["api-service", "web-service"];
 
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
         .with_detached()
@@ -136,7 +150,7 @@ async fn run_docker_compose_up_detached_with_services() {
 
     //* Then
     let output = res.expect("Failed to run docker compose up with detached flag and services");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(
         args,
@@ -147,9 +161,11 @@ async fn run_docker_compose_up_detached_with_services() {
 #[tokio::test]
 async fn run_docker_compose_up_with_build_and_services() {
     //* Given
+    let exe = fixture_exe();
+
     let services = ["api-service", "web-service"];
 
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
         .with_build()
@@ -161,7 +177,7 @@ async fn run_docker_compose_up_with_build_and_services() {
 
     //* Then
     let output = res.expect("Failed to run docker compose up with build flag and services");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(
         args,
@@ -172,9 +188,11 @@ async fn run_docker_compose_up_with_build_and_services() {
 #[tokio::test]
 async fn run_docker_compose_up_with_all_options() {
     //* Given
+    let exe = fixture_exe();
+
     let services = ["api-service", "web-service", "db-service"];
 
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
         .with_build()
@@ -187,7 +205,7 @@ async fn run_docker_compose_up_with_all_options() {
 
     //* Then
     let output = res.expect("Failed to run docker compose up with all options");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(
         args,
@@ -206,9 +224,11 @@ async fn run_docker_compose_up_with_all_options() {
 #[tokio::test]
 async fn run_docker_compose_up_with_build_and_single_service() {
     //* Given
+    let exe = fixture_exe();
+
     let service = "api-service";
 
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
         .with_build()
@@ -220,7 +240,7 @@ async fn run_docker_compose_up_with_build_and_single_service() {
 
     //* Then
     let output = res.expect("Failed to run docker compose up with build flag and single service");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "up", "--build", "api-service"]);
 }
@@ -228,9 +248,11 @@ async fn run_docker_compose_up_with_build_and_single_service() {
 #[tokio::test]
 async fn run_docker_compose_up_detached_with_single_service() {
     //* Given
+    let exe = fixture_exe();
+
     let service = "api-service";
 
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
         .with_detached()
@@ -243,7 +265,7 @@ async fn run_docker_compose_up_detached_with_single_service() {
     //* Then
     let output =
         res.expect("Failed to run docker compose up with detached flag and single service");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "up", "--detached", "api-service"]);
 }
@@ -251,9 +273,11 @@ async fn run_docker_compose_up_detached_with_single_service() {
 #[tokio::test]
 async fn run_docker_compose_up_with_detached_build_and_single_service() {
     //* Given
+    let exe = fixture_exe();
+
     let service = "api-service";
 
-    let mut cmd = DockerCmd::with_test_executable(MOCKER_SH_PATH)
+    let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
         .with_build()
@@ -266,7 +290,7 @@ async fn run_docker_compose_up_with_detached_build_and_single_service() {
 
     //* Then
     let output = res.expect("Failed to run docker compose up with all options and single service");
-    let args = parse_fixture_output(&output);
+    let args = parse_fixture_exe_output(&output);
 
     assert_eq!(
         args,
