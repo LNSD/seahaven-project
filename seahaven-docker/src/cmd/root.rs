@@ -21,9 +21,9 @@ impl Default for DockerCmd {
 }
 
 impl DockerCmd {
-    /// Create a new docker command
+    /// Create a new `docker` command
     ///
-    /// This is equivalent to calling [`DockerCommand::default()`].
+    /// This is equivalent to calling [`DockerCmd::default()`].
     ///
     /// # Panics
     ///
@@ -32,7 +32,7 @@ impl DockerCmd {
         Self::default()
     }
 
-    /// Create a new docker command with a custom executable
+    /// Create a new `docker` command with a custom executable
     pub fn with_executable<B>(bin: B) -> Self
     where
         B: Borrow<Executable>,
@@ -40,7 +40,7 @@ impl DockerCmd {
         Self(tokio::process::Command::new(bin.borrow()))
     }
 
-    /// Create a new docker command with a custom executable
+    /// Create a new `docker` command with a custom executable
     #[cfg(test)]
     pub fn with_test_executable<E>(exe: E) -> Self
     where

@@ -1,9 +1,10 @@
-pub use info::{DefaultFormat, DockerSystemInfoCmd, FormatOpt, WithCustomFormat, WithJsonFormat};
-pub use prune::{
-    All, AllOpt, DockerSystemPruneCmd, Force, ForceOpt, NoForce, NoVolumes, NotAll, Volumes,
-    VolumesOpt,
+pub use self::{
+    info::{DefaultFormat, DockerSystemInfoCmd, FormatOpt, WithCustomFormat, WithJsonFormat},
+    prune::{
+        All, AllOpt, DockerSystemPruneCmd, Force, ForceOpt, NoForce, NoVolumes, NotAll, Volumes,
+        VolumesOpt,
+    },
 };
-
 use super::common::IntoCommand;
 
 pub struct DockerSystemCmd(tokio::process::Command);
