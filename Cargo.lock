@@ -589,10 +589,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "seahaven-conf"
-version = "0.1.0"
-
-[[package]]
 name = "seahaven-docker"
 version = "0.1.0"
 dependencies = [
@@ -606,6 +602,10 @@ dependencies = [
  "tokio",
  "which",
 ]
+
+[[package]]
+name = "seahaven-file"
+version = "0.1.0"
 
 [[package]]
 name = "semver"

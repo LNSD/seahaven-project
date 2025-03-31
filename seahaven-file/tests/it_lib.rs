@@ -1,4 +1,4 @@
-use seahaven_conf::add;
+use seahaven_file::add;
 
 #[test]
 fn add_two_numbers() {
