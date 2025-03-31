@@ -155,8 +155,8 @@ pub(crate) async fn get_docker_system_info_versions(
     // The go template to use to format the output of the `docker system info` command into JSON
     const DOCKER_SYSTEM_INFO_FMT: &str = indoc::indoc! {
         r#"{
-          "plugin_compose":"{{range .ClientInfo.Plugins}}{{if eq .Name "compose"}}{{.Version}}{{end}}{{end}}",
-          "plugin_buildx":"{{range .ClientInfo.Plugins}}{{if eq .Name "buildx"}}{{.Version}}{{end}}{{end}}"
+          "plugin_compose":"{{range .ClientInfo.Plugins}}{{if eq .Name "compose"}}{{ if eq (slice .Version 0 1) "v" }}{{ slice .Version 1 }}{{ else }}{{ .Version }}{{ end }}{{end}}{{end}}",
+          "plugin_buildx":"{{range .ClientInfo.Plugins}}{{if eq .Name "buildx"}}{{ if eq (slice .Version 0 1) "v" }}{{ slice .Version 1 }}{{ else }}{{ .Version }}{{ end }}{{end}}{{end}}"
         }"#
     };
 
