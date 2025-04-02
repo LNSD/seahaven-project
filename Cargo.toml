@@ -4,7 +4,7 @@ members = [
     "seahaven-cli",
     "seahaven-docker",
     "seahaven-file",
-    "testlib/conf-testdata",
+    "testlib/file-testdata",
 ]
 
 [workspace.package]

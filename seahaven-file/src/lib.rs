@@ -1,26 +1,10 @@
-//! # Seahaven configuration
-//!
-//! This crate provides a configuration for the Seahaven project.
+//! # Seahaven file
 
-/// Add two `u64` numbers
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+pub mod compose_file;
+pub mod env_file;
+mod file;
 
-#[cfg(test)]
-mod tests {
-    use super::add;
-
-    #[test]
-    fn add_two_numbers() {
-        //* Given
-        let left = 2;
-        let right = 2;
-
-        //* When
-        let result = add(left, right);
-
-        //* Then
-        assert_eq!(result, 4);
-    }
-}
+pub use file::{
+    DeserializationError, File, SerializationError, deserialize_from_reader, deserialize_from_str,
+    serialize_to_string, serialize_to_writer,
+};

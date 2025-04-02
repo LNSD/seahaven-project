@@ -1,5 +1,5 @@
 [package]
-name = "testlib-conf-testdata"
+name = "testlib-file-testdata"
 version = "0.0.0"
 edition.workspace = true
 publish = false

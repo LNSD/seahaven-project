@@ -5,9 +5,9 @@
 ///   web:
 ///     build: .
 ///     ports:
-///       - "8000:5000"
+///     - 8000:5000
 ///   redis:
-///     image: "redis:alpine"
+///     image: redis:alpine
 /// ```
 ///
 /// See file: `setup-yaml/gettingstarted.yaml`
@@ -16,6 +16,6 @@ pub const GETTINGSTARTED: &str = indoc::indoc! { r###"
     web:
       build: .
       ports:
-        - "8000:5000"
+      - 8000:5000
     redis:
-      image: "redis:alpine""### };
+      image: redis:alpine"### };

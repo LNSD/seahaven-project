@@ -1,4 +1,4 @@
-testlib-conf-testdata
+testlib-file-testdata
 ---------------------
 
 This crate contains test vectors for the Seahaven configuration files.
@@ -13,7 +13,7 @@ The `build.rs` file contains the code that generates the test vectors from the t
 To re-generate the test vectors, run the following command:
 
 ```sh
-cargo build -p testlib-conf-testdata --features=codegen
+cargo build -p testlib-file-testdata --features=codegen
 ```
 
 This will generate the test vector files in the `src/gen` directory.
