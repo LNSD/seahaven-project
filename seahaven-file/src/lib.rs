@@ -3,6 +3,7 @@
 pub mod compose_file;
 pub mod env_file;
 mod file;
+pub mod matter;
 
 pub use file::{
     DeserializationError, File, SerializationError, deserialize_from_reader, deserialize_from_str,
