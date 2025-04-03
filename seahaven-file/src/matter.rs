@@ -131,11 +131,11 @@ mod tests {
             "#
         };
 
-        let mut raw_file_reader = Cursor::new(raw_file);
+        let mut reader = Cursor::new(raw_file);
 
         //* When
         let (front_matter_content, remaining_content) =
-            extract_front_matter(&mut raw_file_reader).expect("Failed to extract front matter");
+            extract_front_matter(&mut reader).expect("Failed to extract front matter");
 
         //* Then
         let front_matter_reader = front_matter_content.expect("Failed to get front matter reader");
@@ -172,11 +172,11 @@ mod tests {
             "#
         };
 
-        let mut raw_file_reader = Cursor::new(raw_file);
+        let mut reader = Cursor::new(raw_file);
 
         //* When
         let (front_matter_content, remaining_content) =
-            extract_front_matter(&mut raw_file_reader).expect("Failed to extract front matter");
+            extract_front_matter(&mut reader).expect("Failed to extract front matter");
 
         //* Then
         assert!(front_matter_content.is_none());
@@ -198,10 +198,10 @@ mod tests {
             "#
         };
 
-        let mut raw_file_reader = Cursor::new(raw_file);
+        let mut reader = Cursor::new(raw_file);
 
         //* When
-        let result = extract_front_matter(&mut raw_file_reader);
+        let result = extract_front_matter(&mut reader);
 
         //* Then
         let err = result.expect_err("Expected invalid front matter format");
@@ -212,11 +212,12 @@ mod tests {
     fn empty_file() {
         //* Given
         let raw_file = "";
-        let mut raw_file_reader = Cursor::new(raw_file);
+
+        let mut reader = Cursor::new(raw_file);
 
         //* When
         let (front_matter_content, remaining_content) =
-            extract_front_matter(&mut raw_file_reader).expect("Failed to extract front matter");
+            extract_front_matter(&mut reader).expect("Failed to extract front matter");
 
         //* Then
         assert!(front_matter_content.is_none());
@@ -239,31 +240,31 @@ mod tests {
             "#
         };
 
-        let mut raw_file_reader = Cursor::new(raw_file);
+        let mut reader = Cursor::new(raw_file);
 
         //* When
         let (front_matter_content, remaining_content) =
-            extract_front_matter(&mut raw_file_reader).expect("Failed to extract front matter");
+            extract_front_matter(&mut reader).expect("Failed to extract front matter");
 
         //* Then
         assert!(front_matter_content.is_none());
 
-        // Read the raw content instead of trying to parse as YAML
-        let mut content = String::new();
-        remaining_content
-            .read_to_string(&mut content)
-            .expect("Failed to read remaining content");
-        assert_eq!(content.trim(), raw_file.trim());
+        let res = serde_yaml::from_reader::<_, YamlValue>(remaining_content);
+        assert!(
+            res.is_err(),
+            "Expected an error when parsing an invalid file content"
+        );
     }
 
     #[test]
     fn only_opening_delimiter() {
         //* Given
         let raw_file = "---\n";
-        let mut raw_file_reader = Cursor::new(raw_file);
+
+        let mut reader = Cursor::new(raw_file);
 
         //* When
-        let result = extract_front_matter(&mut raw_file_reader);
+        let result = extract_front_matter(&mut reader);
 
         //* Then
         let err = result.expect_err("Expected invalid front matter format");
@@ -323,11 +324,11 @@ mod tests {
             "#
         };
 
-        let mut raw_file_reader = Cursor::new(raw_file);
+        let mut reader = Cursor::new(raw_file);
 
         //* When
         let (front_matter_content, remaining_content) =
-            extract_front_matter(&mut raw_file_reader).expect("Failed to extract front matter");
+            extract_front_matter(&mut reader).expect("Failed to extract front matter");
 
         //* Then
         let front_matter_reader = front_matter_content.expect("Failed to get front matter reader");
