@@ -716,6 +716,7 @@ name = "seahaven-file"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "indoc",
  "insta",
  "serde",
  "serde-envfile",

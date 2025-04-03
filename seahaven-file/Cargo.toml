@@ -15,5 +15,6 @@ serde_yaml = "0.9.34"
 thiserror = "2.0.12"
 
 [dev-dependencies]
+indoc = "2.0.6"
 insta = { version = "1.42.2", features = ["yaml"] }
 testlib-file-testdata = { path = "../testlib/file-testdata" }
