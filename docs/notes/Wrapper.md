@@ -1,0 +1,3 @@
+- https://docs.gradle.org/current/userguide/gradle_wrapper.html
+- https://docs.gradle.org/current/userguide/gradle_wrapper_basics.html
+- https://docs.gradle.org/current/userguide/directory_layout.html#dir:project_root (`.gradle` project cache dir)
