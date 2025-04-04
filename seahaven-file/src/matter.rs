@@ -68,6 +68,9 @@ where
         if trimmed.is_empty() {
             // Skip empty lines
             continue;
+        } else if trimmed.starts_with('#') {
+            // Skip YAML comments
+            continue;
         } else if trimmed == DELIMITER {
             // Found opening delimiter
             break;
@@ -317,6 +320,38 @@ mod tests {
             r#"
 
 
+            ---
+            ENV_KEY1: "ENV_VALUE1"
+            ---
+            name: "solo-app"
+            "#
+        };
+
+        let mut reader = Cursor::new(raw_file);
+
+        //* When
+        let (front_matter_content, remaining_content) =
+            extract_front_matter(&mut reader).expect("Failed to extract front matter");
+
+        //* Then
+        let front_matter_reader = front_matter_content.expect("Failed to get front matter reader");
+        let front_matter_value: YamlValue =
+            serde_yaml::from_reader(front_matter_reader).expect("Failed to parse front matter");
+        assert_eq!(front_matter_value["ENV_KEY1"], "ENV_VALUE1");
+
+        let remaining_content_value: YamlValue =
+            serde_yaml::from_reader(remaining_content).expect("Failed to parse remaining content");
+        assert_eq!(remaining_content_value["name"], "solo-app");
+    }
+
+    #[test]
+    fn omments_before_delimiter() {
+        //* Given
+        let raw_file = indoc::indoc! {
+            r#"
+            # This is a YAML comment
+              # An indented comment line that should be ignored
+            # --- This looks like a delimiter but it's a comment
             ---
             ENV_KEY1: "ENV_VALUE1"
             ---
