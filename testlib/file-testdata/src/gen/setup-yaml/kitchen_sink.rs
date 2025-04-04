@@ -18,7 +18,12 @@
 /// APP_SERVER_ADMIN: 7600
 /// APP_SERVER_RPC: 7601
 /// APP_SERVER_METRICS: 7602
+///
+/// # Database config
+/// DB_PASSWORD: secret
+/// APP_PORT: 8080
 /// ---
+/// name: kitchen-sink-project
 ///
 /// services:
 ///   chain:
@@ -26,6 +31,8 @@
 ///     command: "anvil --host=0.0.0.0 --chain-id=${CHAIN_ID} --base-fee=0"
 ///     ports:
 ///       - "${CHAIN_RPC}:8545"
+///     networks:
+///       - blockchain
 ///     healthcheck:
 ///       { interval: 1s, retries: 10, test: cast block }
 ///
@@ -34,12 +41,39 @@
 ///     depends_on:
 ///       chain: { condition: service_healthy }
 ///       deploy-contracts: { condition: service_completed_successfully }
+///       db: { condition: service_healthy }
 ///     ports:
 ///       - "${APP_SERVER_ADMIN}:7600"
 ///       - "${APP_SERVER_RPC}:7601"
 ///       - "${APP_SERVER_METRICS}:7602"
+///     networks:
+///       - frontend
+///       - backend
+///       - blockchain
+///     volumes:
+///       - app-data:/data
+///     configs:
+///       - source: app-config
+///         target: /app/config.yaml
+///     secrets:
+///       - source: db-password
+///         target: /app/db/password
 ///     healthcheck:
 ///       { interval: 1s, retries: 10, test: curl -sf http://localhost:${APP_SERVER_ADMIN}/health }
+///
+///   db:
+///     image: postgres:14
+///     environment:
+///       POSTGRES_PASSWORD: "${DB_PASSWORD}"
+///     networks:
+///       - backend
+///     volumes:
+///       - db-data:/var/lib/postgresql/data
+///     healthcheck:
+///       test: ["CMD-SHELL", "pg_isready -U postgres"]
+///       interval: 10s
+///       timeout: 5s
+///       retries: 5
 ///
 /// init-containers:
 ///   deploy-contracts:
@@ -48,6 +82,26 @@
 ///       chain: { condition: service_healthy }
 ///     volumes:
 ///       - ./contracts.json:/opt/contracts.json:ro
+///
+/// networks:
+///   frontend:
+///     driver: bridge
+///   backend:
+///     driver: bridge
+///   blockchain:
+///     driver: bridge
+///
+/// volumes:
+///   app-data:
+///   db-data:
+///
+/// configs:
+///   app-config:
+///     file: ./config/app.yaml
+///
+/// secrets:
+///   db-password:
+///     file: ./secrets/db-password.txt
 /// ```
 ///
 /// See file: `setup-yaml/kitchen_sink.yaml`
@@ -69,7 +123,12 @@ pub const KITCHEN_SINK: &str = indoc::indoc! { r###"
   APP_SERVER_ADMIN: 7600
   APP_SERVER_RPC: 7601
   APP_SERVER_METRICS: 7602
+
+  # Database config
+  DB_PASSWORD: secret
+  APP_PORT: 8080
   ---
+  name: kitchen-sink-project
 
   services:
     chain:
@@ -77,6 +136,8 @@ pub const KITCHEN_SINK: &str = indoc::indoc! { r###"
       command: "anvil --host=0.0.0.0 --chain-id=${CHAIN_ID} --base-fee=0"
       ports:
         - "${CHAIN_RPC}:8545"
+      networks:
+        - blockchain
       healthcheck:
         { interval: 1s, retries: 10, test: cast block }
 
@@ -85,12 +146,39 @@ pub const KITCHEN_SINK: &str = indoc::indoc! { r###"
       depends_on:
         chain: { condition: service_healthy }
         deploy-contracts: { condition: service_completed_successfully }
+        db: { condition: service_healthy }
       ports:
         - "${APP_SERVER_ADMIN}:7600"
         - "${APP_SERVER_RPC}:7601"
         - "${APP_SERVER_METRICS}:7602"
+      networks:
+        - frontend
+        - backend
+        - blockchain
+      volumes:
+        - app-data:/data
+      configs:
+        - source: app-config
+          target: /app/config.yaml
+      secrets:
+        - source: db-password
+          target: /app/db/password
       healthcheck:
         { interval: 1s, retries: 10, test: curl -sf http://localhost:${APP_SERVER_ADMIN}/health }
+
+    db:
+      image: postgres:14
+      environment:
+        POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      networks:
+        - backend
+      volumes:
+        - db-data:/var/lib/postgresql/data
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U postgres"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
 
   init-containers:
     deploy-contracts:
@@ -98,4 +186,24 @@ pub const KITCHEN_SINK: &str = indoc::indoc! { r###"
       depends_on:
         chain: { condition: service_healthy }
       volumes:
-        - ./contracts.json:/opt/contracts.json:ro"### };
+        - ./contracts.json:/opt/contracts.json:ro
+
+  networks:
+    frontend:
+      driver: bridge
+    backend:
+      driver: bridge
+    blockchain:
+      driver: bridge
+
+  volumes:
+    app-data:
+    db-data:
+
+  configs:
+    app-config:
+      file: ./config/app.yaml
+
+  secrets:
+    db-password:
+      file: ./secrets/db-password.txt"### };
