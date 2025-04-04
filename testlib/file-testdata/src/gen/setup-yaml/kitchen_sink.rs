@@ -1,6 +1,13 @@
 /// Test vector: `setup-yaml/kitchen_sink`
 ///
 /// ```yaml
+/// # The following YAML file is a "kitchen sink" of sorts, containing a
+/// # variety of features and edge cases that are commonly encountered in
+/// # the Seahaven setup description file.
+/// #
+/// # What is exact meaning of "kitchen sink" in programming?
+/// # https://stackoverflow.com/q/33779296/1099999
+///
 /// ---
 /// # Chain config
 /// CHAIN_RPC: 8545
@@ -12,8 +19,6 @@
 /// APP_SERVER_RPC: 7601
 /// APP_SERVER_METRICS: 7602
 /// ---
-/// # What is exact meaning of "kitchen sink" in programming?
-/// # https://stackoverflow.com/q/33779296/1099999
 ///
 /// services:
 ///   chain:
@@ -47,6 +52,13 @@
 ///
 /// See file: `setup-yaml/kitchen_sink.yaml`
 pub const KITCHEN_SINK: &str = indoc::indoc! { r###"
+  # The following YAML file is a "kitchen sink" of sorts, containing a
+  # variety of features and edge cases that are commonly encountered in
+  # the Seahaven setup description file.
+  #
+  # What is exact meaning of "kitchen sink" in programming?
+  # https://stackoverflow.com/q/33779296/1099999
+
   ---
   # Chain config
   CHAIN_RPC: 8545
@@ -58,8 +70,6 @@ pub const KITCHEN_SINK: &str = indoc::indoc! { r###"
   APP_SERVER_RPC: 7601
   APP_SERVER_METRICS: 7602
   ---
-  # What is exact meaning of "kitchen sink" in programming?
-  # https://stackoverflow.com/q/33779296/1099999
 
   services:
     chain:
