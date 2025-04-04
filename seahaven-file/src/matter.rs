@@ -11,11 +11,11 @@
 use std::io::{self, BufRead, Cursor, Seek};
 
 /// Result type for front matter extraction
-pub type Result<T, E = FrontMatterError> = std::result::Result<T, E>;
+pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 /// Error types for front matter extraction
 #[derive(Debug, thiserror::Error)]
-pub enum FrontMatterError {
+pub enum Error {
     /// Front matter is not properly formatted (missing opening or closing delimiter)
     #[error("invalid front matter format")]
     InvalidFormat,
@@ -39,9 +39,9 @@ pub enum FrontMatterError {
 ///
 /// # Errors
 ///
-/// Returns [`FrontMatterError::InvalidFormat`] if the front matter is not properly formatted
+/// Returns [`Error::InvalidFormat`] if the front matter is not properly formatted
 /// (e.g., missing closing delimiter or has content before the opening delimiter), or
-/// [`FrontMatterError::IoError`] if an IO error occurs during reading or seeking operations.
+/// [`Error::IoError`] if an IO error occurs during reading or seeking operations.
 pub fn extract_front_matter<R>(mut reader: R) -> Result<(Option<Cursor<Vec<u8>>>, R)>
 where
     R: BufRead + Seek,
@@ -95,7 +95,7 @@ where
         // EOF without closing delimiter
         if bytes_read == 0 {
             reader.seek(io::SeekFrom::Start(initial_position))?;
-            return Err(FrontMatterError::InvalidFormat);
+            return Err(Error::InvalidFormat);
         }
 
         // Check for closing delimiter
@@ -115,7 +115,7 @@ mod tests {
 
     use serde_yaml::Value as YamlValue;
 
-    use super::{FrontMatterError, extract_front_matter};
+    use super::{Error, extract_front_matter};
 
     #[test]
     fn front_matter_present() {
@@ -208,7 +208,7 @@ mod tests {
 
         //* Then
         let err = result.expect_err("Expected invalid front matter format");
-        assert!(matches!(err, FrontMatterError::InvalidFormat));
+        assert!(matches!(err, Error::InvalidFormat));
     }
 
     #[test]
@@ -271,7 +271,7 @@ mod tests {
 
         //* Then
         let err = result.expect_err("Expected invalid front matter format");
-        assert!(matches!(err, FrontMatterError::InvalidFormat));
+        assert!(matches!(err, Error::InvalidFormat));
     }
 
     #[test]
@@ -310,7 +310,7 @@ mod tests {
 
         //* Then
         let err = result.expect_err("Expected an IO error");
-        assert!(matches!(err, FrontMatterError::IoError(_)));
+        assert!(matches!(err, Error::IoError(_)));
     }
 
     #[test]
