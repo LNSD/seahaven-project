@@ -14,6 +14,7 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: full
+  NEXTEST_NO_TESTS: warn
 
 jobs:
   format:
@@ -54,16 +55,30 @@ jobs:
         with:
           crate: cargo-llvm-cov
 
+      - name: Install cargo-nextest
+        uses: baptiste0928/cargo-install@91c5da15570085bcde6f4d7aed98cb82d6769fd3 # v3
+        with:
+          crate: cargo-nextest
+          version: ^0.9
+
       ## Linting
       - name: Cargo clippy
         run: cargo clippy --all-features --tests -- -D warnings --force-warn deprecated --force-warn dead-code
 
       ## Tests
-      - name: Run unit tests
-        run: cargo llvm-cov test --lib --lcov --output-path unit-lcov.info
+      - name: Unit tests
+        run: cargo llvm-cov nextest 'tests::' --lcov --output-path unit-lcov.info -- --skip 'tests::it_'
 
-      - name: Run integration tests
-        run: cargo llvm-cov test --test '*' --lcov --output-path it-lcov.info
+      - name: Doc tests
+        # TODO: Collect doc tests coverage once nextest supports it
+        # https://nexte.st/docs/integrations/test-coverage/?h=doc#collecting-coverage-data-from-doctests
+        run: cargo test --doc
+
+      - name: Integration tests (in-tree)
+        run: cargo llvm-cov nextest 'tests::it_' --lcov --output-path it-intree-lcov.info
+
+      - name: Integration tests (public api)
+        run: cargo llvm-cov nextest --test '*' --lcov --output-path it-public-lcov.info
 
       - name: Upload unit tests coverage report to codecov
         uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5
@@ -78,5 +93,5 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          files: it-lcov.info
+          files: it-intree-lcov.info,it-public-lcov.info
           flags: integration
