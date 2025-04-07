@@ -59,7 +59,7 @@ where
     /// # Examples
     ///
     /// ```rust
-    /// use seahaven_file::env_file::EnvFile;
+    /// use seahaven_file::env::EnvFile;
     ///
     /// let env_file = EnvFile::from_iter([("KEY1", "VALUE1"), ("KEY2", "VALUE2")]);
     /// # assert_eq!(env_file.get("KEY1").unwrap(), "VALUE1");

@@ -10,18 +10,18 @@
 ///
 /// ---
 /// # Chain config
-/// CHAIN_RPC: 8545
-/// CHAIN_ID: 1337
-/// CHAIN_NAME: "hardhat"
+/// CHAIN_RPC=8545
+/// CHAIN_ID=1337
+/// CHAIN_NAME="hardhat"
 ///
 /// # App server
-/// APP_SERVER_ADMIN: 7600
-/// APP_SERVER_RPC: 7601
-/// APP_SERVER_METRICS: 7602
+/// APP_SERVER_ADMIN=7600
+/// APP_SERVER_RPC=7601
+/// APP_SERVER_METRICS=7602
 ///
 /// # Database config
-/// DB_PASSWORD: secret
-/// APP_PORT: 8080
+/// DB_PASSWORD=secret
+/// APP_PORT=8080
 /// ---
 /// name: kitchen-sink-project
 ///
@@ -59,7 +59,7 @@
 ///       - source: db-password
 ///         target: /app/db/password
 ///     healthcheck:
-///       { interval: 1s, retries: 10, test: curl -sf http://localhost:${APP_SERVER_ADMIN}/health }
+///       { interval: 1s, retries: 10, test: "curl -sf http://localhost:${APP_SERVER_ADMIN}/health" }
 ///
 ///   db:
 ///     image: postgres:14
@@ -115,18 +115,18 @@ pub const KITCHEN_SINK: &str = indoc::indoc! { r###"
 
   ---
   # Chain config
-  CHAIN_RPC: 8545
-  CHAIN_ID: 1337
-  CHAIN_NAME: "hardhat"
+  CHAIN_RPC=8545
+  CHAIN_ID=1337
+  CHAIN_NAME="hardhat"
 
   # App server
-  APP_SERVER_ADMIN: 7600
-  APP_SERVER_RPC: 7601
-  APP_SERVER_METRICS: 7602
+  APP_SERVER_ADMIN=7600
+  APP_SERVER_RPC=7601
+  APP_SERVER_METRICS=7602
 
   # Database config
-  DB_PASSWORD: secret
-  APP_PORT: 8080
+  DB_PASSWORD=secret
+  APP_PORT=8080
   ---
   name: kitchen-sink-project
 
@@ -164,7 +164,7 @@ pub const KITCHEN_SINK: &str = indoc::indoc! { r###"
         - source: db-password
           target: /app/db/password
       healthcheck:
-        { interval: 1s, retries: 10, test: curl -sf http://localhost:${APP_SERVER_ADMIN}/health }
+        { interval: 1s, retries: 10, test: "curl -sf http://localhost:${APP_SERVER_ADMIN}/health" }
 
     db:
       image: postgres:14

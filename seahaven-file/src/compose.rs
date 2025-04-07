@@ -119,7 +119,7 @@ pub mod de {
 mod tests {
     use std::io::{Cursor, ErrorKind, Write};
 
-    use testlib_file_testdata::setup_yaml::GETTINGSTARTED;
+    use testlib_file_testdata::setup_yaml::SINGLE_SERVICE;
 
     use super::{
         de::{DeserializationError, from_reader, from_str},
@@ -130,21 +130,21 @@ mod tests {
     fn serialize_compose_file_to_string() {
         //* Given
         let compose_file =
-            serde_yaml::from_str(GETTINGSTARTED).expect("failed to deserialize compose file");
+            serde_yaml::from_str(SINGLE_SERVICE).expect("failed to deserialize compose file");
 
         //* When
         let serialized = to_string(&compose_file).expect("failed to serialize compose file");
 
         //* Then
         // The last character of the serialized string is a newline, so we need to remove it
-        assert_eq!(&serialized[..serialized.len() - 1], GETTINGSTARTED);
+        assert_eq!(&serialized[..serialized.len() - 1], SINGLE_SERVICE);
     }
 
     #[test]
     fn serialize_compose_file_to_writer() {
         //* Given
         let compose_file =
-            serde_yaml::from_str(GETTINGSTARTED).expect("failed to deserialize compose file");
+            serde_yaml::from_str(SINGLE_SERVICE).expect("failed to deserialize compose file");
 
         let mut writer = Vec::new();
 
@@ -156,14 +156,14 @@ mod tests {
             String::from_utf8(writer).expect("failed to convert serialized bytes to string");
 
         // The last character of the serialized string is a newline, so we need to remove it
-        assert_eq!(&serialized[..serialized.len() - 1], GETTINGSTARTED);
+        assert_eq!(&serialized[..serialized.len() - 1], SINGLE_SERVICE);
     }
 
     #[test]
     fn serialize_compose_file_to_writer_fails_on_write_error() {
         //* Given
         let compose_file =
-            serde_yaml::from_str(GETTINGSTARTED).expect("failed to deserialize compose file");
+            serde_yaml::from_str(SINGLE_SERVICE).expect("failed to deserialize compose file");
 
         // Create a writer that will fail on write
         struct FailingWriter;
@@ -195,14 +195,14 @@ mod tests {
     #[test]
     fn deserialize_compose_file_from_str() {
         //* Given
-        let compose_yaml = GETTINGSTARTED;
+        let compose_yaml = SINGLE_SERVICE;
 
         //* When
         let compose_file = from_str(compose_yaml).expect("Failed to deserialize compose file");
 
         //* Then
         assert!(compose_file.name.is_none());
-        assert_eq!(compose_file.services.len(), 2);
+        assert_eq!(compose_file.services.len(), 1);
         assert!(compose_file.networks.is_none());
         assert!(compose_file.volumes.is_none());
         assert!(compose_file.configs.is_none());
@@ -212,14 +212,14 @@ mod tests {
     #[test]
     fn deserialize_compose_file_from_reader() {
         //* Given
-        let reader = Cursor::new(GETTINGSTARTED);
+        let reader = Cursor::new(SINGLE_SERVICE);
 
         //* When
         let compose_file = from_reader(reader).expect("Failed to deserialize compose file");
 
         //* Then
         assert!(compose_file.name.is_none());
-        assert_eq!(compose_file.services.len(), 2);
+        assert_eq!(compose_file.services.len(), 1);
         assert!(compose_file.networks.is_none());
         assert!(compose_file.volumes.is_none());
         assert!(compose_file.configs.is_none());
@@ -273,7 +273,7 @@ mod tests {
     fn roundtrip_serialization_deserialization() {
         //* Given
         let original_compose_file =
-            from_str(GETTINGSTARTED).expect("Failed to deserialize compose file");
+            from_str(SINGLE_SERVICE).expect("Failed to deserialize compose file");
 
         //* When
         let serialized =

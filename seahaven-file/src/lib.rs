@@ -107,3 +107,8 @@ pub enum ParsingError {
     #[error("content deserialization failed: {0}")]
     ContentDeserializationFailed(#[from] content::de::DeserializationError),
 }
+
+#[cfg(test)]
+mod tests {
+    mod parsing;
+}

@@ -88,7 +88,7 @@ pub mod de {
 
 #[cfg(test)]
 mod tests {
-    use testlib_file_testdata::setup_yaml::GETTINGSTARTED;
+    use testlib_file_testdata::setup_yaml::SINGLE_SERVICE;
 
     use super::{
         de::{from_reader, from_str},
@@ -98,14 +98,14 @@ mod tests {
     #[test]
     fn deserialize_setup_file_from_str() {
         //* Given
-        let setup_file = GETTINGSTARTED;
+        let setup_file = SINGLE_SERVICE;
 
         //* When
         let file = from_str(setup_file).expect("Failed to deserialize setup file");
 
         //* Then
         assert!(file.name.is_none());
-        assert_eq!(file.services.len(), 2);
+        assert_eq!(file.services.len(), 1);
         assert!(file.networks.is_none());
         assert!(file.volumes.is_none());
         assert!(file.configs.is_none());
@@ -115,14 +115,14 @@ mod tests {
     #[test]
     fn deserialize_setup_file_from_reader() {
         //* Given
-        let reader = GETTINGSTARTED.as_bytes();
+        let reader = SINGLE_SERVICE.as_bytes();
 
         //* When
         let file = from_reader(reader).expect("Failed to deserialize setup file");
 
         //* Then
         assert!(file.name.is_none());
-        assert_eq!(file.services.len(), 2);
+        assert_eq!(file.services.len(), 1);
         assert!(file.networks.is_none());
         assert!(file.volumes.is_none());
         assert!(file.configs.is_none());
@@ -132,20 +132,20 @@ mod tests {
     #[test]
     fn serialize_setup_file_to_string() {
         //* Given
-        let setup_file = from_str(GETTINGSTARTED).expect("Failed to deserialize setup file");
+        let setup_file = from_str(SINGLE_SERVICE).expect("Failed to deserialize setup file");
 
         //* When
         let serialized = to_string(&setup_file).expect("Failed to serialize setup file");
 
         //* Then
         // The last character of the serialized string is a newline, so we need to remove it
-        assert_eq!(&serialized[..serialized.len() - 1], GETTINGSTARTED);
+        assert_eq!(&serialized[..serialized.len() - 1], SINGLE_SERVICE);
     }
 
     #[test]
     fn serialize_setup_file_to_writer() {
         //* Given
-        let setup_file = from_str(GETTINGSTARTED).expect("Failed to deserialize setup file");
+        let setup_file = from_str(SINGLE_SERVICE).expect("Failed to deserialize setup file");
 
         let mut writer = Vec::new();
 
@@ -156,6 +156,6 @@ mod tests {
         let serialized =
             String::from_utf8(writer).expect("Failed to convert serialized bytes to string");
         // The last character of the serialized string is a newline, so we need to remove it
-        assert_eq!(&serialized[..serialized.len() - 1], GETTINGSTARTED);
+        assert_eq!(&serialized[..serialized.len() - 1], SINGLE_SERVICE);
     }
 }

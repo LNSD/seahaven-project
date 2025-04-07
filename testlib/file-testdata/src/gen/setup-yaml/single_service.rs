@@ -5,9 +5,12 @@
 ///   app:
 ///     image: nginx:latest
 ///     ports:
-///       - "8080:80"
+///     - 8080:80
 ///     healthcheck:
-///       test: ["CMD", "curl", "-f", "http://localhost:80"]
+///       test:
+///       - curl
+///       - -f
+///       - http://localhost:80
 ///       interval: 30s
 ///       timeout: 10s
 ///       retries: 3
@@ -19,9 +22,12 @@ pub const SINGLE_SERVICE: &str = indoc::indoc! { r###"
     app:
       image: nginx:latest
       ports:
-        - "8080:80"
+      - 8080:80
       healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:80"]
+        test:
+        - curl
+        - -f
+        - http://localhost:80
         interval: 30s
         timeout: 10s
         retries: 3"### };
