@@ -3,9 +3,9 @@
 /// ```yaml
 /// ---
 /// # Basic environment variables
-/// CHAIN_ID: 1337
-/// CHAIN_NAME: "testnet"
-/// APP_PORT: 8080
+/// CHAIN_ID=1337
+/// CHAIN_NAME="testnet"
+/// APP_PORT=8080
 /// ---
 /// # No services
 /// ```
@@ -14,8 +14,8 @@
 pub const NO_SERVICES: &str = indoc::indoc! { r###"
   ---
   # Basic environment variables
-  CHAIN_ID: 1337
-  CHAIN_NAME: "testnet"
-  APP_PORT: 8080
+  CHAIN_ID=1337
+  CHAIN_NAME="testnet"
+  APP_PORT=8080
   ---
   # No services"### };
