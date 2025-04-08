@@ -711,7 +711,7 @@ dependencies = [
 [[package]]
 name = "serde-envfile"
 version = "0.2.0"
-source = "git+https://github.com/LNSD/serde-envfile.git?rev=006e135#006e1353ca6115402d7e232a26f8d25b913a744a"
+source = "git+https://github.com/LNSD/serde-envfile.git?rev=ad00e40#ad00e4029930d238cb1b1465b46e5647a87ded6e"
 dependencies = [
  "cfg-if",
  "dotenvy",
@@ -835,9 +835,9 @@ dependencies = [
 
 [[package]]
 name = "test-with"
-version = "0.14.8"
+version = "0.14.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03ed0eeaca420c94c7fbcfd53f425b6ea2ce25e23111523b76bde45ec1c4e2ca"
+checksum = "5b81f4413c3bd5ce29fcc54572bc44122364be6f68f047844e034acdea8e7e47"
 dependencies = [
  "proc-macro-error2",
  "proc-macro2",
