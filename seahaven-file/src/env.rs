@@ -20,6 +20,84 @@ impl EnvFile {
     pub fn new() -> Self {
         Self(serde_envfile::Value::new())
     }
+
+    /// Returns an iterator over references to key-value pairs in this environment file.
+    pub fn iter(&self) -> Iter<'_> {
+        self.into_iter()
+    }
+
+    /// Returns an iterator over mutable references to key-value pairs in this environment file.
+    pub fn iter_mut(&mut self) -> IterMut<'_> {
+        self.into_iter()
+    }
+
+    /// Inserts a key-value pair into the environment file.
+    ///
+    /// If the key already exists, the value is replaced and the old value is returned.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use seahaven_file::env::EnvFile;
+    ///
+    /// let mut env_file = EnvFile::new();
+    /// assert_eq!(env_file.insert("KEY1", "VALUE1"), None);
+    /// assert_eq!(
+    ///     env_file.insert("KEY1", "NEW_VALUE"),
+    ///     Some("VALUE1".to_string())
+    /// );
+    /// ```
+    pub fn insert<K, V>(&mut self, key: K, value: V) -> Option<String>
+    where
+        K: Into<String>,
+        V: Into<String>,
+    {
+        self.0.insert(key.into(), value.into())
+    }
+
+    /// Removes a key-value pair from the environment file.
+    ///
+    /// Returns the value if the key was present, or `None` if it was not.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use seahaven_file::env::EnvFile;
+    ///
+    /// let mut env_file = EnvFile::from_iter([("KEY1", "VALUE1"), ("KEY2", "VALUE2")]);
+    /// assert_eq!(env_file.remove("KEY1"), Some("VALUE1".to_string()));
+    /// assert_eq!(env_file.remove("KEY3"), None);
+    /// ```
+    pub fn remove<K>(&mut self, key: K) -> Option<String>
+    where
+        K: Into<String>,
+    {
+        self.0.remove(key.into())
+    }
+
+    /// Removes a key-value pair from the environment file and returns it as a tuple.
+    ///
+    /// Returns the key-value pair if the key was present, or `None` if it was not.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use seahaven_file::env::EnvFile;
+    ///
+    /// let mut env_file = EnvFile::from_iter([("KEY1", "VALUE1"), ("KEY2", "VALUE2")]);
+    /// assert_eq!(
+    ///     env_file.remove_entry("KEY1"),
+    ///     Some(("KEY1".to_string(), "VALUE1".to_string()))
+    /// );
+    /// assert_eq!(env_file.remove_entry("KEY3"), None);
+    /// ```
+    pub fn remove_entry<K>(&mut self, key: K) -> Option<(String, String)>
+    where
+        K: Into<String>,
+    {
+        let key = key.into();
+        self.0.remove(&key).map(|value| (key, value))
+    }
 }
 
 impl Default for EnvFile {
@@ -66,7 +144,142 @@ where
     /// # assert_eq!(env_file.get("KEY2").unwrap(), "VALUE2");
     /// ```
     fn from_iter<T: IntoIterator<Item = (K, V)>>(iter: T) -> Self {
-        Self(serde_envfile::Value::from_iter(iter))
+        Self(FromIterator::from_iter(iter))
+    }
+}
+
+impl<K, V> Extend<(K, V)> for EnvFile
+where
+    K: Into<String>,
+    V: Into<String>,
+{
+    /// Extends an `EnvFile` with key-value pairs from an iterator.
+    ///
+    /// This allows adding multiple key-value pairs to an existing environment file.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use seahaven_file::env::EnvFile;
+    ///
+    /// let mut env_file = EnvFile::new();
+    /// env_file.extend([("KEY1", "VALUE1"), ("KEY2", "VALUE2")]);
+    /// # assert_eq!(env_file.get("KEY1").unwrap(), "VALUE1");
+    /// # assert_eq!(env_file.get("KEY2").unwrap(), "VALUE2");
+    /// ```
+    fn extend<T: IntoIterator<Item = (K, V)>>(&mut self, iter: T) {
+        self.0.extend(iter)
+    }
+}
+
+/// Enables iteration over references to key-value pairs in an `EnvFile`.
+///
+/// # Examples
+///
+/// ```rust
+/// use seahaven_file::env::EnvFile;
+///
+/// let env_file = EnvFile::from_iter([("KEY1", "VALUE1"), ("KEY2", "VALUE2")]);
+/// for (key, value) in &env_file {
+///     println!("{} = {}", key, value);
+/// }
+/// ```
+impl<'a> IntoIterator for &'a EnvFile {
+    type Item = (&'a String, &'a String);
+    type IntoIter = Iter<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        Iter(self.0.iter())
+    }
+}
+
+/// Enables iteration over mutable references to key-value pairs in an `EnvFile`.
+///
+/// # Examples
+///
+/// ```rust
+/// use seahaven_file::env::EnvFile;
+///
+/// let mut env_file = EnvFile::from_iter([("KEY1", "VALUE1"), ("KEY2", "VALUE2")]);
+/// for (key, value) in &mut env_file {
+///     *value = format!("{}_UPDATED", value);
+/// }
+/// ```
+impl<'a> IntoIterator for &'a mut EnvFile {
+    type Item = (&'a String, &'a mut String);
+    type IntoIter = IterMut<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        IterMut(self.0.iter_mut())
+    }
+}
+
+/// Enables iteration over owned key-value pairs from an `EnvFile`.
+///
+/// # Examples
+///
+/// ```rust
+/// use seahaven_file::env::EnvFile;
+///
+/// let env_file = EnvFile::from_iter([("KEY1", "VALUE1"), ("KEY2", "VALUE2")]);
+/// for (key, value) in env_file {
+///     println!("{} = {}", key, value);
+/// }
+/// ```
+impl IntoIterator for EnvFile {
+    type Item = (String, String);
+    type IntoIter = IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        IntoIter(self.0.into_iter())
+    }
+}
+
+/// Iterator over references to key-value pairs in an [`EnvFile`]
+#[derive(Debug)]
+pub struct Iter<'a>(serde_envfile::value::Iter<'a>);
+
+impl<'a> Iterator for Iter<'a> {
+    type Item = (&'a String, &'a String);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next()
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.0.size_hint()
+    }
+}
+
+/// Iterator over mutable references to key-value pairs in an [`EnvFile`]
+#[derive(Debug)]
+pub struct IterMut<'a>(serde_envfile::value::IterMut<'a>);
+
+impl<'a> Iterator for IterMut<'a> {
+    type Item = (&'a String, &'a mut String);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next()
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.0.size_hint()
+    }
+}
+
+/// Iterator over owned key-value pairs from an [`EnvFile`]
+#[derive(Debug)]
+pub struct IntoIter(serde_envfile::value::IntoIter);
+
+impl Iterator for IntoIter {
+    type Item = (String, String);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next()
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.0.size_hint()
     }
 }
 
