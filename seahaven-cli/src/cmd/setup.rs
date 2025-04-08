@@ -67,7 +67,7 @@ pub async fn env(matches: &ArgMatches) -> Result<()> {
     let file = File::open(setup_file_path)
         .map(BufReader::new)
         .map_err(|err| anyhow::anyhow!("Failed to open setup file: {}", err))?;
-    let (env_file, _) = seahaven_file::from_reader(file)
+    let env_file = seahaven_file::envfile_from_reader(file)
         .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?;
 
     // If no environment is present, print a warning and return
