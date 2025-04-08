@@ -85,10 +85,27 @@ where
 {
     let (front_matter, content) = matter::extract_front_matter(reader)?;
 
-    let env_file = front_matter.map(serde_envfile::from_reader).transpose()?;
+    let envfile = front_matter.map(serde_envfile::from_reader).transpose()?;
     let file_content = content::de::from_reader(content)?;
 
-    Ok((env_file, file_content))
+    Ok((envfile, file_content))
+}
+
+/// Parses a Seahaven setup description file from a IO stream and returns the envfile.
+///
+/// This function extracts and parses the front-matter section (if present) and returns
+/// the environment variables as an [`EnvFile`].
+///
+/// See [`Error`] for the errors that can occur when parsing a setup description file
+pub fn envfile_from_reader<R>(reader: R) -> Result<Option<EnvFile>, ParsingError>
+where
+    R: BufRead + Seek,
+{
+    let (front_matter, _) = matter::extract_front_matter(reader)?;
+
+    let env_file = front_matter.map(serde_envfile::from_reader).transpose()?;
+
+    Ok(env_file)
 }
 
 /// Errors that can occur when parsing a setup description file
