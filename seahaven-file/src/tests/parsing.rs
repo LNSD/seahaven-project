@@ -4,7 +4,7 @@ use testlib_file_testdata::setup_yaml::{
     EMPTY_ENV, KITCHEN_SINK, NO_SERVICES, SINGLE_SERVICE, SINGLE_SERVICE_BASIC,
 };
 
-use crate::{ParsingError, from_reader};
+use crate::{ParsingError, envfile_from_reader, from_reader};
 
 #[test]
 fn single_service() {
@@ -103,4 +103,24 @@ fn kitchen_sink() {
     assert!(content.volumes.is_some());
     assert!(content.configs.is_some());
     assert!(content.secrets.is_some());
+}
+
+#[test]
+fn kitchen_sink_env_file() {
+    // * Given
+    let input = Cursor::new(KITCHEN_SINK);
+
+    // * When
+    let env_file = envfile_from_reader(input).expect("Failed to parse KITCHEN_SINK");
+
+    // * Then
+    let env_file = env_file.expect("Env file should be present");
+    assert_eq!(env_file.get("chain_id").unwrap(), "1337");
+    assert_eq!(env_file.get("chain_name").unwrap(), "hardhat");
+    assert_eq!(env_file.get("app_port").unwrap(), "8080");
+    assert_eq!(env_file.get("chain_rpc").unwrap(), "8545");
+    assert_eq!(env_file.get("db_password").unwrap(), "secret");
+    assert_eq!(env_file.get("app_server_admin").unwrap(), "7600");
+    assert_eq!(env_file.get("app_server_rpc").unwrap(), "7601");
+    assert_eq!(env_file.get("app_server_metrics").unwrap(), "7602");
 }

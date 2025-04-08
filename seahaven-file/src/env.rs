@@ -9,7 +9,7 @@
 /// This struct provides a convenient way to work with environment variables
 /// stored in a file format. It wraps a `serde_envfile::Value` and provides
 /// methods to create, manipulate, and access environment variables.
-#[derive(Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(transparent)]
 pub struct EnvFile(serde_envfile::Value);
 
