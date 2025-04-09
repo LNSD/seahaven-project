@@ -4,7 +4,7 @@ use testlib_file_testdata::setup_yaml::{
     EMPTY_ENV, KITCHEN_SINK, NO_SERVICES, SINGLE_SERVICE, SINGLE_SERVICE_BASIC,
 };
 
-use crate::{ParsingError, envfile_from_reader, from_reader};
+use crate::parsing::{ParsingError, fileenv_from_reader, from_reader};
 
 #[test]
 fn single_service() {
@@ -12,13 +12,15 @@ fn single_service() {
     let input = Cursor::new(SINGLE_SERVICE);
 
     // * When
-    let (env_file, content) = from_reader(input).expect("Failed to parse content");
+    let setup_file = from_reader(input).expect("Failed to parse content");
 
     // * Then
     // Verify envfile is not present
-    assert!(env_file.is_none());
+    let env = setup_file.env();
+    assert!(env.is_none());
 
     // Verify service content at top level only
+    let content = setup_file.content();
     assert!(!content.services.is_empty());
     assert!(content.services.contains_key("app"));
 }
@@ -29,13 +31,15 @@ fn single_service_basic() {
     let input = Cursor::new(SINGLE_SERVICE_BASIC);
 
     // * When
-    let (env_file, content) = from_reader(input).expect("Failed to parse content");
+    let setup_file = from_reader(input).expect("Failed to parse content");
 
     // * Then
     // Verify envfile is not present
-    assert!(env_file.is_none());
+    let env = setup_file.env();
+    assert!(env.is_none());
 
     // Verify service content at top level only
+    let content = setup_file.content();
     assert!(!content.services.is_empty());
     assert!(content.services.contains_key("app"));
 }
@@ -62,16 +66,17 @@ fn empty_env() {
     let input = Cursor::new(EMPTY_ENV);
 
     // * When
-    let (env_file, content) = from_reader(input).expect("Failed to parse EMPTY_ENV");
+    let setup_file = from_reader(input).expect("Failed to parse EMPTY_ENV");
 
     // * Then
     // Verify env file is present but empty
     assert!(
-        matches!(env_file, Some(env_file) if env_file.is_empty()),
+        matches!(setup_file.env(), Some(env_file) if env_file.is_empty()),
         "Expected env file to be present but empty"
     );
 
     // Verify the top-level content
+    let content = setup_file.content();
     assert!(!content.services.is_empty());
     assert!(content.volumes.is_some());
 }
@@ -82,21 +87,22 @@ fn kitchen_sink() {
     let input = Cursor::new(KITCHEN_SINK);
 
     // * When
-    let (env_file, content) = from_reader(input).expect("Failed to parse KITCHEN_SINK");
+    let setup_file = from_reader(input).expect("Failed to parse KITCHEN_SINK");
 
     // * Then
     // Assert that the env file is present and has the correct values
-    let env_file = env_file.expect("Front matter should be present");
-    assert_eq!(env_file.get("chain_id").unwrap(), "1337");
-    assert_eq!(env_file.get("chain_name").unwrap(), "hardhat");
-    assert_eq!(env_file.get("app_port").unwrap(), "8080");
-    assert_eq!(env_file.get("chain_rpc").unwrap(), "8545");
-    assert_eq!(env_file.get("db_password").unwrap(), "secret");
-    assert_eq!(env_file.get("app_server_admin").unwrap(), "7600");
-    assert_eq!(env_file.get("app_server_rpc").unwrap(), "7601");
-    assert_eq!(env_file.get("app_server_metrics").unwrap(), "7602");
+    let env = setup_file.env().expect("Front matter should be present");
+    assert_eq!(env.get("chain_id").unwrap(), "1337");
+    assert_eq!(env.get("chain_name").unwrap(), "hardhat");
+    assert_eq!(env.get("app_port").unwrap(), "8080");
+    assert_eq!(env.get("chain_rpc").unwrap(), "8545");
+    assert_eq!(env.get("db_password").unwrap(), "secret");
+    assert_eq!(env.get("app_server_admin").unwrap(), "7600");
+    assert_eq!(env.get("app_server_rpc").unwrap(), "7601");
+    assert_eq!(env.get("app_server_metrics").unwrap(), "7602");
 
     // Assert that the content structure is correct
+    let content = setup_file.content();
     assert!(content.name.is_some());
     assert_eq!(content.services.len(), 3);
     assert!(content.networks.is_some());
@@ -111,16 +117,16 @@ fn kitchen_sink_env_file() {
     let input = Cursor::new(KITCHEN_SINK);
 
     // * When
-    let env_file = envfile_from_reader(input).expect("Failed to parse KITCHEN_SINK");
+    let env = fileenv_from_reader(input).expect("Failed to parse KITCHEN_SINK");
 
     // * Then
-    let env_file = env_file.expect("Env file should be present");
-    assert_eq!(env_file.get("chain_id").unwrap(), "1337");
-    assert_eq!(env_file.get("chain_name").unwrap(), "hardhat");
-    assert_eq!(env_file.get("app_port").unwrap(), "8080");
-    assert_eq!(env_file.get("chain_rpc").unwrap(), "8545");
-    assert_eq!(env_file.get("db_password").unwrap(), "secret");
-    assert_eq!(env_file.get("app_server_admin").unwrap(), "7600");
-    assert_eq!(env_file.get("app_server_rpc").unwrap(), "7601");
-    assert_eq!(env_file.get("app_server_metrics").unwrap(), "7602");
+    let env = env.expect("Env file should be present");
+    assert_eq!(env.get("chain_id").unwrap(), "1337");
+    assert_eq!(env.get("chain_name").unwrap(), "hardhat");
+    assert_eq!(env.get("app_port").unwrap(), "8080");
+    assert_eq!(env.get("chain_rpc").unwrap(), "8545");
+    assert_eq!(env.get("db_password").unwrap(), "secret");
+    assert_eq!(env.get("app_server_admin").unwrap(), "7600");
+    assert_eq!(env.get("app_server_rpc").unwrap(), "7601");
+    assert_eq!(env.get("app_server_metrics").unwrap(), "7602");
 }

@@ -67,11 +67,11 @@ pub async fn env(matches: &ArgMatches) -> Result<()> {
     let file = File::open(setup_file_path)
         .map(BufReader::new)
         .map_err(|err| anyhow::anyhow!("Failed to open setup file: {}", err))?;
-    let env_file = seahaven_file::envfile_from_reader(file)
+    let env = seahaven_file::fileenv_from_reader(file)
         .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?;
 
     // If no environment is present, print a warning and return
-    let env_file = match env_file {
+    let env = match env {
         Some(env) => env,
         None => {
             eprintln!("\x1b[33m\x1b[1mWarning\x1b[0m: No env found in the setup file");
@@ -82,11 +82,11 @@ pub async fn env(matches: &ArgMatches) -> Result<()> {
     // Check if we need to interpolate the environment variables
     if !matches.get_flag("no-interpolation") {
         // TODO: Implement interpolation (shellexpand crate?)
-        eprintln!("\x1b[33m\x1b[1mWarning\x1b[0m: Env variables interpolation not implemented");
+        eprintln!("\x1b[33m\x1b[1mWarning\x1b[0m: Env variables interpolation unavailable");
     }
 
     // Serialize the environment variables to a string
-    let env_content = seahaven_file::env::ser::to_string(&env_file)
+    let env_content = seahaven_file::serde_envfile::to_string(&env)
         .map_err(|err| anyhow::anyhow!("Failed to serialize environment variables: {}", err))?;
 
     println!("{}", env_content);
@@ -110,8 +110,9 @@ pub async fn compose(matches: &ArgMatches) -> Result<()> {
     let file = File::open(setup_file_path)
         .map(BufReader::new)
         .map_err(|err| anyhow::anyhow!("Failed to open setup file: {}", err))?;
-    let (_env_file, content) = seahaven_file::from_reader(file)
-        .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?;
+    let (_env, content) = seahaven_file::from_reader(file)
+        .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?
+        .unpack();
 
     // Transform the content into a compose file
     // TODO: Move the transformation into the `seahaven_file` crate
@@ -131,12 +132,7 @@ pub async fn compose(matches: &ArgMatches) -> Result<()> {
     // Interpolate the compose file (env_file -> compose_file)
     if !matches.get_flag("no-interpolation") {
         // TODO: Implement interpolation (shellexpand crate?) for the compose file
-        // let mut env = EnvFile::from_iter(std::env::vars());
-        // if let Some(env_file) = env_file {
-        //     env.extend(env_file.into_iter());
-        // }
-        // <Shell expand the compose file>
-        eprintln!("\x1b[33m\x1b[1mWarning\x1b[0m: Env variables interpolation not implemented");
+        eprintln!("\x1b[33m\x1b[1mWarning\x1b[0m: Env variables interpolation unavailable");
     }
 
     println!("{}", compose_content);
@@ -187,8 +183,9 @@ pub async fn eject(matches: &ArgMatches) -> Result<()> {
     let file = File::open(setup_file_path)
         .map(BufReader::new)
         .map_err(|err| anyhow::anyhow!("Failed to open setup file: {}", err))?;
-    let (env_file, content) = seahaven_file::from_reader(file)
-        .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?;
+    let (env, content) = seahaven_file::from_reader(file)
+        .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?
+        .unpack();
 
     // Transform the content into a compose file
     // TODO: Move the transformation into the `seahaven_file` crate
@@ -215,9 +212,9 @@ pub async fn eject(matches: &ArgMatches) -> Result<()> {
     );
 
     // If environment section is present, write the .env file
-    if let Some(env_file) = env_file {
+    if let Some(env) = env {
         // Serialize the environment variables to a string
-        let env_content = seahaven_file::env::ser::to_string(&env_file)
+        let env_content = seahaven_file::serde_envfile::to_string(&env)
             .map_err(|err| anyhow::anyhow!("Failed to serialize environment variables: {}", err))?;
 
         // Write the .env file

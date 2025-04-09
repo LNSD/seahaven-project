@@ -1,7 +1,7 @@
-//! # Seahaven setup description file contenta
+//! # Seahaven setup description file contents
 //!
 //! This module provides types and functions for working with Seahaven setup description files.
-//! It includes the `FileContent` struct that represents the content of a setup file,
+//! It includes the [`Content`] struct that represents the content of a setup file,
 //! along with serialization and deserialization utilities.
 
 /// Represents the content of a Seahaven setup description file.
@@ -9,8 +9,8 @@
 /// This struct follows the compose file format with top-level elements
 /// for services, networks, volumes, configs, and secrets. The `services`
 /// field is required while other elements are optional.
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct FileContent {
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct Content {
     /// Name top-level element
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -18,6 +18,11 @@ pub struct FileContent {
 
     /// Services top-level element
     pub services: serde_yaml::Mapping,
+
+    /// Init containers top-level element
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub init: Option<serde_yaml::Mapping>,
 
     /// Networks top-level element
     #[serde(default)]
@@ -42,7 +47,7 @@ pub struct FileContent {
 
 /// Module containing serialization functionality
 pub mod ser {
-    use super::FileContent;
+    use super::Content;
 
     /// An error that happened when serializing the setup description file content
     #[derive(Debug, thiserror::Error)]
@@ -50,12 +55,12 @@ pub mod ser {
     pub struct SerializationError(#[from] serde_yaml::Error);
 
     /// Serialize a setup description file content to a string
-    pub fn to_string(file: &FileContent) -> Result<String, SerializationError> {
+    pub fn to_string(file: &Content) -> Result<String, SerializationError> {
         serde_yaml::to_string(file).map_err(SerializationError)
     }
 
     /// Serialize a setup description file content to a writer
-    pub fn to_writer<W>(writer: W, file: &FileContent) -> Result<(), SerializationError>
+    pub fn to_writer<W>(writer: W, file: &Content) -> Result<(), SerializationError>
     where
         W: std::io::Write,
     {
@@ -65,7 +70,7 @@ pub mod ser {
 
 /// Module containing deserialization functionality
 pub mod de {
-    use super::FileContent;
+    use super::Content;
 
     /// An error that happened when deserializing the setup description file content
     #[derive(Debug, thiserror::Error)]
@@ -73,12 +78,12 @@ pub mod de {
     pub struct DeserializationError(#[from] serde_yaml::Error);
 
     /// Deserialize a setup description file content from a string
-    pub fn from_str(s: &str) -> Result<FileContent, DeserializationError> {
+    pub fn from_str(s: &str) -> Result<Content, DeserializationError> {
         serde_yaml::from_str(s).map_err(DeserializationError)
     }
 
     /// Deserialize a setup description file content from a reader
-    pub fn from_reader<R>(reader: R) -> Result<FileContent, DeserializationError>
+    pub fn from_reader<R>(reader: R) -> Result<Content, DeserializationError>
     where
         R: std::io::Read,
     {

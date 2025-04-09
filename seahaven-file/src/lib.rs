@@ -63,69 +63,18 @@
 //!
 //! [compose-spec]: https://github.com/compose-spec/compose-spec/blob/main/spec.md
 
-pub mod compose;
-pub mod content;
-pub mod env;
+// Re-export serde_envfile
+pub use serde_envfile;
+
+pub mod compose; // TODO: Move to seahaven-docker or seahaven-compose-spec
 mod matter;
+pub mod model;
+mod parsing;
 
-use std::io::{BufRead, Seek};
-
-use self::{content::FileContent, env::EnvFile};
-
-/// Parses a Seahaven setup description YAML file from a IO stream
-///
-/// This function extracts and parses both the front-matter section (if present) and the main YAML content.
-/// The front-matter is parsed into an optional [`EnvFile`] containing environment variables,
-/// while the remaining content is parsed into a [`FileContent`].
-///
-/// See [`Error`] for the errors that can occur when parsing a setup description file
-pub fn from_reader<R>(reader: R) -> Result<(Option<EnvFile>, FileContent), ParsingError>
-where
-    R: BufRead + Seek,
-{
-    let (front_matter, content) = matter::extract_front_matter(reader)?;
-
-    let envfile = front_matter.map(serde_envfile::from_reader).transpose()?;
-    let file_content = content::de::from_reader(content)?;
-
-    Ok((envfile, file_content))
-}
-
-/// Parses a Seahaven setup description file from a IO stream and returns the envfile.
-///
-/// This function extracts and parses the front-matter section (if present) and returns
-/// the environment variables as an [`EnvFile`].
-///
-/// See [`Error`] for the errors that can occur when parsing a setup description file
-pub fn envfile_from_reader<R>(reader: R) -> Result<Option<EnvFile>, ParsingError>
-where
-    R: BufRead + Seek,
-{
-    let (front_matter, _) = matter::extract_front_matter(reader)?;
-
-    let env_file = front_matter.map(serde_envfile::from_reader).transpose()?;
-
-    Ok(env_file)
-}
-
-/// Errors that can occur when parsing a setup description file
-#[derive(Debug, thiserror::Error)]
-#[non_exhaustive]
-pub enum ParsingError {
-    /// The front matter section of a file has an invalid format
-    #[error("invalid front-matter format: {0}")]
-    InvalidFrontMatterFormat(#[from] matter::Error),
-
-    /// The environment variables in the front-matter section cannot be parsed
-    #[error("environment variables parsing failed: {0}")]
-    EnvParsingFailed(#[from] serde_envfile::Error),
-
-    /// The main content of the setup description file cannot be parsed
-    #[error("content deserialization failed: {0}")]
-    ContentDeserializationFailed(#[from] content::de::DeserializationError),
-}
+pub use model::{SetupFile, content::Content, env::Env};
+pub use parsing::{ParsingError, fileenv_from_reader, from_reader};
 
 #[cfg(test)]
 mod tests {
-    mod parsing;
+    mod it_parsing;
 }
