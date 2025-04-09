@@ -81,7 +81,7 @@ pub async fn env(matches: &ArgMatches) -> Result<()> {
 
     // Check if we need to interpolate the environment variables
     if !matches.get_flag("no-interpolation") {
-        // TODO: Implement interpolation (shellexpand crate?)
+        // TODO: Implement interpolation
         eprintln!("\x1b[33m\x1b[1mWarning\x1b[0m: Env variables interpolation unavailable");
     }
 
@@ -115,15 +115,8 @@ pub async fn compose(matches: &ArgMatches) -> Result<()> {
         .unpack();
 
     // Transform the content into a compose file
-    // TODO: Move the transformation into the `seahaven_file` crate
-    let compose_file = ComposeFile {
-        name: content.name,
-        services: content.services,
-        networks: content.networks,
-        volumes: content.volumes,
-        configs: content.configs,
-        secrets: content.secrets,
-    };
+    let compose_file = seahaven_file::try_into_compose_file(content)
+        .map_err(|err| anyhow::anyhow!("Failed to convert setup file to compose file: {}", err))?;
 
     // Serialize the compose file to a string
     let compose_content = seahaven_file::compose::ser::to_string(&compose_file)
@@ -131,7 +124,7 @@ pub async fn compose(matches: &ArgMatches) -> Result<()> {
 
     // Interpolate the compose file (env_file -> compose_file)
     if !matches.get_flag("no-interpolation") {
-        // TODO: Implement interpolation (shellexpand crate?) for the compose file
+        // TODO: Implement interpolation for the compose file
         eprintln!("\x1b[33m\x1b[1mWarning\x1b[0m: Env variables interpolation unavailable");
     }
 

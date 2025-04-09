@@ -67,10 +67,12 @@
 pub use serde_envfile;
 
 pub mod compose; // TODO: Move to seahaven-docker or seahaven-compose-spec
+mod convert;
 mod matter;
 pub mod model;
 mod parsing;
 
+pub use convert::{Error as ConvertError, try_into_compose_file};
 pub use model::{SetupFile, content::Content, env::Env};
 pub use parsing::{ParsingError, fileenv_from_reader, from_reader};
 
