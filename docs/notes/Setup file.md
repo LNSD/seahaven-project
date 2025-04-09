@@ -1,7 +1,7 @@
 - Equivalent to `docker-compose.yaml` file with the `.env` section (constants section).
 - ~~The `[constants]` section, as [in meson](https://mesonbuild.com/Machine-files.html#constants), can be referenced in the `[services]` section, and they will be interpolated.~~ See [[#Front-matter]] section.
 - There are two type of containers: 
-	- The [[Init container|init-containers]]: ephemeral containers that run once and exit, and the final state in docker compose is `service_completed_successfully`.
+	- The [[Init container|init-containers]]: ephemeral containers that run once and exit, and the final state in docker compose is `service_completed_successfully`. They are perfect for setup tasks, data loading, or any prerequisites that need to be satisfied before the main application starts.
 	- The [[Services|services]]: containers that run indefinitely, and the final state in docker compose is `service_started` or `service_healthy`.
 - The `setup.yaml` file is "transpiled" by the [[truman (CLI)]] into a `docker-compose.yaml` file and an `.env` file, which is then used by docker-compose to run the services.
 - #next Multiple setup files can be merged into a single setup file by specifying them in the CLI the same way multiple docker-compose files are merged in the docker compose CLI.
