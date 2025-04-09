@@ -42,7 +42,7 @@ services:
     image: ghcr.io/example/server:latest
     depends_on:
       chain: { condition: service_healthy }
-      deploy-contracts: { condition: service_completed_successfully }
+      deploy-smart-contracts: { condition: service_completed_successfully }
     ports: 
       - "${APP_SERVER_ADMIN}:7600"
       - "${APP_SERVER_RPC}:7601"
@@ -50,9 +50,11 @@ services:
     healthcheck:
       { interval: 1s, retries: 10, test: curl -sf http://localhost:${APP_SERVER_ADMIN}/health }
 
-init-containers:
-  deploy-contracts:
-    build: { context: contracts }
+init:
+  deploy-smart-contracts:
+    build:
+      context: contracts,
+      dockerfile: Dockerfile.deploy
     depends_on:
       chain: { condition: service_healthy }
     volumes:
@@ -66,7 +68,7 @@ init-containers:
 flowchart LR
   A[[chain]];
   B[[app-server]];  
-  C([deploy-contracts]);
+  C([deploy-smart-contracts]);
   
   A -- healthy? --> C;
   A -- healthy? --> B;
