@@ -1,7 +1,6 @@
 use std::{fs::File, io::BufReader, path::PathBuf};
 
 use clap::{ArgMatches, Command, arg, command, value_parser};
-use seahaven_file::compose::ComposeFile;
 
 use super::result::Result;
 
@@ -119,7 +118,7 @@ pub async fn compose(matches: &ArgMatches) -> Result<()> {
         .map_err(|err| anyhow::anyhow!("Failed to convert setup file to compose file: {}", err))?;
 
     // Serialize the compose file to a string
-    let compose_content = seahaven_file::compose::ser::to_string(&compose_file)
+    let compose_content = seahaven_file::seahaven_compose_file::ser::to_string(&compose_file)
         .map_err(|err| anyhow::anyhow!("Failed to serialize compose file: {}", err))?;
 
     // Interpolate the compose file (env_file -> compose_file)
@@ -181,18 +180,11 @@ pub async fn eject(matches: &ArgMatches) -> Result<()> {
         .unpack();
 
     // Transform the content into a compose file
-    // TODO: Move the transformation into the `seahaven_file` crate
-    let compose_file = ComposeFile {
-        name: content.name,
-        services: content.services,
-        networks: content.networks,
-        volumes: content.volumes,
-        configs: content.configs,
-        secrets: content.secrets,
-    };
+    let compose_file = seahaven_file::try_into_compose_file(content)
+        .map_err(|err| anyhow::anyhow!("Failed to convert setup file to compose file: {}", err))?;
 
     // Serialize the compose file to a string
-    let compose_content = seahaven_file::compose::ser::to_string(&compose_file)
+    let compose_content = seahaven_file::seahaven_compose_file::ser::to_string(&compose_file)
         .map_err(|err| anyhow::anyhow!("Failed to serialize compose file: {}", err))?;
 
     // Write the docker-compose.yaml file
