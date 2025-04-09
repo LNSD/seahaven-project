@@ -1,0 +1,51 @@
+name: commit-check
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+
+jobs:
+  conventional-commits:
+    runs-on: ubuntu-latest
+    # SECURITY: # https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+    permissions: read-all
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
+        with:
+          python-version: "3.13"
+
+      - name: commitizen check
+        run: |
+          pip install commitizen
+          cz check --rev-range ${{ github.event.pull_request.base.sha }}..HEAD
+
+  dco:
+    runs-on: ubuntu-latest
+    # SECURITY: # https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+    permissions: read-all
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
+        with:
+          python-version: '3.13'
+
+      - name: dco check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DCO_CHECK_EXCLUDE_PATTERN: (dependabot|github-actions)\[bot\]@users\.noreply\.github\.com
+          DCO_CHECK_VERBOSE: '1'
+        run: |
+          pip install -U dco-check
+          dco-check
