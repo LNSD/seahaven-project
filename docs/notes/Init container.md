@@ -2,7 +2,10 @@ Init containers are specialized containers that run and complete before the main
 
 # Configuration Structure
 
-In Seahaven, init containers must be defined under a dedicated `init` key in the configuration. This separation is important to avoid key collisions when translating `setup.yaml` into `docker-compose.yaml`. The structure ensures that service names and init container names cannot overlap.
+Init containers in Seahaven are defined under the `init` section of the configuration. These specialized containers execute setup tasks before the main application starts, ensuring all prerequisites are met. Each init container must have a unique name to avoid conflicts with other services and init containers.
+
+> [!WARNING]
+> Container names must be unique across both the `services` and `init` sections. Using the same name in both sections will cause a conflict and prevent the application from starting properly.
 
 Example structure:
 
@@ -192,57 +195,57 @@ When implementing init containers, following best practices is crucial for creat
 Follow these guidelines to create efficient and reliable init containers:
 
 1. **Keep Containers Lightweight**
-   - Use minimal base images.
-   - Include only necessary tools.
-   - Optimize for quick execution.
+    - Use minimal base images.
+    - Include only necessary tools.
+    - Optimize for quick execution.
 
 2. **Handle Failures Gracefully**
-   - Implement proper error handling.
-   - Provide clear error messages.
-   - Set appropriate timeouts.
+    - Implement proper error handling.
+    - Provide clear error messages.
+    - Set appropriate timeouts.
 
 3. **Ensure Idempotency**
-   - Design init scripts to be re-runnable.
-   - Include checks for existing state.
-   - Use conditional logic for setup steps.
+    - Design init scripts to be re-runnable.
+    - Include checks for existing state.
+    - Use conditional logic for setup steps.
 
 ## Security
 
 Security is crucial when designing init containers. Consider these aspects:
 
 1. **Principle of Least Privilege**
-   - Run init containers with minimal permissions.
-   - Use non-root users when possible.
-   - Limit network access.
+    - Run init containers with minimal permissions.
+    - Use non-root users when possible.
+    - Limit network access.
 
 2. **Secret Management**
-   - Use Docker secrets or environment variables.
-   - Avoid hardcoding sensitive information.
-   - Rotate credentials regularly.
+    - Use Docker secrets or environment variables.
+    - Avoid hardcoding sensitive information.
+    - Rotate credentials regularly.
 
 3. **Image Security**
-   - Use official base images.
-   - Keep images updated.
-   - Scan for vulnerabilities.
+    - Use official base images.
+    - Keep images updated.
+    - Scan for vulnerabilities.
 
 ## Performance
 
 Optimize your init containers for better performance:
 
 1. **Startup Optimization**
-   - Minimize init container size.
-   - Optimize initialization scripts.
-   - Use caching effectively.
+    - Minimize init container size.
+    - Optimize initialization scripts.
+    - Use caching effectively.
 
 2. **Resource Management**
-   - Set appropriate resource limits.
-   - Monitor memory and CPU usage.
-   - Clean up temporary files.
+    - Set appropriate resource limits.
+    - Monitor memory and CPU usage.
+    - Clean up temporary files.
 
 3. **Parallel Execution**
-   - Run independent init containers in parallel.
-   - Use proper dependency management.
-   - Optimize startup sequence.
+    - Run independent init containers in parallel.
+    - Use proper dependency management.
+    - Optimize startup sequence.
 
 # Troubleshooting
 
@@ -251,46 +254,46 @@ Optimize your init containers for better performance:
 When working with init containers, you might encounter these common problems:
 
 1. **Init Container Timeouts**
-   - Set appropriate `timeout` values in healthchecks.
-   - Use `restart: on-failure` for retry logic.
-   - Implement proper logging for debugging.
+	- Set appropriate `timeout` values in `healthchecks`.
+    - Use `restart: on-failure` for retry logic.
+    - Implement proper logging for debugging.
 
 2. **Resource Constraints**
-   - Monitor resource usage with `docker stats`.
-   - Set appropriate resource limits.
-   - Use lightweight base images.
+    - Monitor resource usage with `docker stats`.
+    - Set appropriate resource limits.
+    - Use lightweight base images.
 
 3. **Dependency Issues**
-   - Verify service names and conditions.
-   - Check network connectivity.
-   - Ensure proper volume mounts.
+    - Verify service names and conditions.
+    - Check network connectivity.
+    - Ensure proper volume mounts.
 
 ## Debugging
 
 Debugging init containers can be challenging due to their temporary nature and specific execution patterns. These are the commands you can use to diagnose and resolve issues:
 
 1. **View Logs**
-   The logs command provides visibility into the container's execution:
-   ```bash
-   # List all logs specific to an init container
-   docker compose logs <init-container-name>
-   ```
-   This command shows the complete output from the init container, including startup messages, errors, and execution results. Use `--follow` to watch logs in real-time.
+    The logs command provides visibility into the container's execution:
+    ```bash
+    # List all logs specific to an init container
+    docker compose logs <init-container-name>
+    ```
+    This command shows the complete output from the init container, including startup messages, errors, and execution results. Use `--follow` to watch logs in real-time.
 
 2. **Inspect Container State**
-   To understand the container's configuration and current state:
-   ```bash
-   # List all containers
-   docker compose ps
-   # Inspect a specific container
-   docker inspect <init-container-name>
-   ```
-   These commands help you understand the container's current state, configuration, and resource usage. The `inspect` command provides detailed information about the container's setup.
+    To understand the container's configuration and current state:
+    ```bash
+    # List all containers
+    docker compose ps
+    # Inspect a specific container
+    docker inspect <init-container-name>
+    ```
+    These commands help you understand the container's current state, configuration, and resource usage. The `inspect` command provides detailed information about the container's setup.
 
 3. **Interactive Debugging**
-   For hands-on investigation of the container:
-   ```bash
-   # Run a shell inside the container
-   docker compose exec <init-container-name> sh
-   ```
-   This allows you to interactively explore the container's filesystem and run commands. Useful for verifying file permissions, checking environment variables, or testing commands directly.
+    For hands-on investigation of the container:
+    ```bash
+    # Run a shell inside the container
+    docker compose exec <init-container-name> sh
+    ```
+    This allows you to interactively explore the container's filesystem and run commands. Useful for verifying file permissions, checking environment variables, or testing commands directly.
