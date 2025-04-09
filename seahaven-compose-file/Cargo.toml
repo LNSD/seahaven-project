@@ -1,0 +1,31 @@
+[package]
+name = "seahaven-compose-file"
+version = "0.1.0"
+description = "A library for working with Compose files"
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+edition.workspace = true
+
+[features]
+# Enables serialization and deserialization support via serde
+# When enabled, types can be converted to/from various formats (JSON, YAML, etc.)
+serde = ["dep:serde"]
+
+# Enables automatic schema updates from the official Compose specification
+# When enabled, the build script will:
+# 1. Download the latest Compose specification from GitHub
+# 2. Update the local schema files in the schemas directory
+# 3. Ensure the library stays in sync with the latest Compose format
+update-spec-file = []
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"], optional = true }
+serde_yaml = "0.9"
+thiserror = "2.0"
+
+[dev-dependencies]
+testlib-file-testdata = { path = "../testlib/file-testdata" }
+
+[build-dependencies]
+reqwest = { version = "0.12", features = ["blocking"] }

@@ -6,7 +6,9 @@
 //! [Compose]: https://github.com/compose-spec/compose-spec/blob/main/spec.md
 //! [.env]: https://dotenvx.com/docs/env-file
 
-use crate::{compose::ComposeFile, model::content::Content};
+use seahaven_compose_file::ComposeFile;
+
+use crate::model::content::Content;
 
 /// Try to convert a [`Content`] into a [`ComposeFile`].
 pub fn try_into_compose_file(file: Content) -> Result<ComposeFile, Error> {

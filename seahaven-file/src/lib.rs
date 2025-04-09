@@ -63,10 +63,9 @@
 //!
 //! [compose-spec]: https://github.com/compose-spec/compose-spec/blob/main/spec.md
 
-// Re-export serde_envfile
+pub use seahaven_compose_file;
 pub use serde_envfile;
 
-pub mod compose; // TODO: Move to seahaven-docker or seahaven-compose-spec
 mod convert;
 mod matter;
 pub mod model;
