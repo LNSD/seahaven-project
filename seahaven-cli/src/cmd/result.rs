@@ -12,14 +12,16 @@ pub struct Error {
     code: i32,
     /// The error message
     #[source]
-    source: anyhow::Error,
+    source: Box<dyn std::error::Error + Send + Sync + 'static>,
 }
 
 impl Error {
     /// Create a new [`Error`] instance
     ///
     /// The default error code is 1.
-    pub fn new(err: impl Into<anyhow::Error> + Send + Sync + 'static) -> Self {
+    pub fn new(
+        err: impl Into<Box<dyn std::error::Error + Send + Sync + 'static>> + Send + Sync + 'static,
+    ) -> Self {
         Self {
             code: DEFAULT_ERROR_CODE,
             source: err.into(),
