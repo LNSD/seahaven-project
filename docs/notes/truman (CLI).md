@@ -9,3 +9,14 @@
 - Support overriding the docker-compose (and env file?) templates
 - A new session ID must be generated for each CLI execution. The session ID must be a UUID?.
 - To pass the files to the docker-compose command `--file` and `--env-file` options, the CLI must create temporary files that should be automatically deleted after the command execution. The temporary files must be created under `/var/seahaven/<session-id>/` directory.
+- Docker compose wrapper commands:
+	- `truman up`
+	- `truman down`
+	- `truman logs`
+	- `truman ps`
+	- `truman start`
+	- `truman stop`
+	- `truman restart`
+	- `truman build`
+- Justfile runner wrapper, `truman run`
+- Wrapper script management, `truman wrapper`, similar to `gradle wrapper` command.
