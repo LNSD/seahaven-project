@@ -55,7 +55,8 @@ impl From<anyhow::Error> for Error {
 mod tests {
     use serde_yaml::Mapping;
 
-    use super::*;
+    use super::try_into_compose_file;
+    use crate::model::content::Content;
 
     const PROJECT_NAME: &str = "test-project";
     const CHAIN_SERVICE_NAME: &str = "chain";
