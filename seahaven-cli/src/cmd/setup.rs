@@ -1,47 +1,47 @@
 use std::{fs::File, io::BufReader, path::PathBuf};
 
-use clap::{ArgMatches, Command, arg, command, value_parser};
-
 use super::result::Result;
 
 /// The `setup` command name
 pub(super) const CMD: &str = "setup";
 
 /// Create the `setup` command
-pub(super) fn cmd() -> Command {
-    command!(CMD)
+pub(super) fn cmd() -> clap::Command {
+    clap::command!(CMD)
         .about("Manage local development environment setup")
         .subcommands([
-            command!("env").about("Print the .env file contents").args([
-                arg!(-f --file <FILE> "The setup file")
-                    .default_value("setup.yaml")
-                    .value_parser(value_parser!(PathBuf)),
-                arg!(--"no-interpolation" "Do not interpolate the environment values"),
-            ]),
-            command!("compose")
+            clap::command!("env")
+                .about("Print the .env file contents")
+                .args([
+                    clap::arg!(-f --file <FILE> "The setup file")
+                        .default_value("setup.yaml")
+                        .value_parser(clap::value_parser!(PathBuf)),
+                    clap::arg!(--"no-interpolation" "Do not interpolate the environment values"),
+                ]),
+            clap::command!("compose")
                 .about("Print the docker-compose.yaml file contents")
                 .args([
-                    arg!(-f --file <FILE> "The setup file")
+                    clap::arg!(-f --file <FILE> "The setup file")
                         .default_value("setup.yaml")
-                        .value_parser(value_parser!(PathBuf)),
-                    arg!(--"no-interpolation" "Do not interpolate the environment values"),
+                        .value_parser(clap::value_parser!(PathBuf)),
+                    clap::arg!(--"no-interpolation" "Do not interpolate the environment values"),
                 ]),
-            command!("eject")
+            clap::command!("eject")
                 .about("Eject the setup.yaml file to get the docker-compose.yaml and .env files")
                 .args([
-                    arg!(-f --file <FILE> "The setup file" )
+                    clap::arg!(-f --file <FILE> "The setup file")
                         .default_value("setup.yaml")
-                        .value_parser(value_parser!(PathBuf)),
-                    arg!(-o --"output-dir" <DIR> "The output directory")
+                        .value_parser(clap::value_parser!(PathBuf)),
+                    clap::arg!(-o --"output-dir" <DIR> "The output directory")
                         .default_value(".")
-                        .value_parser(value_parser!(PathBuf)),
-                    arg!(--"no-interpolation" "Do not interpolate the environment values"),
+                        .value_parser(clap::value_parser!(PathBuf)),
+                    clap::arg!(--"no-interpolation" "Do not interpolate the environment values"),
                 ]),
         ])
 }
 
 /// The `setup` command implementation
-pub(super) async fn run(matches: &ArgMatches) -> Result<()> {
+pub(super) async fn run(matches: &clap::ArgMatches) -> Result<()> {
     match matches.subcommand() {
         Some(("env", matches)) => env(matches).await,
         Some(("compose", matches)) => compose(matches).await,
@@ -53,7 +53,7 @@ pub(super) async fn run(matches: &ArgMatches) -> Result<()> {
 /// The `setup env` command
 ///
 /// This function prints the .env file contents to the console with all the interpolated values.
-pub async fn env(matches: &ArgMatches) -> Result<()> {
+pub async fn env(matches: &clap::ArgMatches) -> Result<()> {
     // Get the setup file path from the command line (required)
     let setup_file_path = matches
         .get_one::<PathBuf>("file")
@@ -96,7 +96,7 @@ pub async fn env(matches: &ArgMatches) -> Result<()> {
 /// The `setup compose` command
 ///
 /// This function prints the docker-compose.yaml file contents to the console with all the interpolated values.
-pub async fn compose(matches: &ArgMatches) -> Result<()> {
+pub async fn compose(matches: &clap::ArgMatches) -> Result<()> {
     // Get the setup file path from the command line (required)
     let setup_file_path = matches
         .get_one::<PathBuf>("file")
@@ -136,7 +136,7 @@ pub async fn compose(matches: &ArgMatches) -> Result<()> {
 ///
 /// This function ejects the setup.yaml file to get the docker-compose.yaml and .env files.
 /// This is a one-way operation. Once ejected, you will need to manage the configuration manually.
-pub async fn eject(matches: &ArgMatches) -> Result<()> {
+pub async fn eject(matches: &clap::ArgMatches) -> Result<()> {
     // Display warning message about the one-way nature of the operation
     indoc::eprintdoc! {r#"
         \x1b[33m\x1b[1mWARNING\x1b[0m: This is a one-way operation. Once ejected, you will need to manage the configuration manually.
