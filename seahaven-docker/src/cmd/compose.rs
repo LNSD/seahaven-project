@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::{ffi::OsStr, marker::PhantomData};
 
 use self::{
     build::DockerComposeBuildCmd,
@@ -61,7 +61,7 @@ impl<N, P, A> DockerComposeCmd<N, P, A> {
     /// for more information about the `--file` option.
     pub fn with_file<S>(mut self, file: S) -> Self
     where
-        S: AsRef<str>,
+        S: AsRef<OsStr>,
     {
         self.0.arg("--file").arg(file.as_ref());
         self
@@ -77,7 +77,7 @@ impl<N, P, A> DockerComposeCmd<N, P, A> {
     pub fn with_files<I, S>(mut self, files: I) -> Self
     where
         I: IntoIterator<Item = S>,
-        S: AsRef<str>,
+        S: AsRef<OsStr>,
     {
         for file in files {
             self.0.arg("--file").arg(file.as_ref());
@@ -91,7 +91,7 @@ impl<N, P, A> DockerComposeCmd<N, P, A> {
     /// for more information about the `--env-file` option.
     pub fn with_env_file<S>(mut self, env_file: S) -> Self
     where
-        S: AsRef<str>,
+        S: AsRef<OsStr>,
     {
         self.0.arg("--env-file").arg(env_file.as_ref());
         self
