@@ -44,17 +44,17 @@ impl DockerCmd {
 impl DockerCmd {
     /// Create a new `docker version` command
     pub fn version(self) -> DockerVersionCmd {
-        DockerVersionCmd::new(self.0)
+        DockerVersionCmd::new(self)
     }
 
     /// Create a new `docker system` command
     pub fn system(self) -> DockerSystemCmd {
-        DockerSystemCmd::new(self.0)
+        DockerSystemCmd::new(self)
     }
 
     /// Create a new `docker compose` command
     pub fn compose(self) -> DockerComposeCmd {
-        DockerComposeCmd::new(self.0)
+        DockerComposeCmd::new(self)
     }
 }
 

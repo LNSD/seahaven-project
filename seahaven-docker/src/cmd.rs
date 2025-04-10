@@ -45,13 +45,13 @@
 //! let mut compose_cmd = DockerCmd::new()
 //!     .compose()
 //!     .up()
-//!     .with_detached()
+//!     .with_detached(true)
 //!     .with_service("my-service");
 //!
 //! let command = compose_cmd.into_command();
 //! ```
-//! Note the precedence of the `with_detached` method over the `with_service` method. The
-//! opposite order would not compile:
+//! Note that the order of method calls matters - `with_progress_json` must be called before `up`.
+//! The reverse order would not compile:
 //!
 //! ```compilation_error
 //! use seahaven_docker::cmd::{DockerCmd, IntoCommand};
@@ -59,7 +59,7 @@
 //! let mut compose_cmd = DockerCmd::new()
 //!     .compose()
 //!     .up()
-//!     .with_service("my-service") // ❌ Error!
+//!     .with_progress_json() // ❌ Error!
 //!     .with_detached();
 //! ```
 

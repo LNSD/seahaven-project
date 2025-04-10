@@ -74,41 +74,16 @@ pub(super) async fn run(matches: &clap::ArgMatches) -> Result<()> {
             .map_err(|err| anyhow::anyhow!("Failed to write docker-compose.yaml file: {err}"))?;
     }
 
-    let compose_up_cmd = DockerCmd::new()
+    let mut command = DockerCmd::new()
         .compose()
         .with_file(content_file_path)
         .with_env_file(env_file_path)
         .with_plain_progress()
-        .up();
-
-    // TODO: Change the command to support conditional flags
-    let mut command = match (
-        matches.get_flag("detach"),
-        matches.get_flag("build"),
-        matches.get_many::<String>("SERVICE"),
-    ) {
-        // Detached mode combinations
-        (true, true, Some(services)) => compose_up_cmd
-            .with_detached()
-            .with_build()
-            .with_services(services)
-            .into_command(),
-        (true, true, None) => compose_up_cmd.with_detached().with_build().into_command(),
-        (true, false, Some(services)) => compose_up_cmd
-            .with_detached()
-            .with_services(services)
-            .into_command(),
-        (true, false, None) => compose_up_cmd.with_detached().into_command(),
-
-        // Non-detached mode combinations
-        (false, true, Some(services)) => compose_up_cmd
-            .with_build()
-            .with_services(services)
-            .into_command(),
-        (false, true, None) => compose_up_cmd.with_build().into_command(),
-        (false, false, Some(services)) => compose_up_cmd.with_services(services).into_command(),
-        (false, false, None) => compose_up_cmd.into_command(),
-    };
+        .up()
+        .with_build(matches.get_flag("build"))
+        .with_detached(matches.get_flag("detach"))
+        .with_services(matches.get_many::<String>("SERVICE").unwrap_or_default())
+        .into_command();
 
     tracing::debug!("Running command: {:?}", command.as_std());
 

@@ -49,12 +49,13 @@ async fn run_docker_compose_build_with_build_arg() {
     //* Given
     let exe = fixture_exe();
 
-    let arg = "FOO=bar";
+    let build_arg_key = "FOO";
+    let build_arg_value = "bar";
 
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .build()
-        .with_build_arg(arg)
+        .with_build_arg(build_arg_key, build_arg_value)
         .into_command();
 
     //* When
@@ -72,7 +73,7 @@ async fn run_docker_compose_build_with_multiple_build_args() {
     //* Given
     let exe = fixture_exe();
 
-    let build_args = ["FOO=bar", "BAZ=qux"];
+    let build_args = [("FOO", "bar"), ("BAZ", "qux")];
 
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
@@ -106,12 +107,13 @@ async fn run_docker_compose_build_with_single_service_and_build_arg() {
     let exe = fixture_exe();
 
     let service = "api-service";
-    let arg = "NODE_ENV=production";
+    let build_arg_key = "NODE_ENV";
+    let build_arg_value = "production";
 
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .build()
-        .with_build_arg(arg)
+        .with_build_arg(build_arg_key, build_arg_value)
         .with_service(service)
         .into_command();
 
@@ -140,7 +142,7 @@ async fn run_docker_compose_build_with_multiple_services_and_build_args() {
     let exe = fixture_exe();
 
     let services = ["api-service", "web-service"];
-    let build_args = ["NODE_ENV=production", "DEBUG=false"];
+    let build_args = [("NODE_ENV", "production"), ("DEBUG", "false")];
 
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
