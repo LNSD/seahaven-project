@@ -110,7 +110,7 @@ async fn run_docker_system_prune_with_volumes() {
     let mut cmd = DockerCmd::with_executable(exe)
         .system()
         .prune()
-        .with_volumes()
+        .with_volumes(true)
         .into_command();
 
     //* When
@@ -131,7 +131,7 @@ async fn run_docker_system_prune_with_all() {
     let mut cmd = DockerCmd::with_executable(exe)
         .system()
         .prune()
-        .with_all()
+        .with_all(true)
         .into_command();
 
     //* When
@@ -152,7 +152,7 @@ async fn run_docker_system_prune_with_force() {
     let mut cmd = DockerCmd::with_executable(exe)
         .system()
         .prune()
-        .with_force()
+        .with_force(true)
         .into_command();
 
     //* When
@@ -173,9 +173,9 @@ async fn run_docker_system_prune_with_all_options() {
     let mut cmd = DockerCmd::with_executable(exe)
         .system()
         .prune()
-        .with_volumes()
-        .with_all()
-        .with_force()
+        .with_volumes(true)
+        .with_all(true)
+        .with_force(true)
         .into_command();
 
     //* When
