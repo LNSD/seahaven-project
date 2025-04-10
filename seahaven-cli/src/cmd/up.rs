@@ -2,7 +2,7 @@ use std::{fs::File, io::BufReader, path::PathBuf};
 
 use seahaven_docker::cmd::{DockerCmd, IntoCommand};
 
-use super::result::{Error, Result};
+use crate::result::{Error, Result};
 
 /// The `up` command name
 pub(super) const CMD: &str = "up";
