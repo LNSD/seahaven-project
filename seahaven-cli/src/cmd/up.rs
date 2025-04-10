@@ -19,6 +19,8 @@ pub(super) fn cmd() -> clap::Command {
                 .action(clap::ArgAction::SetTrue),
             clap::arg!(--build "Build images before starting containers")
                 .action(clap::ArgAction::SetTrue),
+            clap::arg!(--dry-run "Execute command in dry run mode")
+                .action(clap::ArgAction::SetTrue),
             clap::arg!([SERVICE] ... "The services to start").action(clap::ArgAction::Append),
         ])
 }
@@ -83,6 +85,7 @@ pub(super) async fn run(matches: &clap::ArgMatches) -> Result<()> {
         .with_build(matches.get_flag("build"))
         .with_detached(matches.get_flag("detach"))
         .with_services(matches.get_many::<String>("SERVICE").unwrap_or_default())
+        .with_dry_run(matches.get_flag("dry-run"))
         .into_command();
 
     tracing::debug!("Running command: {:?}", command.as_std());

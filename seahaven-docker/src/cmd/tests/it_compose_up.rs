@@ -297,3 +297,24 @@ async fn run_docker_compose_up_with_detached_build_and_single_service() {
         ["compose", "up", "--build", "--detached", "api-service"]
     );
 }
+
+#[tokio::test]
+async fn run_docker_compose_up_with_dry_run() {
+    //* Given
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .up()
+        .with_dry_run(true)
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output = res.expect("Failed to run docker compose up with dry-run flag");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(args, ["compose", "up", "--dry-run"]);
+}

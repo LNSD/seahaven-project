@@ -1,9 +1,15 @@
 use super::{IntoCmdOptValue, IntoCommand};
 
-pub struct DockerComposeUpCmd<D = DetachedNotSet, B = BuildNotSet, S = ServicesNotSet> {
+pub struct DockerComposeUpCmd<
+    D = DetachedNotSet,
+    B = BuildNotSet,
+    DR = DryRunNotSet,
+    S = ServicesNotSet,
+> {
     cmd: tokio::process::Command,
     detached_opt: D,
     build_opt: B,
+    dry_run_opt: DR,
     services_opt: S,
 }
 
@@ -13,15 +19,17 @@ impl DockerComposeUpCmd {
             cmd: cmd.into_command(),
             detached_opt: DetachedNotSet,
             build_opt: BuildNotSet,
+            dry_run_opt: DryRunNotSet,
             services_opt: ServicesNotSet,
         }
     }
 }
 
-impl<D, B, S> IntoCommand for DockerComposeUpCmd<D, B, S>
+impl<D, B, DR, S> IntoCommand for DockerComposeUpCmd<D, B, DR, S>
 where
     D: DetachedOpt,
     B: BuildOpt,
+    DR: DryRunOpt,
     S: ServicesOpt,
 {
     fn into_command(self) -> tokio::process::Command {
@@ -40,6 +48,11 @@ where
             cmd.arg("--detached");
         }
 
+        // --dry-run
+        if matches!(self.dry_run_opt.into_value(), Some(true)) {
+            cmd.arg("--dry-run");
+        }
+
         // [SERVICES...]
         if let Some(services) = self.services_opt.into_value() {
             cmd.args(services);
@@ -49,48 +62,74 @@ where
     }
 }
 
-impl<B, S> DockerComposeUpCmd<DetachedNotSet, B, S>
+impl<B, DR, S> DockerComposeUpCmd<DetachedNotSet, B, DR, S>
 where
     B: BuildOpt,
+    DR: DryRunOpt,
     S: ServicesOpt,
 {
     /// Run containers in the background with the `--detached` flag.
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/up/)
     /// for more information.
-    pub fn with_detached(self, detached: bool) -> DockerComposeUpCmd<DetachedSet, B, S> {
+    pub fn with_detached(self, detached: bool) -> DockerComposeUpCmd<DetachedSet, B, DR, S> {
         DockerComposeUpCmd {
             cmd: self.cmd,
             detached_opt: DetachedSet(detached),
             build_opt: self.build_opt,
+            dry_run_opt: self.dry_run_opt,
             services_opt: self.services_opt,
         }
     }
 }
 
-impl<D, S> DockerComposeUpCmd<D, BuildNotSet, S>
+impl<D, DR, S> DockerComposeUpCmd<D, BuildNotSet, DR, S>
 where
     D: DetachedOpt,
+    DR: DryRunOpt,
     S: ServicesOpt,
 {
     /// Build images before starting containers with the `--build` flag.
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/up/)
     /// for more information.
-    pub fn with_build(self, build: bool) -> DockerComposeUpCmd<D, BuildSet, S> {
+    pub fn with_build(self, build: bool) -> DockerComposeUpCmd<D, BuildSet, DR, S> {
         DockerComposeUpCmd {
             cmd: self.cmd,
             detached_opt: self.detached_opt,
             build_opt: BuildSet(build),
+            dry_run_opt: self.dry_run_opt,
             services_opt: self.services_opt,
         }
     }
 }
 
-impl<D, B> DockerComposeUpCmd<D, B, ServicesNotSet>
+impl<D, B, S> DockerComposeUpCmd<D, B, DryRunNotSet, S>
 where
     D: DetachedOpt,
     B: BuildOpt,
+    S: ServicesOpt,
+{
+    /// Run the command in dry run mode with the `--dry-run` flag.
+    ///
+    /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/up/)
+    /// for more information.
+    pub fn with_dry_run(self, dry_run: bool) -> DockerComposeUpCmd<D, B, DryRunSet, S> {
+        DockerComposeUpCmd {
+            cmd: self.cmd,
+            detached_opt: self.detached_opt,
+            build_opt: self.build_opt,
+            dry_run_opt: DryRunSet(dry_run),
+            services_opt: self.services_opt,
+        }
+    }
+}
+
+impl<D, B, DR> DockerComposeUpCmd<D, B, DR, ServicesNotSet>
+where
+    D: DetachedOpt,
+    B: BuildOpt,
+    DR: DryRunOpt,
 {
     /// Specify one or more services to start.
     ///
@@ -98,7 +137,7 @@ where
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/up/)
     /// for more information.
-    pub fn with_services<I, T>(self, services: I) -> DockerComposeUpCmd<D, B, ServicesSet>
+    pub fn with_services<I, T>(self, services: I) -> DockerComposeUpCmd<D, B, DR, ServicesSet>
     where
         I: IntoIterator<Item = T>,
         T: AsRef<str>,
@@ -120,6 +159,7 @@ where
             cmd: self.cmd,
             detached_opt: self.detached_opt,
             build_opt: self.build_opt,
+            dry_run_opt: self.dry_run_opt,
             services_opt: ServicesSet(services),
         }
     }
@@ -130,7 +170,7 @@ where
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/up/)
     /// for more information.
-    pub fn with_service<T>(self, service: T) -> DockerComposeUpCmd<D, B, ServicesSet>
+    pub fn with_service<T>(self, service: T) -> DockerComposeUpCmd<D, B, DR, ServicesSet>
     where
         T: AsRef<str>,
     {
@@ -185,6 +225,32 @@ impl BuildOpt for BuildSet {}
 impl _priv::Sealed for BuildSet {}
 
 impl IntoCmdOptValue<bool> for BuildSet {
+    fn into_value(self) -> Option<bool> {
+        Some(self.0)
+    }
+}
+
+/// A trait that represents the dry run option for the `docker compose up` command.
+#[allow(private_bounds)]
+pub trait DryRunOpt: IntoCmdOptValue<bool> + _priv::Sealed {}
+
+pub struct DryRunNotSet;
+
+impl DryRunOpt for DryRunNotSet {}
+impl _priv::Sealed for DryRunNotSet {}
+
+impl IntoCmdOptValue<bool> for DryRunNotSet {
+    fn into_value(self) -> Option<bool> {
+        None
+    }
+}
+
+pub struct DryRunSet(bool);
+
+impl DryRunOpt for DryRunSet {}
+impl _priv::Sealed for DryRunSet {}
+
+impl IntoCmdOptValue<bool> for DryRunSet {
     fn into_value(self) -> Option<bool> {
         Some(self.0)
     }
