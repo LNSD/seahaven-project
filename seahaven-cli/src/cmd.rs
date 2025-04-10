@@ -1,10 +1,9 @@
 mod build;
 mod pull;
-mod result;
 mod setup;
 mod up;
 
-use self::result::Result;
+use crate::result::Result;
 
 /// Create and execute the DIPs CLI command line interface
 pub async fn run() -> Result<()> {

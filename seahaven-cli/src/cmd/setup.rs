@@ -1,6 +1,6 @@
 use std::{fs::File, io::BufReader, path::PathBuf};
 
-use super::result::Result;
+use crate::result::Result;
 
 /// The `setup` command name
 pub(super) const CMD: &str = "setup";
