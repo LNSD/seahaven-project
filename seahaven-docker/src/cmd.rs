@@ -77,6 +77,8 @@ mod tests {
     mod common;
     mod it_compose;
     mod it_compose_build;
+    mod it_compose_down;
+    mod it_compose_pull;
     mod it_compose_up;
     mod it_root;
     mod it_system;

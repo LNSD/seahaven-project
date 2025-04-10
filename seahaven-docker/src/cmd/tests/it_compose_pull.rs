@@ -19,6 +19,67 @@ async fn run_docker_compose() {
 }
 
 #[tokio::test]
+async fn run_docker_compose_down() {
+    //* Given
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .down()
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output = res.expect("Failed to run docker compose down");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(args, ["compose", "down"]);
+}
+
+#[tokio::test]
+async fn run_docker_compose_down_with_volumes() {
+    //* Given
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .down()
+        .with_volumes(true)
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output = res.expect("Failed to run docker compose down with volumes");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(args, ["compose", "down", "--volumes"]);
+}
+
+#[tokio::test]
+async fn run_docker_compose_pull() {
+    //* Given
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .pull()
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output = res.expect("Failed to run docker compose pull");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(args, ["compose", "pull"]);
+}
+
+#[tokio::test]
 async fn run_docker_compose_with_plain_progress() {
     //* Given
     let exe = fixture_exe();
@@ -47,7 +108,7 @@ async fn run_docker_compose_with_quiet_progress() {
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .with_quiet_progress()
-        .up()
+        .pull()
         .into_command();
 
     //* When
@@ -57,7 +118,7 @@ async fn run_docker_compose_with_quiet_progress() {
     let output = res.expect("Failed to run docker compose with quiet progress");
     let args = parse_fixture_exe_output(&output);
 
-    assert_eq!(args, ["compose", "--progress", "quiet", "up"]);
+    assert_eq!(args, ["compose", "--progress", "quiet", "pull"]);
 }
 
 #[tokio::test]
@@ -437,4 +498,67 @@ async fn run_docker_compose_with_all_options_including_ansi() {
             "up"
         ]
     );
+}
+
+#[tokio::test]
+async fn run_docker_compose_pull_with_dry_run() {
+    //* Given
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .pull()
+        .with_dry_run(true)
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output = res.expect("Failed to run docker compose pull with dry run");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(args, ["compose", "pull", "--dry-run"]);
+}
+
+#[tokio::test]
+async fn run_docker_compose_pull_with_services() {
+    //* Given
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .pull()
+        .with_services(["service1", "service2"])
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output = res.expect("Failed to run docker compose pull with services");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(args, ["compose", "pull", "service1", "service2"]);
+}
+
+#[tokio::test]
+async fn run_docker_compose_pull_with_single_service() {
+    //* Given
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .pull()
+        .with_service("service1")
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output = res.expect("Failed to run docker compose pull with single service");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(args, ["compose", "pull", "service1"]);
 }
