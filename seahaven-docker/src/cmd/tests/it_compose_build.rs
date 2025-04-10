@@ -173,3 +173,24 @@ async fn run_docker_compose_build_with_multiple_services_and_build_args() {
         ]
     );
 }
+
+#[tokio::test]
+async fn run_docker_compose_build_with_dry_run() {
+    //* Given
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .build()
+        .with_dry_run(true)
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output = res.expect("Failed to run docker compose build with dry run");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(args, ["compose", "build", "--dry-run"]);
+}

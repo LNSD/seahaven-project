@@ -50,6 +50,25 @@ where
     }
 }
 
+impl<B, S> DockerComposeBuildCmd<DryRunNotSet, B, S>
+where
+    B: BuildArgsOpt,
+    S: ServicesOpt,
+{
+    /// Run the command in dry run mode with the `--dry-run` flag.
+    ///
+    /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/build/)
+    /// for more information.
+    pub fn with_dry_run(self, dry_run: bool) -> DockerComposeBuildCmd<DryRunSet, B, S> {
+        DockerComposeBuildCmd {
+            cmd: self.cmd,
+            dry_run_opt: DryRunSet(dry_run),
+            build_args_opt: self.build_args_opt,
+            services_opt: self.services_opt,
+        }
+    }
+}
+
 impl<D, S> DockerComposeBuildCmd<D, BuildArgsNotSet, S>
 where
     D: DryRunOpt,
