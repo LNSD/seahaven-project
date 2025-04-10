@@ -10,8 +10,12 @@ pub struct DockerVersionCmd<F = NoFormatOpt> {
 
 impl<F> DockerVersionCmd<F> {
     /// Create a new `docker version` command
-    pub(crate) fn new(mut cmd: tokio::process::Command) -> Self {
+    pub(crate) fn new(cmd: impl IntoCommand) -> Self {
+        let mut cmd = cmd.into_command();
+
+        // Add the `version` subcommand
         cmd.arg("version");
+
         Self {
             cmd,
             _args: PhantomData,

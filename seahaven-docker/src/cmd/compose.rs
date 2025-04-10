@@ -1,34 +1,61 @@
-use std::{ffi::OsStr, marker::PhantomData};
+use std::{
+    ffi::OsStr,
+    path::{Path, PathBuf},
+};
+
+pub mod build;
+pub mod down;
+pub mod pull;
+pub mod up;
 
 use self::{
-    build::DockerComposeBuildCmd,
-    down::DockerComposeDownCmd,
-    opts::{
-        AnsiAlways, AnsiAuto, AnsiNever, NoProjectName, ProgressAuto, ProgressJson, ProgressPlain,
-        ProgressQuiet, ProgressTty, WithProjectName,
-    },
-    pull::DockerComposePullCmd,
+    build::DockerComposeBuildCmd, down::DockerComposeDownCmd, pull::DockerComposePullCmd,
     up::DockerComposeUpCmd,
 };
-use super::common::IntoCommand;
+use super::common::{IntoCmdOptValue, IntoCommand};
 
-pub struct DockerComposeCmd<N = NoProjectName, P = ProgressAuto, A = AnsiAuto>(
-    tokio::process::Command,
-    PhantomData<(N, P, A)>,
-);
+pub struct DockerComposeCmd<
+    N = NameNotSet,
+    F = ProjectFileNotSet,
+    E = EnvFileNotSet,
+    P = ProgressNotSet,
+    A = AnsiNotSet,
+> {
+    cmd: tokio::process::Command,
+    name_opt: N,
+    project_file_opt: F,
+    env_file_opt: E,
+    progress_opt: P,
+    ansi_opt: A,
+}
 
-impl<N, P, A> DockerComposeCmd<N, P, A> {
-    pub(crate) fn new(mut cmd: tokio::process::Command) -> Self {
-        cmd.arg("compose");
-        Self(cmd, PhantomData)
+impl DockerComposeCmd {
+    pub(crate) fn new(cmd: impl IntoCommand) -> Self {
+        Self {
+            cmd: cmd.into_command(),
+            name_opt: NameNotSet,
+            project_file_opt: ProjectFileNotSet,
+            env_file_opt: EnvFileNotSet,
+            progress_opt: ProgressNotSet,
+            ansi_opt: AnsiNotSet,
+        }
     }
+}
 
+impl<N, F, E, P, A> DockerComposeCmd<N, F, E, P, A>
+where
+    N: NameOpt,
+    F: ProjectFileOpt,
+    E: EnvFileOpt,
+    P: ProgressOpt,
+    A: AnsiOpt,
+{
     /// Pull the images for the services defined in the `docker-compose.yml` file.
     ///
     /// See [`docker compose pull`](https://docs.docker.com/compose/reference/pull/)
     /// for more information.
     pub fn pull(self) -> DockerComposePullCmd {
-        DockerComposePullCmd::new(self.0)
+        DockerComposePullCmd::new(self)
     }
 
     /// Build the images for the services defined in the `docker-compose.yml` file.
@@ -36,7 +63,7 @@ impl<N, P, A> DockerComposeCmd<N, P, A> {
     /// See [`Docker Compose Build`](https://docs.docker.com/compose/reference/build/)
     /// for more information.
     pub fn build(self) -> DockerComposeBuildCmd {
-        DockerComposeBuildCmd::new(self.0)
+        DockerComposeBuildCmd::new(self)
     }
 
     /// Start the services defined in the `docker-compose.yml` file.
@@ -44,7 +71,7 @@ impl<N, P, A> DockerComposeCmd<N, P, A> {
     /// See [`docker compose up`](https://docs.docker.com/compose/reference/up/)
     /// for more information.
     pub fn up(self) -> DockerComposeUpCmd {
-        DockerComposeUpCmd::new(self.0)
+        DockerComposeUpCmd::new(self)
     }
 
     /// Stop the services defined in the `docker-compose.yml` file.
@@ -52,73 +79,54 @@ impl<N, P, A> DockerComposeCmd<N, P, A> {
     /// See [`docker compose down`](https://docs.docker.com/compose/reference/down/)
     /// for more information.
     pub fn down(self) -> DockerComposeDownCmd {
-        DockerComposeDownCmd::new(self.0)
+        DockerComposeDownCmd::new(self)
     }
+}
 
-    /// Specify an alternate compose file.
-    ///
-    /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/overview/)
-    /// for more information about the `--file` option.
-    pub fn with_file<S>(mut self, file: S) -> Self
-    where
-        S: AsRef<OsStr>,
-    {
-        self.0.arg("--file").arg(file.as_ref());
-        self
-    }
+impl<N, F, E, P, A> IntoCommand for DockerComposeCmd<N, F, E, P, A>
+where
+    N: NameOpt,
+    F: ProjectFileOpt,
+    E: EnvFileOpt,
+    P: ProgressOpt,
+    A: AnsiOpt,
+{
+    fn into_command(self) -> tokio::process::Command {
+        let mut cmd = self.cmd;
 
-    /// Specify multiple compose files.
-    ///
-    /// Files will be applied in the order they're specified, with later files overriding
-    /// and adding to their predecessors.
-    ///
-    /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/overview/)
-    /// for more information about the `--file` option.
-    pub fn with_files<I, S>(mut self, files: I) -> Self
-    where
-        I: IntoIterator<Item = S>,
-        S: AsRef<OsStr>,
-    {
-        for file in files {
-            self.0.arg("--file").arg(file.as_ref());
+        // Add the `compose` subcommand
+        cmd.arg("compose");
+
+        // --project-name <name>
+        if let Some(name) = self.name_opt.into_value() {
+            cmd.arg("--project-name").arg(name);
         }
-        self
-    }
 
-    /// Specify an alternate environment file.
-    ///
-    /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/overview/)
-    /// for more information about the `--env-file` option.
-    pub fn with_env_file<S>(mut self, env_file: S) -> Self
-    where
-        S: AsRef<OsStr>,
-    {
-        self.0.arg("--env-file").arg(env_file.as_ref());
-        self
-    }
-}
+        // --file <path>
+        if let Some(file) = self.project_file_opt.into_value() {
+            cmd.arg("--file").arg(file.as_os_str());
+        }
 
-impl<N, P> DockerComposeCmd<N, P, AnsiAuto> {
-    /// Always print ANSI control characters.
-    ///
-    /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/)
-    /// for more information about the `--ansi` option.
-    pub fn with_ansi_always(mut self) -> DockerComposeCmd<N, P, AnsiAlways> {
-        self.0.arg("--ansi").arg("always");
-        DockerComposeCmd(self.0, PhantomData)
-    }
+        // --env-file <path>
+        if let Some(env_file) = self.env_file_opt.into_value() {
+            cmd.arg("--env-file").arg(env_file.as_os_str());
+        }
 
-    /// Never print ANSI control characters.
-    ///
-    /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/)
-    /// for more information about the `--ansi` option.
-    pub fn with_ansi_never(mut self) -> DockerComposeCmd<N, P, AnsiNever> {
-        self.0.arg("--ansi").arg("never");
-        DockerComposeCmd(self.0, PhantomData)
+        // --progress <type>
+        if let Some(progress) = self.progress_opt.into_value() {
+            cmd.arg("--progress").arg(progress.to_string());
+        }
+
+        // --ansi <type>
+        if let Some(ansi) = self.ansi_opt.into_value() {
+            cmd.arg("--ansi").arg(ansi.to_string());
+        }
+
+        cmd
     }
 }
 
-impl<P, A> DockerComposeCmd<NoProjectName, P, A> {
+impl<F, E, P, A> DockerComposeCmd<NameNotSet, F, E, P, A> {
     /// Specify a project name for the Docker Compose deployment.
     ///
     /// The project name is used as a prefix for container names and creates an isolated
@@ -127,464 +135,366 @@ impl<P, A> DockerComposeCmd<NoProjectName, P, A> {
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/overview/#use--p-to-specify-a-project-name)
     /// for more information about the `--project-name` option.
-    pub fn with_project_name<S>(mut self, name: S) -> DockerComposeCmd<WithProjectName, P, A>
+    pub fn with_project_name<S>(self, name: S) -> DockerComposeCmd<NameSet, F, E, P, A>
     where
         S: AsRef<str>,
     {
-        self.0.arg("--project-name").arg(name.as_ref());
-        DockerComposeCmd(self.0, PhantomData)
+        let name = name.as_ref().to_string();
+
+        DockerComposeCmd {
+            cmd: self.cmd,
+            name_opt: NameSet(name),
+            project_file_opt: self.project_file_opt,
+            env_file_opt: self.env_file_opt,
+            progress_opt: self.progress_opt,
+            ansi_opt: self.ansi_opt,
+        }
     }
 }
 
-impl<N, A> DockerComposeCmd<N, ProgressAuto, A> {
+impl<N, E, P, A> DockerComposeCmd<N, ProjectFileNotSet, E, P, A> {
+    /// Specify an alternate compose file.
+    ///
+    /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/overview/)
+    /// for more information about the `--file` option.
+    pub fn with_file<S>(self, file: S) -> DockerComposeCmd<N, ProjectFileSet, E, P, A>
+    where
+        S: AsRef<OsStr>,
+    {
+        let file = PathBuf::from(&file).into_boxed_path();
+
+        DockerComposeCmd {
+            cmd: self.cmd,
+            name_opt: self.name_opt,
+            project_file_opt: ProjectFileSet(file),
+            env_file_opt: self.env_file_opt,
+            progress_opt: self.progress_opt,
+            ansi_opt: self.ansi_opt,
+        }
+    }
+}
+
+impl<N, F, P, A> DockerComposeCmd<N, F, EnvFileNotSet, P, A> {
+    /// Specify an alternate environment file.
+    ///
+    /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/overview/)
+    /// for more information about the `--env-file` option.
+    pub fn with_env_file<T>(self, env_file: T) -> DockerComposeCmd<N, F, EnvFileSet, P, A>
+    where
+        T: AsRef<OsStr>,
+    {
+        let file = PathBuf::from(&env_file).into_boxed_path();
+
+        DockerComposeCmd {
+            cmd: self.cmd,
+            name_opt: self.name_opt,
+            project_file_opt: self.project_file_opt,
+            env_file_opt: EnvFileSet(file),
+            progress_opt: self.progress_opt,
+            ansi_opt: self.ansi_opt,
+        }
+    }
+}
+
+impl<N, F, E, A> DockerComposeCmd<N, F, E, ProgressNotSet, A> {
+    /// Set the type of progress output to auto (default).
+    ///
+    /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/#progress)
+    /// for more information.
+    pub fn with_auto_progress(self) -> DockerComposeCmd<N, F, E, ProgressSet, A> {
+        DockerComposeCmd {
+            cmd: self.cmd,
+            name_opt: self.name_opt,
+            project_file_opt: self.project_file_opt,
+            env_file_opt: self.env_file_opt,
+            progress_opt: ProgressSet(Progress::Auto),
+            ansi_opt: self.ansi_opt,
+        }
+    }
+
     /// Set the type of progress output to TTY
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/#progress)
     /// for more information.
-    pub fn with_tty_progress(mut self) -> DockerComposeCmd<N, ProgressTty, A> {
-        self.0.arg("--progress").arg("tty");
-        DockerComposeCmd(self.0, PhantomData)
+    pub fn with_tty_progress(self) -> DockerComposeCmd<N, F, E, ProgressSet, A> {
+        DockerComposeCmd {
+            cmd: self.cmd,
+            name_opt: self.name_opt,
+            project_file_opt: self.project_file_opt,
+            env_file_opt: self.env_file_opt,
+            progress_opt: ProgressSet(Progress::Tty),
+            ansi_opt: self.ansi_opt,
+        }
     }
 
     /// Set the type of progress output to plain text
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/#progress)
     /// for more information.
-    pub fn with_plain_progress(mut self) -> DockerComposeCmd<N, ProgressPlain, A> {
-        self.0.arg("--progress").arg("plain");
-        DockerComposeCmd(self.0, PhantomData)
+    pub fn with_plain_progress(self) -> DockerComposeCmd<N, F, E, ProgressSet, A> {
+        DockerComposeCmd {
+            cmd: self.cmd,
+            name_opt: self.name_opt,
+            project_file_opt: self.project_file_opt,
+            env_file_opt: self.env_file_opt,
+            progress_opt: ProgressSet(Progress::Plain),
+            ansi_opt: self.ansi_opt,
+        }
     }
 
     /// Set the type of progress output to JSON
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/#progress)
     /// for more information.
-    pub fn with_json_progress(mut self) -> DockerComposeCmd<N, ProgressJson, A> {
-        self.0.arg("--progress").arg("json");
-        DockerComposeCmd(self.0, PhantomData)
+    pub fn with_json_progress(self) -> DockerComposeCmd<N, F, E, ProgressSet, A> {
+        DockerComposeCmd {
+            cmd: self.cmd,
+            name_opt: self.name_opt,
+            project_file_opt: self.project_file_opt,
+            env_file_opt: self.env_file_opt,
+            progress_opt: ProgressSet(Progress::Json),
+            ansi_opt: self.ansi_opt,
+        }
     }
 
     /// Set the type of progress output to quiet (no output)
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/#progress)
     /// for more information.
-    pub fn with_quiet_progress(mut self) -> DockerComposeCmd<N, ProgressQuiet, A> {
-        self.0.arg("--progress").arg("quiet");
-        DockerComposeCmd(self.0, PhantomData)
+    pub fn with_quiet_progress(self) -> DockerComposeCmd<N, F, E, ProgressSet, A> {
+        DockerComposeCmd {
+            cmd: self.cmd,
+            name_opt: self.name_opt,
+            project_file_opt: self.project_file_opt,
+            env_file_opt: self.env_file_opt,
+            progress_opt: ProgressSet(Progress::Quiet),
+            ansi_opt: self.ansi_opt,
+        }
     }
 }
 
-impl<N, P, A> IntoCommand for DockerComposeCmd<N, P, A> {
-    fn into_command(self) -> tokio::process::Command {
-        self.0
+impl<N, F, E, P> DockerComposeCmd<N, F, E, P, AnsiNotSet> {
+    /// Automatically detect whether to print ANSI control characters (default).
+    ///
+    /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/)
+    /// for more information about the `--ansi` option.
+    pub fn with_ansi_auto(self) -> DockerComposeCmd<N, F, E, P, AnsiSet> {
+        DockerComposeCmd {
+            cmd: self.cmd,
+            name_opt: self.name_opt,
+            project_file_opt: self.project_file_opt,
+            env_file_opt: self.env_file_opt,
+            progress_opt: self.progress_opt,
+            ansi_opt: AnsiSet(Ansi::Auto),
+        }
+    }
+
+    /// Always print ANSI control characters.
+    ///
+    /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/)
+    /// for more information about the `--ansi` option.
+    pub fn with_ansi_always(self) -> DockerComposeCmd<N, F, E, P, AnsiSet> {
+        DockerComposeCmd {
+            cmd: self.cmd,
+            name_opt: self.name_opt,
+            project_file_opt: self.project_file_opt,
+            env_file_opt: self.env_file_opt,
+            progress_opt: self.progress_opt,
+            ansi_opt: AnsiSet(Ansi::Always),
+        }
+    }
+
+    /// Never print ANSI control characters.
+    ///
+    /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/)
+    /// for more information about the `--ansi` option.
+    pub fn with_ansi_never(self) -> DockerComposeCmd<N, F, E, P, AnsiSet> {
+        DockerComposeCmd {
+            cmd: self.cmd,
+            name_opt: self.name_opt,
+            project_file_opt: self.project_file_opt,
+            env_file_opt: self.env_file_opt,
+            progress_opt: self.progress_opt,
+            ansi_opt: AnsiSet(Ansi::Never),
+        }
     }
 }
 
-pub mod opts {
-    // Progress markers
-    pub trait ProgressOpt: _priv::Sealed {}
+// Project name markers
+#[allow(private_bounds)]
+pub trait NameOpt: IntoCmdOptValue<String> + _priv::Sealed {}
 
-    pub struct ProgressAuto;
-    impl ProgressOpt for ProgressAuto {}
-    impl _priv::Sealed for ProgressAuto {}
+pub struct NameNotSet;
 
-    pub struct ProgressTty;
-    impl ProgressOpt for ProgressTty {}
-    impl _priv::Sealed for ProgressTty {}
+impl NameOpt for NameNotSet {}
+impl _priv::Sealed for NameNotSet {}
 
-    pub struct ProgressPlain;
-    impl ProgressOpt for ProgressPlain {}
-    impl _priv::Sealed for ProgressPlain {}
-
-    pub struct ProgressJson;
-    impl ProgressOpt for ProgressJson {}
-    impl _priv::Sealed for ProgressJson {}
-
-    pub struct ProgressQuiet;
-    impl ProgressOpt for ProgressQuiet {}
-    impl _priv::Sealed for ProgressQuiet {}
-
-    // Project name markers
-    pub trait ProjectNameOpt: _priv::Sealed {}
-
-    pub struct NoProjectName;
-    impl ProjectNameOpt for NoProjectName {}
-    impl _priv::Sealed for NoProjectName {}
-
-    pub struct WithProjectName;
-    impl ProjectNameOpt for WithProjectName {}
-    impl _priv::Sealed for WithProjectName {}
-
-    // ANSI control characters markers
-    pub trait AnsiOpt: _priv::Sealed {}
-
-    pub struct AnsiAuto;
-    impl AnsiOpt for AnsiAuto {}
-    impl _priv::Sealed for AnsiAuto {}
-
-    pub struct AnsiAlways;
-    impl AnsiOpt for AnsiAlways {}
-    impl _priv::Sealed for AnsiAlways {}
-
-    pub struct AnsiNever;
-    impl AnsiOpt for AnsiNever {}
-    impl _priv::Sealed for AnsiNever {}
-
-    // Private module for sealing traits
-    #[allow(dead_code)]
-    mod _priv {
-        pub trait Sealed {}
+impl IntoCmdOptValue<String> for NameNotSet {
+    fn into_value(self) -> Option<String> {
+        None
     }
 }
 
-pub mod build {
-    use std::marker::PhantomData;
+pub struct NameSet(String);
 
-    use super::IntoCommand;
+impl NameOpt for NameSet {}
+impl _priv::Sealed for NameSet {}
 
-    pub struct DockerComposeBuildCmd<S = NoServices> {
-        cmd: tokio::process::Command,
-        _args: PhantomData<S>,
-    }
-
-    impl<S> DockerComposeBuildCmd<S>
-    where
-        S: ServicesOpt,
-    {
-        pub(crate) fn new(mut cmd: tokio::process::Command) -> Self {
-            cmd.arg("build");
-            Self {
-                cmd,
-                _args: PhantomData,
-            }
-        }
-    }
-
-    impl<S> IntoCommand for DockerComposeBuildCmd<S>
-    where
-        S: ServicesOpt,
-    {
-        fn into_command(self) -> tokio::process::Command {
-            self.cmd
-        }
-    }
-
-    impl DockerComposeBuildCmd<NoServices> {
-        /// Specify which services to build.
-        ///
-        /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/build/)
-        /// for more information.
-        pub fn with_services<I, S>(self, services: I) -> DockerComposeBuildCmd<WithServices>
-        where
-            I: IntoIterator<Item = S>,
-            S: AsRef<str>,
-        {
-            let mut cmd = self.cmd;
-            for service in services {
-                cmd.arg(service.as_ref());
-            }
-            DockerComposeBuildCmd {
-                cmd,
-                _args: PhantomData,
-            }
-        }
-
-        /// Specify a single service to build.
-        ///
-        /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/build/)
-        /// for more information.
-        pub fn with_service<S>(self, service: S) -> DockerComposeBuildCmd<WithServices>
-        where
-            S: AsRef<str>,
-        {
-            self.with_services([service])
-        }
-
-        /// Add a build argument in the form of `<key>=<value>`.
-        ///
-        /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/build/)
-        /// for more information.
-        pub fn with_build_arg<S>(self, arg: S) -> Self
-        where
-            S: AsRef<str>,
-        {
-            let mut cmd = self.cmd;
-            cmd.arg("--build-arg").arg(arg.as_ref());
-            DockerComposeBuildCmd {
-                cmd,
-                _args: PhantomData,
-            }
-        }
-
-        /// Add multiple build arguments.
-        ///
-        /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/build/)
-        /// for more information.
-        pub fn with_build_args<I, S>(self, args: I) -> Self
-        where
-            I: IntoIterator<Item = S>,
-            S: AsRef<str>,
-        {
-            let mut cmd = self.cmd;
-            for arg in args {
-                cmd.arg("--build-arg").arg(arg.as_ref());
-            }
-            DockerComposeBuildCmd {
-                cmd,
-                _args: PhantomData,
-            }
-        }
-    }
-
-    /// Marker trait for services options.
-    pub trait ServicesOpt {}
-
-    /// Marker type for no services specified.
-    pub struct NoServices;
-    impl ServicesOpt for NoServices {}
-
-    /// Marker type for services specified.
-    pub struct WithServices;
-    impl ServicesOpt for WithServices {}
-}
-
-pub mod up {
-    use std::marker::PhantomData;
-
-    use super::IntoCommand;
-
-    pub struct DockerComposeUpCmd<D = NotDetached, B = NoBuild, S = NoServices> {
-        cmd: tokio::process::Command,
-        _args: PhantomData<(D, B, S)>,
-    }
-
-    impl<D, B, S> DockerComposeUpCmd<D, B, S>
-    where
-        D: DetachedOpt,
-        B: BuildOpt,
-        S: ServicesOpt,
-    {
-        pub(crate) fn new(mut cmd: tokio::process::Command) -> Self {
-            cmd.arg("up");
-            Self {
-                cmd,
-                _args: PhantomData,
-            }
-        }
-    }
-
-    impl<D, B, S> IntoCommand for DockerComposeUpCmd<D, B, S>
-    where
-        D: DetachedOpt,
-        B: BuildOpt,
-        S: ServicesOpt,
-    {
-        fn into_command(self) -> tokio::process::Command {
-            self.cmd
-        }
-    }
-
-    impl<B> DockerComposeUpCmd<NotDetached, B, NoServices>
-    where
-        B: BuildOpt,
-    {
-        /// Run containers in the background with the `--detached` flag.
-        ///
-        /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/up/)
-        /// for more information.
-        pub fn with_detached(self) -> DockerComposeUpCmd<Detached, B, NoServices> {
-            let mut cmd = self.cmd;
-            cmd.arg("--detached");
-            DockerComposeUpCmd {
-                cmd,
-                _args: PhantomData,
-            }
-        }
-    }
-
-    impl<D> DockerComposeUpCmd<D, NoBuild, NoServices>
-    where
-        D: DetachedOpt,
-    {
-        /// Build images before starting containers with the `--build` flag.
-        ///
-        /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/up/)
-        /// for more information.
-        pub fn with_build(self) -> DockerComposeUpCmd<D, WithBuild, NoServices> {
-            let mut cmd = self.cmd;
-            cmd.arg("--build");
-            DockerComposeUpCmd {
-                cmd,
-                _args: PhantomData,
-            }
-        }
-    }
-
-    impl<D, B> DockerComposeUpCmd<D, B, NoServices>
-    where
-        D: DetachedOpt,
-        B: BuildOpt,
-    {
-        /// Specify one or more services to start.
-        ///
-        /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/up/)
-        /// for more information.
-        pub fn with_services<I, S>(self, services: I) -> DockerComposeUpCmd<D, B, WithServices>
-        where
-            I: IntoIterator<Item = S>,
-            S: AsRef<str>,
-        {
-            let mut cmd = self.cmd;
-            for service in services {
-                cmd.arg(service.as_ref());
-            }
-            DockerComposeUpCmd {
-                cmd,
-                _args: PhantomData,
-            }
-        }
-
-        /// Specify a single service to include.
-        ///
-        /// This is a convenience method for `with_services([service])`.
-        ///
-        /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/up/)
-        /// for more information.
-        pub fn with_service<S>(self, service: S) -> DockerComposeUpCmd<D, B, WithServices>
-        where
-            S: AsRef<str>,
-        {
-            self.with_services([service])
-        }
-    }
-
-    /// A trait that represents the detached option for the `docker compose up` command.
-    pub trait DetachedOpt: _priv::Sealed {}
-
-    pub struct NotDetached;
-
-    impl DetachedOpt for NotDetached {}
-    impl _priv::Sealed for NotDetached {}
-
-    pub struct Detached;
-
-    impl DetachedOpt for Detached {}
-    impl _priv::Sealed for Detached {}
-
-    /// A trait that represents the build option for the `docker compose up` command.
-    pub trait BuildOpt: _priv::Sealed {}
-
-    pub struct NoBuild;
-
-    impl BuildOpt for NoBuild {}
-    impl _priv::Sealed for NoBuild {}
-
-    pub struct WithBuild;
-
-    impl BuildOpt for WithBuild {}
-    impl _priv::Sealed for WithBuild {}
-
-    /// A trait that represents whether services have been specified for the `docker compose up` command.
-    pub trait ServicesOpt: _priv::Sealed {}
-
-    pub struct NoServices;
-
-    impl ServicesOpt for NoServices {}
-    impl _priv::Sealed for NoServices {}
-
-    pub struct WithServices;
-
-    impl ServicesOpt for WithServices {}
-    impl _priv::Sealed for WithServices {}
-
-    #[allow(dead_code)]
-    mod _priv {
-        pub trait Sealed {}
+impl IntoCmdOptValue<String> for NameSet {
+    fn into_value(self) -> Option<String> {
+        Some(self.0)
     }
 }
 
-pub mod down {
-    use std::marker::PhantomData;
+// Project file markers
+#[allow(private_bounds)]
+pub trait ProjectFileOpt: IntoCmdOptValue<Box<Path>> + _priv::Sealed {}
 
-    use super::IntoCommand;
+pub struct ProjectFileNotSet;
 
-    pub struct DockerComposeDownCmd<V = NoVolumes> {
-        cmd: tokio::process::Command,
-        _args: PhantomData<V>,
-    }
+impl ProjectFileOpt for ProjectFileNotSet {}
+impl _priv::Sealed for ProjectFileNotSet {}
 
-    impl<V> DockerComposeDownCmd<V>
-    where
-        V: VolumesOpt,
-    {
-        pub(crate) fn new(mut cmd: tokio::process::Command) -> Self {
-            cmd.arg("down");
-            Self {
-                cmd,
-                _args: PhantomData,
-            }
-        }
-    }
-
-    impl<V> IntoCommand for DockerComposeDownCmd<V>
-    where
-        V: VolumesOpt,
-    {
-        fn into_command(self) -> tokio::process::Command {
-            self.cmd
-        }
-    }
-
-    impl DockerComposeDownCmd<NoVolumes> {
-        /// Remove named volumes declared in the `volumes` section of the Compose file
-        /// and anonymous volumes attached to containers.
-        ///
-        /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/down/)
-        /// for more information.
-        pub fn with_volumes(self) -> DockerComposeDownCmd<WithVolumes> {
-            let mut cmd = self.cmd;
-            cmd.arg("--volumes");
-            DockerComposeDownCmd {
-                cmd,
-                _args: PhantomData,
-            }
-        }
-    }
-
-    /// A trait that represents the volumes option for the `docker compose down` command.
-    pub trait VolumesOpt: _priv::Sealed {}
-
-    /// Marker type for no volumes option specified.
-    pub struct NoVolumes;
-    impl VolumesOpt for NoVolumes {}
-    impl _priv::Sealed for NoVolumes {}
-
-    /// Marker type for volumes option specified.
-    pub struct WithVolumes;
-    impl VolumesOpt for WithVolumes {}
-    impl _priv::Sealed for WithVolumes {}
-
-    #[allow(dead_code)]
-    mod _priv {
-        pub trait Sealed {}
+impl IntoCmdOptValue<Box<Path>> for ProjectFileNotSet {
+    fn into_value(self) -> Option<Box<Path>> {
+        None
     }
 }
 
-pub mod pull {
-    use super::IntoCommand;
+pub struct ProjectFileSet(Box<Path>);
 
-    pub struct DockerComposePullCmd(tokio::process::Command);
+impl ProjectFileOpt for ProjectFileSet {}
+impl _priv::Sealed for ProjectFileSet {}
 
-    impl DockerComposePullCmd {
-        pub(crate) fn new(mut cmd: tokio::process::Command) -> Self {
-            cmd.arg("pull");
-            Self(cmd)
-        }
+impl IntoCmdOptValue<Box<Path>> for ProjectFileSet {
+    fn into_value(self) -> Option<Box<Path>> {
+        Some(self.0)
     }
+}
 
-    impl IntoCommand for DockerComposePullCmd {
-        fn into_command(self) -> tokio::process::Command {
-            self.0
-        }
+// Environment file markers
+#[allow(private_bounds)]
+pub trait EnvFileOpt: IntoCmdOptValue<Box<Path>> + _priv::Sealed {}
+
+pub struct EnvFileNotSet;
+
+impl EnvFileOpt for EnvFileNotSet {}
+impl _priv::Sealed for EnvFileNotSet {}
+
+impl IntoCmdOptValue<Box<Path>> for EnvFileNotSet {
+    fn into_value(self) -> Option<Box<Path>> {
+        None
     }
+}
+
+pub struct EnvFileSet(Box<Path>);
+
+impl EnvFileOpt for EnvFileSet {}
+impl _priv::Sealed for EnvFileSet {}
+
+impl IntoCmdOptValue<Box<Path>> for EnvFileSet {
+    fn into_value(self) -> Option<Box<Path>> {
+        Some(self.0)
+    }
+}
+
+// Progress output type
+#[derive(Debug, Clone, Copy, Default)]
+pub enum Progress {
+    #[default]
+    Auto,
+    Tty,
+    Plain,
+    Json,
+    Quiet,
+}
+
+impl std::fmt::Display for Progress {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Self::Auto => "auto",
+            Self::Tty => "tty",
+            Self::Plain => "plain",
+            Self::Json => "json",
+            Self::Quiet => "quiet",
+        };
+        write!(f, "{}", s)
+    }
+}
+
+// Progress output type markers
+#[allow(private_bounds)]
+pub trait ProgressOpt: IntoCmdOptValue<Progress> + _priv::Sealed {}
+
+pub struct ProgressNotSet;
+
+impl ProgressOpt for ProgressNotSet {}
+impl _priv::Sealed for ProgressNotSet {}
+
+impl IntoCmdOptValue<Progress> for ProgressNotSet {
+    fn into_value(self) -> Option<Progress> {
+        None
+    }
+}
+
+pub struct ProgressSet(Progress);
+
+impl ProgressOpt for ProgressSet {}
+impl _priv::Sealed for ProgressSet {}
+
+impl IntoCmdOptValue<Progress> for ProgressSet {
+    fn into_value(self) -> Option<Progress> {
+        Some(self.0)
+    }
+}
+
+// ANSI control characters type
+#[derive(Debug, Clone, Copy, Default)]
+pub enum Ansi {
+    #[default]
+    Auto,
+    Always,
+    Never,
+}
+
+impl std::fmt::Display for Ansi {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Self::Auto => "auto",
+            Self::Always => "always",
+            Self::Never => "never",
+        };
+        write!(f, "{}", s)
+    }
+}
+
+// ANSI control characters markers
+#[allow(private_bounds)]
+pub trait AnsiOpt: IntoCmdOptValue<Ansi> + _priv::Sealed {}
+
+pub struct AnsiNotSet;
+
+impl AnsiOpt for AnsiNotSet {}
+impl _priv::Sealed for AnsiNotSet {}
+
+impl IntoCmdOptValue<Ansi> for AnsiNotSet {
+    fn into_value(self) -> Option<Ansi> {
+        None
+    }
+}
+
+pub struct AnsiSet(Ansi);
+
+impl AnsiOpt for AnsiSet {}
+impl _priv::Sealed for AnsiSet {}
+
+impl IntoCmdOptValue<Ansi> for AnsiSet {
+    fn into_value(self) -> Option<Ansi> {
+        Some(self.0)
+    }
+}
+
+#[allow(dead_code)]
+mod _priv {
+    pub trait Sealed {}
 }

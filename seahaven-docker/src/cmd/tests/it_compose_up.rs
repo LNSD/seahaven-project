@@ -29,7 +29,7 @@ async fn run_docker_compose_up_detached() {
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
-        .with_detached()
+        .with_detached(true)
         .into_command();
 
     //* When
@@ -50,7 +50,7 @@ async fn run_docker_compose_up_with_build() {
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
-        .with_build()
+        .with_build(true)
         .into_command();
 
     //* When
@@ -117,8 +117,8 @@ async fn run_docker_compose_up_detached_with_build() {
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
-        .with_build()
-        .with_detached()
+        .with_build(true)
+        .with_detached(true)
         .into_command();
 
     //* When
@@ -141,7 +141,7 @@ async fn run_docker_compose_up_detached_with_services() {
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
-        .with_detached()
+        .with_detached(true)
         .with_services(services)
         .into_command();
 
@@ -168,7 +168,7 @@ async fn run_docker_compose_up_with_build_and_services() {
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
-        .with_build()
+        .with_build(true)
         .with_services(services)
         .into_command();
 
@@ -195,8 +195,8 @@ async fn run_docker_compose_up_with_all_options() {
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
-        .with_build()
-        .with_detached()
+        .with_build(true)
+        .with_detached(true)
         .with_services(services)
         .into_command();
 
@@ -231,7 +231,7 @@ async fn run_docker_compose_up_with_build_and_single_service() {
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
-        .with_build()
+        .with_build(true)
         .with_service(service)
         .into_command();
 
@@ -255,7 +255,7 @@ async fn run_docker_compose_up_detached_with_single_service() {
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
-        .with_detached()
+        .with_detached(true)
         .with_service(service)
         .into_command();
 
@@ -280,8 +280,8 @@ async fn run_docker_compose_up_with_detached_build_and_single_service() {
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
-        .with_build()
-        .with_detached()
+        .with_build(true)
+        .with_detached(true)
         .with_service(service)
         .into_command();
 

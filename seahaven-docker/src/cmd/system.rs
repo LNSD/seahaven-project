@@ -5,8 +5,12 @@ pub struct DockerSystemCmd(tokio::process::Command);
 
 impl DockerSystemCmd {
     /// Create a new `docker system` command
-    pub(crate) fn new(mut cmd: tokio::process::Command) -> Self {
+    pub(crate) fn new(cmd: impl IntoCommand) -> Self {
+        let mut cmd = cmd.into_command();
+
+        // Add the `system` subcommand
         cmd.arg("system");
+
         Self(cmd)
     }
 
@@ -39,8 +43,12 @@ pub mod info {
 
     impl<F> DockerSystemInfoCmd<F> {
         /// Create a new `docker system info` command
-        pub(crate) fn new(mut cmd: tokio::process::Command) -> Self {
+        pub(crate) fn new(cmd: impl IntoCommand) -> Self {
+            let mut cmd = cmd.into_command();
+
+            // Add the `info` subcommand
             cmd.arg("info");
+
             Self {
                 cmd,
                 _format: PhantomData,
@@ -124,8 +132,12 @@ pub mod prune {
         A: AllOpt,
         F: ForceOpt,
     {
-        pub(crate) fn new(mut cmd: tokio::process::Command) -> Self {
+        pub(crate) fn new(cmd: impl IntoCommand) -> Self {
+            let mut cmd = cmd.into_command();
+
+            // Add the `prune` subcommand
             cmd.arg("prune");
+
             Self {
                 cmd,
                 _phantom: PhantomData,

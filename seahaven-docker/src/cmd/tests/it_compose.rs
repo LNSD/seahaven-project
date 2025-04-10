@@ -46,7 +46,7 @@ async fn run_docker_compose_down_with_volumes() {
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .down()
-        .with_volumes()
+        .with_volumes(true)
         .into_command();
 
     //* When
@@ -197,10 +197,10 @@ async fn run_docker_compose_with_progress_and_project_name() {
         args,
         [
             "compose",
-            "--progress",
-            "plain",
             "--project-name",
             "test-project",
+            "--progress",
+            "plain",
             "up"
         ]
     );
@@ -225,37 +225,6 @@ async fn run_docker_compose_with_file() {
     let args = parse_fixture_exe_output(&output);
 
     assert_eq!(args, ["compose", "--file", "docker-compose.prod.yml", "up"]);
-}
-
-#[tokio::test]
-async fn run_docker_compose_with_multiple_files() {
-    //* Given
-    let exe = fixture_exe();
-
-    let mut cmd = DockerCmd::with_executable(exe)
-        .compose()
-        .with_files(["docker-compose.yml", "docker-compose.override.yml"])
-        .up()
-        .into_command();
-
-    //* When
-    let res = cmd.kill_on_drop(true).output().await;
-
-    //* Then
-    let output = res.expect("Failed to run docker compose with multiple files");
-    let args = parse_fixture_exe_output(&output);
-
-    assert_eq!(
-        args,
-        [
-            "compose",
-            "--file",
-            "docker-compose.yml",
-            "--file",
-            "docker-compose.override.yml",
-            "up"
-        ]
-    );
 }
 
 #[tokio::test]
@@ -346,12 +315,12 @@ async fn run_docker_compose_with_all_options() {
         args,
         [
             "compose",
+            "--project-name",
+            "test-project",
             "--file",
             "docker-compose.prod.yml",
             "--env-file",
             ".env.prod",
-            "--project-name",
-            "test-project",
             "--progress",
             "quiet",
             "up"
@@ -454,7 +423,7 @@ async fn run_docker_compose_with_ansi_and_progress() {
 
     assert_eq!(
         args,
-        ["compose", "--ansi", "always", "--progress", "plain", "up"]
+        ["compose", "--progress", "plain", "--ansi", "always", "up"]
     );
 }
 
@@ -481,10 +450,10 @@ async fn run_docker_compose_with_ansi_and_project_name() {
         args,
         [
             "compose",
-            "--ansi",
-            "never",
             "--project-name",
             "test-project",
+            "--ansi",
+            "never",
             "up"
         ]
     );
@@ -516,16 +485,16 @@ async fn run_docker_compose_with_all_options_including_ansi() {
         args,
         [
             "compose",
+            "--project-name",
+            "test-project",
             "--file",
             "docker-compose.prod.yml",
             "--env-file",
             ".env.prod",
-            "--ansi",
-            "always",
-            "--project-name",
-            "test-project",
             "--progress",
             "quiet",
+            "--ansi",
+            "always",
             "up"
         ]
     );
