@@ -34,8 +34,8 @@ Understanding the fundamental principles of services is crucial for building rel
 
 Services follow these key principles:
 
-- Services run continuously (unlike [[Init container|init containers]] which run to completion)
-- Services can depend on other services and [[init container|init containers]]
+- Services run continuously (unlike [[docs-drafts/Init container|init containers]] which run to completion)
+- Services can depend on other services and [[docs-drafts/Init container|init containers]]
 - Services can be configured with various options for networking, volumes, environment variables, and more
 - Services can be health-checked to ensure they're running properly
 

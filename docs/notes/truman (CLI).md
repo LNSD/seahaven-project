@@ -1,5 +1,12 @@
-,The CLI is an opinionated wrapper around `docker compose` + `just` to facilitate the operation of the "local development" environments.
+The CLI is an opinionated wrapper around `docker compose` + `just` to facilitate the operation of the "local development" environments.
+# TODO
 
+- [ ] Move the `--file` option out of the main command, e.g., `truman --file <file> up`
+- [ ] Intercept any signal and forward it to the docker command
+- [ ] Add a `--output` (a.k.a. `--progress`) global option with `plain`, `json` and `tty` (for TUI). This will require better docker command *stdio* handling 
+- [ ] Refactor the command preparation to avoid code duplication.
+
+# Notes
 - The CLI environment variables must be passed down to the docker-compose commands.
 - Version compatibility with docker-compose must be ensured at startup. The minimum version must be compatible with docker-buildkit.
 - Call `truman setup eject` the `setup.yaml` file to get the `docker-compose.yaml` and `.env` files.
@@ -18,5 +25,26 @@
 	- `truman stop`
 	- `truman restart`
 	- `truman build`
-- Justfile runner wrapper, `truman run`
-- Wrapper script management, `truman wrapper`, similar to `gradle wrapper` command.
+- Justfile runner wrapper, `truman run`. [[#Justfile]]
+- Wrapper script management, `truman wrapper`, similar to `gradle wrapper` command. [[#Wrapper]]
+- `truman init`: bootstrap the project, `git init`, wrapper init
+
+---
+# Setup.yaml edit
+#next
+- `truman new` ([[Packages]])
+- `truman add` ([[Packages]], from git URL, `rev`, `branch`; from `path`)
+- `truman remove` ([[Packages]])
+- See [[Packages]]
+# Justfile
+-  See [[Tasks]]
+- `truman run <task-name>` for root file tasks
+- `truman run <service> <task-name>`  like `docked compose run` (https://docs.docker.com/reference/cli/docker/compose/run/)
+# Test
+#next
+- See [[Tests]]
+- As a `truman`, Cargo-like, CLI plugin. Run a binary in the path named `truman-test` that provides the functionality.
+# Wrapper
+- See [[Wrapper]]
+- Truman CLI wrapper command
+
