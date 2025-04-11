@@ -17,15 +17,19 @@
 //! - `just --version`
 
 mod common;
+pub mod dump;
 mod root;
 pub mod version;
 
 pub use common::IntoCommand;
-pub use root::JustCmd;
+pub use root::{
+    EnvFileNotSet, EnvFileOpt, EnvFileSet, JustCmd, JustfileNotSet, JustfileOpt, JustfileSet,
+};
 
 #[cfg(test)]
 mod tests {
     mod common;
+    mod it_dump;
     mod it_root;
     mod it_version;
 }

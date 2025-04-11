@@ -6,6 +6,7 @@ use std::{
 
 use super::{
     common::{IntoCmdOptValue, IntoCommand},
+    dump::JustDumpCmd,
     version::JustVersionCmd,
 };
 use crate::exe::{Executable, resolve_cli_executable};
@@ -54,9 +55,14 @@ impl JustCmd {
 }
 
 impl JustCmd {
-    /// Create a new `just version` command
+    /// Create a new `just --version` command
     pub fn version(self) -> JustVersionCmd {
         JustVersionCmd::new(self)
+    }
+
+    /// Create a new `just --dump` command
+    pub fn dump(self) -> JustDumpCmd {
+        JustDumpCmd::new(self)
     }
 }
 
