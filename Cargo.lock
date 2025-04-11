@@ -1325,6 +1325,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "seahaven-just"
+version = "0.1.0"
+dependencies = [
+ "semver",
+ "test-with",
+ "thiserror",
+ "tokio",
+ "which",
+]
+
+[[package]]
 name = "security-framework"
 version = "2.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

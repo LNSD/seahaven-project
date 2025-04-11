@@ -5,6 +5,7 @@ members = [
     "seahaven-compose-file",
     "seahaven-docker",
     "seahaven-file",
+    "seahaven-just",
     "testlib/file-testdata",
 ]
 
