@@ -11,3 +11,11 @@ impl IntoCommand for tokio::process::Command {
         self
     }
 }
+
+/// A trait that converts a command option into its value.
+///
+/// This trait is used to convert command options into their values when building the command.
+pub trait IntoCmdOptValue<T> {
+    /// Convert the option into its value.
+    fn into_value(self) -> Option<T>;
+}
