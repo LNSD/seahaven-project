@@ -1,0 +1,31 @@
+//! # Command builder
+//!
+//! This module provides a type-safe abstraction for constructing and executing Just commands.
+//! It allows for programmatic interaction with Just's CLI without directly relying on string
+//! manipulation or process spawning, making Just operations more maintainable and less error-prone.
+//!
+//! ## Architecture
+//!
+//! The module is structured around command builders that implement the `IntoCommand` trait,
+//! enabling consistent conversion of builder structs into executable command representations.
+//! Each Just command family is organized into its own submodule.
+//!
+//! ## Supported Commands
+//!
+//! The following Just commands are currently supported:
+//!
+//! - `just --version`
+
+mod common;
+mod root;
+pub mod version;
+
+pub use common::IntoCommand;
+pub use root::JustCmd;
+
+#[cfg(test)]
+mod tests {
+    mod common;
+    mod it_root;
+    mod it_version;
+}
