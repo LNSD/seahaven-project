@@ -11,10 +11,11 @@ use super::{
 };
 use crate::exe::{Executable, resolve_cli_executable};
 
-pub struct JustCmd<F = JustfileNotSet, E = EnvFileNotSet> {
+pub struct JustCmd<F = JustfileNotSet, E = EnvFileNotSet, D = DryRunNotSet> {
     cmd: tokio::process::Command,
     justfile_opt: F,
     env_file_opt: E,
+    dry_run_opt: D,
 }
 
 impl Default for JustCmd {
@@ -50,6 +51,7 @@ impl JustCmd {
             cmd: tokio::process::Command::new(exe.borrow()),
             justfile_opt: JustfileNotSet,
             env_file_opt: EnvFileNotSet,
+            dry_run_opt: DryRunNotSet,
         }
     }
 }
@@ -66,10 +68,11 @@ impl JustCmd {
     }
 }
 
-impl<F, E> IntoCommand for JustCmd<F, E>
+impl<F, E, D> IntoCommand for JustCmd<F, E, D>
 where
     F: JustfileOpt,
     E: EnvFileOpt,
+    D: DryRunOpt,
 {
     fn into_command(self) -> tokio::process::Command {
         let mut cmd = self.cmd;
@@ -84,16 +87,21 @@ where
             cmd.arg("--dotenv-path").arg(env_file.as_ref());
         }
 
+        // --dry-run
+        if matches!(self.dry_run_opt.into_value(), Some(true)) {
+            cmd.arg("--dry-run");
+        }
+
         cmd
     }
 }
 
-impl<E> JustCmd<JustfileNotSet, E> {
+impl<E, D> JustCmd<JustfileNotSet, E, D> {
     /// Specify an alternate justfile.
     ///
     /// See the [Just documentation](https://github.com/casey/just)
     /// for more information about the `--justfile` option.
-    pub fn with_justfile<P>(self, file: P) -> JustCmd<JustfileSet, E>
+    pub fn with_justfile<P>(self, file: P) -> JustCmd<JustfileSet, E, D>
     where
         P: AsRef<OsStr>,
     {
@@ -103,16 +111,17 @@ impl<E> JustCmd<JustfileNotSet, E> {
             cmd: self.cmd,
             justfile_opt: JustfileSet(file),
             env_file_opt: self.env_file_opt,
+            dry_run_opt: self.dry_run_opt,
         }
     }
 }
 
-impl<F> JustCmd<F, EnvFileNotSet> {
+impl<F, D> JustCmd<F, EnvFileNotSet, D> {
     /// Specify an alternate environment file.
     ///
     /// See the [Just documentation](https://github.com/casey/just)
     /// for more information about the `--dotenv-path` option.
-    pub fn with_env_file<P>(self, file: P) -> JustCmd<F, EnvFileSet>
+    pub fn with_env_file<P>(self, file: P) -> JustCmd<F, EnvFileSet, D>
     where
         P: AsRef<OsStr>,
     {
@@ -122,6 +131,21 @@ impl<F> JustCmd<F, EnvFileNotSet> {
             cmd: self.cmd,
             justfile_opt: self.justfile_opt,
             env_file_opt: EnvFileSet(file),
+            dry_run_opt: self.dry_run_opt,
+        }
+    }
+}
+
+impl<F, E> JustCmd<F, E, DryRunNotSet> {
+    /// Enable dry-run mode.
+    ///
+    /// See the [Just documentation](https://github.com/casey/just)
+    pub fn with_dry_run(self, dry_run: bool) -> JustCmd<F, E, DryRunSet> {
+        JustCmd {
+            cmd: self.cmd,
+            justfile_opt: self.justfile_opt,
+            env_file_opt: self.env_file_opt,
+            dry_run_opt: DryRunSet(dry_run),
         }
     }
 }
@@ -174,6 +198,32 @@ impl _priv::Sealed for EnvFileSet {}
 
 impl IntoCmdOptValue<Box<Path>> for EnvFileSet {
     fn into_value(self) -> Option<Box<Path>> {
+        Some(self.0)
+    }
+}
+
+// Dry run option markers
+#[allow(private_bounds)]
+pub trait DryRunOpt: IntoCmdOptValue<bool> + _priv::Sealed {}
+
+pub struct DryRunNotSet;
+
+impl DryRunOpt for DryRunNotSet {}
+impl _priv::Sealed for DryRunNotSet {}
+
+impl IntoCmdOptValue<bool> for DryRunNotSet {
+    fn into_value(self) -> Option<bool> {
+        None
+    }
+}
+
+pub struct DryRunSet(bool);
+
+impl DryRunOpt for DryRunSet {}
+impl _priv::Sealed for DryRunSet {}
+
+impl IntoCmdOptValue<bool> for DryRunSet {
+    fn into_value(self) -> Option<bool> {
         Some(self.0)
     }
 }
