@@ -8,9 +8,25 @@
 default:
     @just --list
 
-# Run all project tests
-test:
-    cargo nextest run
+# Run project tests
+test *suites='all':
+    #!/usr/bin/env sh
+    if [ "{{suites}}" = "all" ]; then
+        cargo nextest run
+    else
+        for suite in {{suites}}; do
+            case $suite in
+                unit) cargo nextest run 'tests::' -- --skip 'tests::it_' ;;
+                it-in-tree) cargo nextest run 'tests::it_' ;;
+                it-public) cargo nextest run --test '*' ;;
+                doc) cargo test --doc ;;
+                *)
+                    echo "Unknown test suite: $suite"
+                    exit 1
+                    ;;
+            esac
+        done
+    fi
 
 # Format all Rust code (requires nightly toolchain)
 fmt:
