@@ -13,11 +13,11 @@ edition.workspace = true
 serde = ["dep:serde"]
 
 # Enables automatic schema updates from the official Compose specification
-# When enabled, the build script will:
+# When enabled, the build script will ensure the library stays in sync with the latest Compose format
 # 1. Download the latest Compose specification from GitHub
 # 2. Update the local schema files in the schemas directory
-# 3. Ensure the library stays in sync with the latest Compose format
-update-spec-file = []
+# 3. Apply patches to the schema file
+update-spec-file = ["dep:reqwest", "dep:diffy"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"], optional = true }
@@ -28,4 +28,5 @@ thiserror = "2.0"
 testlib-file-testdata = { path = "../testlib/file-testdata" }
 
 [build-dependencies]
-reqwest = { version = "0.12", features = ["blocking"] }
+reqwest = { version = "0.12", features = ["blocking"], optional = true }
+diffy = { version = "0.4.2", optional = true }
