@@ -5,16 +5,13 @@ use seahaven_docker::cmd::{DockerCmd, IntoCommand};
 use crate::result::{Error, Result};
 
 /// The `pull` command name
-pub(super) const CMD: &str = "pull";
+pub const CMD: &str = "pull";
 
 /// Create the `pull` command
-pub(super) fn cmd() -> clap::Command {
+pub fn cmd() -> clap::Command {
     clap::command!(CMD)
         .about("Pull the images for the development environment")
         .args([
-            clap::arg!(-f --file <FILE> "The seahaven setup file")
-                .default_value("setup.yaml")
-                .value_parser(clap::value_parser!(PathBuf)),
             clap::arg!(--"dry-run" "Execute command in dry run mode")
                 .action(clap::ArgAction::SetTrue),
             clap::arg!([SERVICE] ... "The services to pull").action(clap::ArgAction::Append),
@@ -22,7 +19,7 @@ pub(super) fn cmd() -> clap::Command {
 }
 
 /// The `pull` command implementation
-pub(super) async fn run(matches: &clap::ArgMatches) -> Result<()> {
+pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     let setup_file = matches
         .get_one::<PathBuf>("file")
         .expect("Failed to get setup file");

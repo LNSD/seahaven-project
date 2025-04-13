@@ -5,16 +5,13 @@ use seahaven_docker::cmd::{DockerCmd, IntoCommand};
 use crate::result::{Error, Result};
 
 /// The `build` command name
-pub(super) const CMD: &str = "build";
+pub const CMD: &str = "build";
 
 /// Create the `build` command
-pub(super) fn cmd() -> clap::Command {
+pub fn cmd() -> clap::Command {
     clap::command!(CMD)
         .about("Build the development environment images using docker compose")
         .args([
-            clap::arg!(-f --file <FILE> "The seahaven setup file")
-                .default_value("setup.yaml")
-                .value_parser(clap::value_parser!(PathBuf)),
             clap::arg!(--"dry-run" "Execute command in dry run mode")
                 .action(clap::ArgAction::SetTrue),
             clap::arg!(--"build-arg" <KEY_VALUE> "Set build-time variables")
@@ -25,7 +22,7 @@ pub(super) fn cmd() -> clap::Command {
 }
 
 /// The `build` command implementation
-pub(super) async fn run(matches: &clap::ArgMatches) -> Result<()> {
+pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     let setup_file = matches
         .get_one::<PathBuf>("file")
         .expect("Failed to get setup file");

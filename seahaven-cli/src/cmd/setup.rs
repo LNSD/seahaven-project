@@ -3,17 +3,17 @@ use std::{fs::File, io::BufReader, path::PathBuf};
 use crate::result::Result;
 
 /// The `setup` command name
-pub(super) const CMD: &str = "setup";
+pub const CMD: &str = "setup";
 
 /// Create the `setup` command
-pub(super) fn cmd() -> clap::Command {
+pub fn cmd() -> clap::Command {
     clap::command!(CMD)
         .about("Manage local development environment setup")
         .subcommands([env::cmd(), compose::cmd(), eject::cmd()])
 }
 
 /// The `setup` command implementation
-pub(super) async fn run(matches: &clap::ArgMatches) -> Result<()> {
+pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     match matches.subcommand() {
         Some((env::CMD, matches)) => env::run(matches).await,
         Some((compose::CMD, matches)) => compose::run(matches).await,
@@ -30,11 +30,7 @@ mod env {
 
     /// Create the `setup env` sub-command
     pub fn cmd() -> clap::Command {
-        clap::command!("env")
-            .about("Print the .env file contents")
-            .args([clap::arg!(-f --file <FILE> "The setup file")
-                .default_value("setup.yaml")
-                .value_parser(clap::value_parser!(PathBuf))])
+        clap::command!(CMD).about("Print the .env file contents")
     }
 
     /// The `setup env` command
@@ -85,11 +81,7 @@ mod compose {
 
     /// Create the `setup compose` sub-command
     pub fn cmd() -> clap::Command {
-        clap::command!("compose")
-            .about("Print the docker-compose.yaml file contents")
-            .args([clap::arg!(-f --file <FILE> "The setup file")
-                .default_value("setup.yaml")
-                .value_parser(clap::value_parser!(PathBuf))])
+        clap::command!(CMD).about("Print the docker-compose.yaml file contents")
     }
 
     /// The `setup compose` command
@@ -138,16 +130,11 @@ mod eject {
 
     /// Create the `setup eject` sub-command
     pub fn cmd() -> clap::Command {
-        clap::command!("eject")
+        clap::command!(CMD)
             .about("Eject the setup.yaml file to get the docker-compose.yaml and .env files")
-            .args([
-                clap::arg!(-f --file <FILE> "The setup file")
-                    .default_value("setup.yaml")
-                    .value_parser(clap::value_parser!(PathBuf)),
-                clap::arg!(-o --"output-dir" <DIR> "The output directory")
-                    .default_value(".")
-                    .value_parser(clap::value_parser!(PathBuf)),
-            ])
+            .args([clap::arg!(-o --"output-dir" <DIR> "The output directory")
+                .default_value(".")
+                .value_parser(clap::value_parser!(PathBuf))])
     }
 
     /// The `setup eject` command

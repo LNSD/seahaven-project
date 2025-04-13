@@ -5,16 +5,13 @@ use seahaven_docker::cmd::{DockerCmd, IntoCommand};
 use crate::result::{Error, Result};
 
 /// The `down` command name
-pub(super) const CMD: &str = "down";
+pub const CMD: &str = "down";
 
 /// Create the `down` command
-pub(super) fn cmd() -> clap::Command {
+pub fn cmd() -> clap::Command {
     clap::command!(CMD)
         .about("Stop and remove containers, networks, images, and volumes")
         .args([
-            clap::arg!(-f --file <FILE> "The seahaven setup file")
-                .default_value("setup.yaml")
-                .value_parser(clap::value_parser!(PathBuf)),
             clap::arg!(-v --volumes "Remove named volumes declared in the volumes section of the Compose file")
                 .action(clap::ArgAction::SetTrue),
             clap::arg!(--"dry-run" "Execute command in dry run mode")
@@ -25,7 +22,7 @@ pub(super) fn cmd() -> clap::Command {
 }
 
 /// The `down` command implementation
-pub(super) async fn run(matches: &clap::ArgMatches) -> Result<()> {
+pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     let setup_file = matches
         .get_one::<PathBuf>("file")
         .expect("Failed to get setup file");
