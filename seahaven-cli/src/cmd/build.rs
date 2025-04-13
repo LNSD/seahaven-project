@@ -15,7 +15,7 @@ pub(super) fn cmd() -> clap::Command {
             clap::arg!(-f --file <FILE> "The seahaven setup file")
                 .default_value("setup.yaml")
                 .value_parser(clap::value_parser!(PathBuf)),
-            clap::arg!(--dry-run "Execute command in dry run mode")
+            clap::arg!(--"dry-run" "Execute command in dry run mode")
                 .action(clap::ArgAction::SetTrue),
             clap::arg!(--"build-arg" <KEY_VALUE> "Set build-time variables")
                 .action(clap::ArgAction::Append)

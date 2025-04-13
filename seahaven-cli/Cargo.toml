@@ -18,6 +18,7 @@ clap = { version = "4.5", features = ["cargo"] }
 indoc = "2.0.6"
 seahaven-docker = { version = "0.1.0", path = "../seahaven-docker" }
 seahaven-file = { version = "0.1.0", path = "../seahaven-file" }
+seahaven-just = { version = "0.1.0", path = "../seahaven-just" }
 tempfile = "3.19.1"
 thiserror = "2.0.12"
 tokio = { version = "1.44", features = ["rt", "macros"] }
