@@ -1277,6 +1277,7 @@ dependencies = [
  "indoc",
  "seahaven-docker",
  "seahaven-file",
+ "seahaven-just",
  "tempfile",
  "thiserror",
  "tokio",

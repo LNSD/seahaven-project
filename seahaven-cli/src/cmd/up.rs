@@ -19,7 +19,7 @@ pub(super) fn cmd() -> clap::Command {
                 .action(clap::ArgAction::SetTrue),
             clap::arg!(--build "Build images before starting containers")
                 .action(clap::ArgAction::SetTrue),
-            clap::arg!(--dry-run "Execute command in dry run mode")
+            clap::arg!(--"dry-run" "Execute command in dry run mode")
                 .action(clap::ArgAction::SetTrue),
             clap::arg!([SERVICE] ... "The services to start").action(clap::ArgAction::Append),
         ])

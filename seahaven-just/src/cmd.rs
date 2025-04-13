@@ -15,6 +15,13 @@
 //! The following Just commands are currently supported:
 //!
 //! - `just --version`
+//! - `just --dump`
+//! - `just` with the following options:
+//!   - `--justfile <path>` - Specify an alternate justfile
+//!   - `--dotenv-path <path>` - Specify an alternate environment file
+//!   - `--working-directory <path>` - Specify a working directory
+//!   - `--dry-run` - Enable dry-run mode
+//!   - `[ARGUMENTS]...` - Overrides and recipe(s) to run
 
 mod common;
 pub mod dump;

@@ -17,7 +17,7 @@ pub(super) fn cmd() -> clap::Command {
                 .value_parser(clap::value_parser!(PathBuf)),
             clap::arg!(-v --volumes "Remove named volumes declared in the volumes section of the Compose file")
                 .action(clap::ArgAction::SetTrue),
-            clap::arg!(--dry-run "Execute command in dry run mode")
+            clap::arg!(--"dry-run" "Execute command in dry run mode")
                 .action(clap::ArgAction::SetTrue),
             clap::arg!([SERVICE] ... "The services to stop and remove")
                 .action(clap::ArgAction::Append),
