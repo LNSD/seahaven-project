@@ -14,6 +14,8 @@ pub fn cmd() -> clap::Command {
         .args([
             clap::arg!(--"dry-run" "Execute command in dry run mode")
                 .action(clap::ArgAction::SetTrue),
+            clap::arg!(--justfile <FILE> "Path to the justfile to use")
+                .value_parser(clap::value_parser!(PathBuf)),
             clap::arg!([ARGUMENTS] ... "Overrides and recipe(s) to run, defaulting to the first recipe in the justfile")
                 .action(clap::ArgAction::Append),
         ])
@@ -57,6 +59,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
 
     // Create and run the just command
     let mut command = JustCmd::new()
+        .with_justfile::<&PathBuf>(matches.get_one::<PathBuf>("justfile"))
         .with_env_file(env_file_path)
         .with_dry_run(matches.get_flag("dry-run"))
         .with_args(matches.get_many::<String>("ARGUMENTS").unwrap_or_default())
