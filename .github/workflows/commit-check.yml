@@ -1,8 +1,6 @@
 name: commit-check
 on:
   pull_request:
-    branches-ignore:
-    - 'renovate/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -11,6 +9,7 @@ concurrency:
 
 jobs:
   conventional-commits:
+    if: ${{ !startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-latest
     # SECURITY: # https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
     permissions: read-all
@@ -30,6 +29,7 @@ jobs:
           cz check --rev-range ${{ github.event.pull_request.base.sha }}..HEAD
 
   dco:
+    if: ${{ !startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-latest
     # SECURITY: # https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
     permissions: read-all
