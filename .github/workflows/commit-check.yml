@@ -1,6 +1,8 @@
 name: commit-check
 on:
   pull_request:
+    branches-ignore:
+    - 'renovate/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
