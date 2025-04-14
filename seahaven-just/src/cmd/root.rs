@@ -123,11 +123,13 @@ impl<E, W, D, A> JustCmd<JustfileNotSet, E, W, D, A> {
     ///
     /// See the [Just documentation](https://github.com/casey/just)
     /// for more information about the `--justfile` option.
-    pub fn with_justfile<P>(self, file: P) -> JustCmd<JustfileSet, E, W, D, A>
+    pub fn with_justfile<P>(self, file: impl Into<Option<P>>) -> JustCmd<JustfileSet, E, W, D, A>
     where
         P: AsRef<OsStr>,
     {
-        let file = PathBuf::from(&file).into_boxed_path();
+        let file: Option<Box<Path>> = file
+            .into()
+            .map(|path| PathBuf::from(path.as_ref()).into_boxed_path());
 
         JustCmd {
             cmd: self.cmd,
@@ -249,14 +251,14 @@ impl IntoCmdOptValue<Box<Path>> for JustfileNotSet {
     }
 }
 
-pub struct JustfileSet(Box<Path>);
+pub struct JustfileSet(Option<Box<Path>>);
 
 impl JustfileOpt for JustfileSet {}
 impl _priv::Sealed for JustfileSet {}
 
 impl IntoCmdOptValue<Box<Path>> for JustfileSet {
     fn into_value(self) -> Option<Box<Path>> {
-        Some(self.0)
+        self.0
     }
 }
 
