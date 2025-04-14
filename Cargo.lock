@@ -1381,11 +1381,17 @@ name = "seahaven-compose-file"
 version = "0.1.0"
 dependencies = [
  "diffy",
+ "prettyplease",
+ "regress",
  "reqwest",
+ "schemars",
  "serde",
+ "serde_json",
  "serde_yaml",
+ "syn",
  "testlib-file-testdata",
  "thiserror 2.0.12",
+ "typify",
 ]
 
 [[package]]
