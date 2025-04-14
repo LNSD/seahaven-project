@@ -80,6 +80,7 @@ mod internal {
     #![allow(clippy::clone_on_copy)]
     #![allow(clippy::large_enum_variant)]
     #![allow(clippy::enum_variant_names)]
+    #![allow(clippy::derivable_impls)]
 
     include!(concat!(env!("OUT_DIR"), "/codegen/src/compose_spec.rs"));
 }
