@@ -45,6 +45,17 @@ pub struct Content {
     pub secrets: Option<serde_yaml::Mapping>,
 }
 
+mod internal {
+    // Allow the generated code to be used without warnings
+    #![allow(dead_code)]
+    #![allow(irrefutable_let_patterns)]
+    #![allow(clippy::clone_on_copy)]
+    #![allow(clippy::large_enum_variant)]
+    #![allow(clippy::enum_variant_names)]
+
+    include!(concat!(env!("OUT_DIR"), "/codegen/src/model/setup_spec.rs"));
+}
+
 /// Module containing serialization functionality
 pub mod ser {
     use super::Content;
