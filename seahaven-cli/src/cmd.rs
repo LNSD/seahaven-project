@@ -1,5 +1,6 @@
 mod build;
 mod down;
+mod init;
 mod pull;
 mod root;
 mod run;

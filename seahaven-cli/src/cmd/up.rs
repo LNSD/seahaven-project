@@ -80,7 +80,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         .with_plain_progress()
         .up()
         .with_build(matches.get_flag("build"))
-        .with_detached(matches.get_flag("detach"))
+        .with_detach(matches.get_flag("detach"))
         .with_services(matches.get_many::<String>("SERVICE").unwrap_or_default())
         .with_dry_run(matches.get_flag("dry-run"))
         .into_command();

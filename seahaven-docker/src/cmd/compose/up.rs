@@ -1,13 +1,13 @@
 use super::{IntoCmdOptValue, IntoCommand};
 
 pub struct DockerComposeUpCmd<
-    D = DetachedNotSet,
+    D = DetachNotSet,
     B = BuildNotSet,
     DR = DryRunNotSet,
     S = ServicesNotSet,
 > {
     cmd: tokio::process::Command,
-    detached_opt: D,
+    detach_opt: D,
     build_opt: B,
     dry_run_opt: DR,
     services_opt: S,
@@ -17,7 +17,7 @@ impl DockerComposeUpCmd {
     pub(crate) fn new(cmd: impl IntoCommand) -> DockerComposeUpCmd {
         DockerComposeUpCmd {
             cmd: cmd.into_command(),
-            detached_opt: DetachedNotSet,
+            detach_opt: DetachNotSet,
             build_opt: BuildNotSet,
             dry_run_opt: DryRunNotSet,
             services_opt: ServicesNotSet,
@@ -27,7 +27,7 @@ impl DockerComposeUpCmd {
 
 impl<D, B, DR, S> IntoCommand for DockerComposeUpCmd<D, B, DR, S>
 where
-    D: DetachedOpt,
+    D: DetachOpt,
     B: BuildOpt,
     DR: DryRunOpt,
     S: ServicesOpt,
@@ -43,9 +43,9 @@ where
             cmd.arg("--build");
         }
 
-        // --detached
-        if matches!(self.detached_opt.into_value(), Some(true)) {
-            cmd.arg("--detached");
+        // --detach
+        if matches!(self.detach_opt.into_value(), Some(true)) {
+            cmd.arg("--detach");
         }
 
         // --dry-run
@@ -62,20 +62,20 @@ where
     }
 }
 
-impl<B, DR, S> DockerComposeUpCmd<DetachedNotSet, B, DR, S>
+impl<B, DR, S> DockerComposeUpCmd<DetachNotSet, B, DR, S>
 where
     B: BuildOpt,
     DR: DryRunOpt,
     S: ServicesOpt,
 {
-    /// Run containers in the background with the `--detached` flag.
+    /// Run containers in the background with the `--detach` flag.
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/up/)
     /// for more information.
-    pub fn with_detached(self, detached: bool) -> DockerComposeUpCmd<DetachedSet, B, DR, S> {
+    pub fn with_detach(self, detach: bool) -> DockerComposeUpCmd<DetachSet, B, DR, S> {
         DockerComposeUpCmd {
             cmd: self.cmd,
-            detached_opt: DetachedSet(detached),
+            detach_opt: DetachSet(detach),
             build_opt: self.build_opt,
             dry_run_opt: self.dry_run_opt,
             services_opt: self.services_opt,
@@ -85,7 +85,7 @@ where
 
 impl<D, DR, S> DockerComposeUpCmd<D, BuildNotSet, DR, S>
 where
-    D: DetachedOpt,
+    D: DetachOpt,
     DR: DryRunOpt,
     S: ServicesOpt,
 {
@@ -96,7 +96,7 @@ where
     pub fn with_build(self, build: bool) -> DockerComposeUpCmd<D, BuildSet, DR, S> {
         DockerComposeUpCmd {
             cmd: self.cmd,
-            detached_opt: self.detached_opt,
+            detach_opt: self.detach_opt,
             build_opt: BuildSet(build),
             dry_run_opt: self.dry_run_opt,
             services_opt: self.services_opt,
@@ -106,7 +106,7 @@ where
 
 impl<D, B, S> DockerComposeUpCmd<D, B, DryRunNotSet, S>
 where
-    D: DetachedOpt,
+    D: DetachOpt,
     B: BuildOpt,
     S: ServicesOpt,
 {
@@ -117,7 +117,7 @@ where
     pub fn with_dry_run(self, dry_run: bool) -> DockerComposeUpCmd<D, B, DryRunSet, S> {
         DockerComposeUpCmd {
             cmd: self.cmd,
-            detached_opt: self.detached_opt,
+            detach_opt: self.detach_opt,
             build_opt: self.build_opt,
             dry_run_opt: DryRunSet(dry_run),
             services_opt: self.services_opt,
@@ -127,7 +127,7 @@ where
 
 impl<D, B, DR> DockerComposeUpCmd<D, B, DR, ServicesNotSet>
 where
-    D: DetachedOpt,
+    D: DetachOpt,
     B: BuildOpt,
     DR: DryRunOpt,
 {
@@ -157,7 +157,7 @@ where
 
         DockerComposeUpCmd {
             cmd: self.cmd,
-            detached_opt: self.detached_opt,
+            detach_opt: self.detach_opt,
             build_opt: self.build_opt,
             dry_run_opt: self.dry_run_opt,
             services_opt: ServicesSet(services),
@@ -178,27 +178,27 @@ where
     }
 }
 
-/// A trait that represents the detached option for the `docker compose up` command.
+/// A trait that represents the detach option for the `docker compose up` command.
 #[allow(private_bounds)]
-pub trait DetachedOpt: IntoCmdOptValue<bool> + _priv::Sealed {}
+pub trait DetachOpt: IntoCmdOptValue<bool> + _priv::Sealed {}
 
-pub struct DetachedNotSet;
+pub struct DetachNotSet;
 
-impl DetachedOpt for DetachedNotSet {}
-impl _priv::Sealed for DetachedNotSet {}
+impl DetachOpt for DetachNotSet {}
+impl _priv::Sealed for DetachNotSet {}
 
-impl IntoCmdOptValue<bool> for DetachedNotSet {
+impl IntoCmdOptValue<bool> for DetachNotSet {
     fn into_value(self) -> Option<bool> {
         None
     }
 }
 
-pub struct DetachedSet(bool);
+pub struct DetachSet(bool);
 
-impl DetachedOpt for DetachedSet {}
-impl _priv::Sealed for DetachedSet {}
+impl DetachOpt for DetachSet {}
+impl _priv::Sealed for DetachSet {}
 
-impl IntoCmdOptValue<bool> for DetachedSet {
+impl IntoCmdOptValue<bool> for DetachSet {
     fn into_value(self) -> Option<bool> {
         Some(self.0)
     }

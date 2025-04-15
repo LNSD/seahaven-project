@@ -29,7 +29,7 @@ async fn run_docker_compose_up_detached() {
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
-        .with_detached(true)
+        .with_detach(true)
         .into_command();
 
     //* When
@@ -39,7 +39,7 @@ async fn run_docker_compose_up_detached() {
     let output = res.expect("Failed to run docker compose up with detached flag");
     let args = parse_fixture_exe_output(&output);
 
-    assert_eq!(args, ["compose", "up", "--detached"]);
+    assert_eq!(args, ["compose", "up", "--detach"]);
 }
 
 #[tokio::test]
@@ -118,7 +118,7 @@ async fn run_docker_compose_up_detached_with_build() {
         .compose()
         .up()
         .with_build(true)
-        .with_detached(true)
+        .with_detach(true)
         .into_command();
 
     //* When
@@ -128,7 +128,7 @@ async fn run_docker_compose_up_detached_with_build() {
     let output = res.expect("Failed to run docker compose up with build and detached flags");
     let args = parse_fixture_exe_output(&output);
 
-    assert_eq!(args, ["compose", "up", "--build", "--detached"]);
+    assert_eq!(args, ["compose", "up", "--build", "--detach"]);
 }
 
 #[tokio::test]
@@ -141,7 +141,7 @@ async fn run_docker_compose_up_detached_with_services() {
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
-        .with_detached(true)
+        .with_detach(true)
         .with_services(services)
         .into_command();
 
@@ -154,7 +154,7 @@ async fn run_docker_compose_up_detached_with_services() {
 
     assert_eq!(
         args,
-        ["compose", "up", "--detached", "api-service", "web-service"]
+        ["compose", "up", "--detach", "api-service", "web-service"]
     );
 }
 
@@ -196,7 +196,7 @@ async fn run_docker_compose_up_with_all_options() {
         .compose()
         .up()
         .with_build(true)
-        .with_detached(true)
+        .with_detach(true)
         .with_services(services)
         .into_command();
 
@@ -213,7 +213,7 @@ async fn run_docker_compose_up_with_all_options() {
             "compose",
             "up",
             "--build",
-            "--detached",
+            "--detach",
             "api-service",
             "web-service",
             "db-service"
@@ -255,7 +255,7 @@ async fn run_docker_compose_up_detached_with_single_service() {
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .up()
-        .with_detached(true)
+        .with_detach(true)
         .with_service(service)
         .into_command();
 
@@ -267,7 +267,7 @@ async fn run_docker_compose_up_detached_with_single_service() {
         res.expect("Failed to run docker compose up with detached flag and single service");
     let args = parse_fixture_exe_output(&output);
 
-    assert_eq!(args, ["compose", "up", "--detached", "api-service"]);
+    assert_eq!(args, ["compose", "up", "--detach", "api-service"]);
 }
 
 #[tokio::test]
@@ -281,7 +281,7 @@ async fn run_docker_compose_up_with_detached_build_and_single_service() {
         .compose()
         .up()
         .with_build(true)
-        .with_detached(true)
+        .with_detach(true)
         .with_service(service)
         .into_command();
 
@@ -294,7 +294,7 @@ async fn run_docker_compose_up_with_detached_build_and_single_service() {
 
     assert_eq!(
         args,
-        ["compose", "up", "--build", "--detached", "api-service"]
+        ["compose", "up", "--build", "--detach", "api-service"]
     );
 }
 
