@@ -8,10 +8,8 @@ const COMPOSE_SPEC_FILE_URL: &str =
 const COMPOSE_SPEC_PATCHES_DIR: &str = "schemas/patches";
 
 /// The path to the compose spec file
+#[cfg(feature = "update-spec-file")]
 const COMPOSE_SPEC_FILE_PATH: &str = "schemas/compose-spec.json";
-
-/// The path to the generated types file
-const GENERATED_TYPES_FILE_PATH: &str = "codegen/src/compose_spec.rs";
 
 fn main() {
     #[cfg(feature = "update-spec-file")]
@@ -83,54 +81,6 @@ fn main() {
 
         println!(
             "cargo:warning=Downloaded latest version of compose-spec.json from GitHub and applied patches"
-        );
-    }
-
-    // Generate the compose-spec.json Rust types
-    {
-        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR")
-            .map(std::path::PathBuf::from)
-            .expect("Failed to get CARGO_MANIFEST_DIR");
-        let out_dir = std::env::var("OUT_DIR")
-            .map(std::path::PathBuf::from)
-            .expect("Failed to get OUT_DIR");
-
-        let compose_spec_file_path = manifest_dir.join(COMPOSE_SPEC_FILE_PATH);
-        let generated_types_file_path = out_dir.join(GENERATED_TYPES_FILE_PATH);
-
-        // Read the spec file from the local filesystem
-        let content = std::fs::read_to_string(&compose_spec_file_path)
-            .expect("Failed to read compose spec file");
-
-        // Parse the JSON schema
-        let schema = serde_json::from_str::<schemars::schema::RootSchema>(&content)
-            .expect("Failed to parse compose spec as JSON schema");
-
-        // Generate Rust types using typify
-        let mut type_space =
-            typify::TypeSpace::new(typify::TypeSpaceSettings::default().with_struct_builder(true));
-        type_space
-            .add_root_schema(schema)
-            .expect("Failed to add schema to type space");
-
-        let contents = prettyplease::unparse(
-            &syn::parse2::<syn::File>(type_space.to_stream())
-                .expect("Failed to parse generated code"),
-        );
-
-        // Create the output directory if it doesn't exist
-        if let Some(parent) = generated_types_file_path.parent() {
-            std::fs::create_dir_all(parent).expect("Failed to create output directory");
-        }
-
-        // Write the generated types to the file
-        std::fs::write(&generated_types_file_path, contents)
-            .expect("Failed to write generated types to file");
-
-        // Re-run the build if the compose-spec.json file changes
-        println!(
-            "cargo:rerun-if-changed={}",
-            compose_spec_file_path.display()
         );
     }
 }
