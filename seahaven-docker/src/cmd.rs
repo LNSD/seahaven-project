@@ -45,7 +45,7 @@
 //! let mut compose_cmd = DockerCmd::new()
 //!     .compose()
 //!     .up()
-//!     .with_detached(true)
+//!     .with_detach(true)
 //!     .with_service("my-service");
 //!
 //! let command = compose_cmd.into_command();
@@ -60,7 +60,7 @@
 //!     .compose()
 //!     .up()
 //!     .with_progress_json() // ❌ Error!
-//!     .with_detached();
+//!     .with_detach();
 //! ```
 
 mod common;
