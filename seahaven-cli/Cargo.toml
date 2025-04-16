@@ -20,6 +20,7 @@ indoc = "2.0.6"
 seahaven-docker = { version = "0.1.0", path = "../seahaven-docker" }
 seahaven-file = { version = "0.1.0", path = "../seahaven-file" }
 seahaven-just = { version = "0.1.0", path = "../seahaven-just" }
+serde = { version = "1.0.197", features = ["derive"] }
 serde_json = { version = "1.0.140", features = ["preserve_order"] }
 tempfile = "3.19.1"
 thiserror = "2.0.12"

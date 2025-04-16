@@ -7,7 +7,7 @@
 
 use std::borrow::Borrow;
 
-use semver::Version;
+pub use semver::Version;
 
 use crate::{
     cmd::{IntoCommand, JustCmd},

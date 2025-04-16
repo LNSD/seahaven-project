@@ -1542,6 +1542,7 @@ dependencies = [
  "seahaven-docker",
  "seahaven-file",
  "seahaven-just",
+ "serde",
  "serde_json",
  "tempfile",
  "thiserror",
