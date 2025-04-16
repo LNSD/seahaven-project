@@ -4,34 +4,11 @@ use super::{
     common::IntoCommand, compose::DockerComposeCmd, system::DockerSystemCmd,
     version::DockerVersionCmd,
 };
-use crate::exe::{Executable, resolve_cli_executable};
+use crate::exe::Executable;
 
 pub struct DockerCmd(tokio::process::Command);
 
-impl Default for DockerCmd {
-    /// Create a new docker command
-    ///
-    /// # Panics
-    ///
-    /// This function will panic if the docker CLI binary is not found.
-    fn default() -> Self {
-        let exe = resolve_cli_executable().expect("Docker CLI binary not found");
-        Self::with_executable(exe)
-    }
-}
-
 impl DockerCmd {
-    /// Create a new `docker` command
-    ///
-    /// This is equivalent to calling [`DockerCmd::default()`].
-    ///
-    /// # Panics
-    ///
-    /// This function will panic if the docker CLI binary is not found.
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Create a new `docker` command with a custom executable
     pub fn with_executable<B>(exe: B) -> Self
     where

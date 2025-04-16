@@ -1,7 +1,4 @@
-use seahaven_just::{
-    cmd::{IntoCommand, JustCmd},
-    exe::{Executable, resolve_cli_executable},
-};
+use seahaven_just::exe::{Executable, resolve_cli_executable};
 
 #[test_with::no_env(CI)]
 #[test]
@@ -32,31 +29,4 @@ fn executable_display_and_debug() {
     //* Then
     assert!(display_str.contains("just"));
     assert!(debug_str.contains("just"));
-}
-
-#[test_with::no_env(CI)]
-#[test]
-fn just_cmd_default() {
-    //* Given
-    // Resolve the just executable
-    let expected_exe = resolve_cli_executable().expect("just CLI executable not found");
-
-    //* When
-    let command = JustCmd::default().into_command();
-
-    // Get the program path
-    let prog_path = command.as_std().get_program();
-
-    //* Then
-    // Assert that the program path is a valid utf-8 string
-    let prog_path_str = prog_path
-        .to_str()
-        .expect("Program path should be a valid utf-8 string");
-    assert!(
-        prog_path_str.contains("just"),
-        "Program path should contain 'just'"
-    );
-
-    // Assert that the program path is the same as the resolved executable
-    assert_eq!(prog_path, expected_exe.as_ref());
 }

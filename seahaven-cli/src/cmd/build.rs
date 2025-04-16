@@ -23,6 +23,12 @@ pub fn cmd() -> clap::Command {
 
 /// The `build` command implementation
 pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
+    // Check for requirements
+    // TODO: Check for the docker compose and buildx plugins
+    let docker_exe = seahaven_docker::exe::resolve_cli_executable()
+        .map_err(|err| anyhow::anyhow!("Failed to resolve docker executable: {err}"))?;
+
+    // Load the setup file
     let setup_file = matches
         .get_one::<PathBuf>("file")
         .expect("Failed to get setup file");
@@ -30,7 +36,6 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         return Err(anyhow::anyhow!("Setup file not found: {}", setup_file.display()).into());
     }
 
-    // Load the setup file
     let setup_file = File::open(setup_file)
         .map(BufReader::new)
         .map_err(|err| anyhow::anyhow!("Failed to open setup file: {err}"))?;
@@ -85,7 +90,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         );
 
     // Create and run the docker command
-    let mut command = DockerCmd::new()
+    let mut command = DockerCmd::with_executable(docker_exe)
         .compose()
         .with_file(content_file_path)
         .with_env_file(env_file_path)

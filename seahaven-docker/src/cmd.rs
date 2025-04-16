@@ -23,11 +23,15 @@
 //! ### Basic Docker Command
 //!
 //! ```rust
-//! use seahaven_docker::cmd::{DockerCmd, IntoCommand};
+//! use seahaven_docker::{
+//!     cmd::{DockerCmd, IntoCommand},
+//!     exe::resolve_cli_executable,
+//! };
 //!
 //! // Get Docker version information
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-//! let version_cmd = DockerCmd::new().version();
+//! let exe = resolve_cli_executable()?;
+//! let version_cmd = DockerCmd::with_executable(exe).version();
 //! let mut command = version_cmd.into_command();
 //!
 //! // Execute the command
@@ -39,17 +43,24 @@
 //! ### Docker Compose Command with Options
 //!
 //! ```rust
-//! use seahaven_docker::cmd::{DockerCmd, IntoCommand};
+//! use seahaven_docker::{
+//!     cmd::{DockerCmd, IntoCommand},
+//!     exe::resolve_cli_executable,
+//! };
 //!
 //! // Configure and start services with Docker Compose
-//! let mut compose_cmd = DockerCmd::new()
+//! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+//! let exe = resolve_cli_executable()?;
+//! let mut compose_cmd = DockerCmd::with_executable(exe)
 //!     .compose()
 //!     .up()
 //!     .with_detach(true)
 //!     .with_service("my-service");
-//!
 //! let command = compose_cmd.into_command();
+//! # Ok(())
+//! # }
 //! ```
+//!
 //! Note that the order of method calls matters - `with_progress_json` must be called before `up`.
 //! The reverse order would not compile:
 //!
