@@ -1,5 +1,6 @@
+use seahaven_cli::result::Result;
+
 use super::{build, down, eject, init, pull, run, setup, system, up, version};
-use crate::result::Result;
 
 /// The name of the CLI
 pub const CMD: &str = "truman";
@@ -7,6 +8,11 @@ pub const CMD: &str = "truman";
 /// Create and execute the DIPs CLI command line interface
 pub async fn cmd_run() -> Result<()> {
     let matches = clap::command!(CMD)
+        .about(indoc::indoc! {r#"
+            The CLI tool that helps you manage your local development environment setup with the ease of a well-scripted reality.
+
+            "𝑰𝒏 𝒄𝒂𝒔𝒆 𝑰 𝒅𝒐𝒏'𝒕 𝒔𝒆𝒆 𝒚𝒂, 𝒈𝒐𝒐𝒅 𝒂𝒇𝒕𝒆𝒓𝒏𝒐𝒐𝒏, 𝒈𝒐𝒐𝒅 𝒆𝒗𝒆𝒏𝒊𝒏𝒈, 𝒂𝒏𝒅 𝒈𝒐𝒐𝒅 𝒏𝒊𝒈𝒉𝒕!" — Truman Burbank
+        "#})
         .subcommands([
             build::cmd(),
             down::cmd(),

@@ -1,6 +1,5 @@
 use build_info::BuildInfo;
-
-use crate::result::Result;
+use seahaven_cli::result::Result;
 
 // Generate the build info function.
 build_info::build_info!(fn get_build_info);

@@ -1,9 +1,10 @@
 use std::{fs::File, io::BufReader, path::PathBuf};
 
+use seahaven_cli::result::{Error, Result};
 use seahaven_just::cmd::{IntoCommand, JustCmd};
 
 use super::common::file_arg;
-use crate::result::{Error, Result};
+
 /// The `run` command name
 pub const CMD: &str = "run";
 
