@@ -1,9 +1,8 @@
 use std::path::PathBuf;
 
 use clap::ArgMatches;
+use seahaven_cli::result::Result;
 use tokio::process::Command;
-
-use crate::result::Result;
 
 pub const CMD: &str = "init";
 

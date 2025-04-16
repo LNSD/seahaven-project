@@ -10,7 +10,7 @@ rust-version = "1.85.0"
 
 [[bin]]
 name = "truman"
-path = "src/main.rs"
+path = "src/bin/truman/main.rs"
 
 [dependencies]
 anyhow = "1.0.97"

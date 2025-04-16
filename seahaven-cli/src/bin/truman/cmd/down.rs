@@ -1,9 +1,9 @@
 use std::{fs::File, io::BufReader, path::PathBuf};
 
+use seahaven_cli::result::{Error, Result};
 use seahaven_docker::cmd::{DockerCmd, IntoCommand};
 
 use super::common::file_arg;
-use crate::result::{Error, Result};
 
 /// The `down` command name
 pub const CMD: &str = "down";

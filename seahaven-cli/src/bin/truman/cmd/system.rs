@@ -1,4 +1,4 @@
-use crate::result::Result;
+use seahaven_cli::result::Result;
 
 /// The `system` command name
 pub const CMD: &str = "system";

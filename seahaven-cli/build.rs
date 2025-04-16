@@ -5,5 +5,6 @@ fn main() {
     // - Build timestamp
     // - Compiler version
     // - Build profile
+    // - etc.
     build_info_build::build_script();
 }

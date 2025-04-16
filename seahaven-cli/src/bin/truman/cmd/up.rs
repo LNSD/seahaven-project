@@ -1,26 +1,30 @@
 use std::{fs::File, io::BufReader, path::PathBuf};
 
+use seahaven_cli::result::{Error, Result};
 use seahaven_docker::cmd::{DockerCmd, IntoCommand};
 
 use super::common::file_arg;
-use crate::result::{Error, Result};
 
-/// The `pull` command name
-pub const CMD: &str = "pull";
+/// The `up` command name
+pub const CMD: &str = "up";
 
-/// Create the `pull` command
+/// Create the `up` command
 pub fn cmd() -> clap::Command {
     clap::command!(CMD)
-        .about("Pull the images for the development environment")
-        .arg(file_arg())
+        .about("Start the development environment using docker compose")
+        .arg(file_arg().global(true))
         .args([
+            clap::arg!(-d --detach "Detached mode: Run containers in the background")
+                .action(clap::ArgAction::SetTrue),
+            clap::arg!(--build "Build images before starting containers")
+                .action(clap::ArgAction::SetTrue),
             clap::arg!(--"dry-run" "Execute command in dry run mode")
                 .action(clap::ArgAction::SetTrue),
-            clap::arg!([SERVICE] ... "The services to pull").action(clap::ArgAction::Append),
+            clap::arg!([SERVICE] ... "The services to start").action(clap::ArgAction::Append),
         ])
 }
 
-/// The `pull` command implementation
+/// The `up` command implementation
 pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     // Check for requirements
     // - No min version for docker
@@ -92,31 +96,32 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
             .map_err(|err| anyhow::anyhow!("Failed to write docker-compose.yaml file: {err}"))?;
     }
 
-    // Create and run the docker command
     let mut command = DockerCmd::with_executable(docker_exe)
         .compose()
         .with_file(content_file_path)
         .with_env_file(env_file_path)
         .with_plain_progress()
-        .pull()
-        .with_dry_run(matches.get_flag("dry-run"))
+        .up()
+        .with_build(matches.get_flag("build"))
+        .with_detach(matches.get_flag("detach"))
         .with_services(matches.get_many::<String>("SERVICE").unwrap_or_default())
+        .with_dry_run(matches.get_flag("dry-run"))
         .into_command();
 
-    tracing::debug!("command: {:?}", command.as_std());
+    tracing::debug!("Running command: {:?}", command.as_std());
 
     let mut child = command
         .kill_on_drop(true)
         .spawn()
-        .map_err(|err| anyhow::anyhow!("Failed to spawn docker compose pull command: {err}"))?;
+        .map_err(|err| anyhow::anyhow!("Failed to spawn docker compose up command: {err}"))?;
 
     let status = child
         .wait()
         .await
-        .map_err(|err| anyhow::anyhow!("Failed to wait for docker compose pull command: {err}"))?;
+        .map_err(|err| anyhow::anyhow!("Failed to wait for docker compose up command: {err}"))?;
     if !status.success() {
         return Err(
-            Error::new(anyhow::anyhow!("Docker compose pull command failed"))
+            Error::new(anyhow::anyhow!("Docker compose up command failed"))
                 .with_code(status.code().unwrap_or(1)),
         );
     }
