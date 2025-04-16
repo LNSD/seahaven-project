@@ -1566,6 +1566,7 @@ dependencies = [
 name = "seahaven-docker"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "indoc",
  "semver",
  "serde",
@@ -1574,6 +1575,7 @@ dependencies = [
  "test-with",
  "thiserror",
  "tokio",
+ "tracing",
  "which",
 ]
 
