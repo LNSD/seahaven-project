@@ -1,7 +1,7 @@
 use std::{fs::File, io::BufReader, path::PathBuf};
 
+use super::common::file_arg;
 use crate::result::Result;
-
 /// The `setup` command name
 pub const CMD: &str = "setup";
 
@@ -10,6 +10,7 @@ pub fn cmd() -> clap::Command {
     clap::command!(CMD)
         .about("Manage local development environment setup")
         .subcommands([env::cmd(), compose::cmd()])
+        .arg(file_arg().global(true))
 }
 
 /// The `setup` command implementation

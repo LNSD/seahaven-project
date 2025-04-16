@@ -2,6 +2,7 @@ use std::{fs::File, io::BufReader, path::PathBuf};
 
 use seahaven_docker::cmd::{DockerCmd, IntoCommand};
 
+use super::common::file_arg;
 use crate::result::{Error, Result};
 
 /// The `down` command name
@@ -11,6 +12,7 @@ pub const CMD: &str = "down";
 pub fn cmd() -> clap::Command {
     clap::command!(CMD)
         .about("Stop and remove containers, networks, images, and volumes")
+        .arg(file_arg())
         .args([
             clap::arg!(-v --volumes "Remove named volumes declared in the volumes section of the Compose file")
                 .action(clap::ArgAction::SetTrue),

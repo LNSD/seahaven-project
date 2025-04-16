@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use super::{build, down, eject, init, pull, run, setup, up, version};
 use crate::result::Result;
 
@@ -17,12 +15,6 @@ pub async fn cmd_run() -> Result<()> {
             up::cmd(),
             version::cmd(),
         ])
-        .arg(
-            clap::arg!(-f --file <FILE> "The seahaven setup file")
-                .default_value("setup.yaml")
-                .value_parser(clap::value_parser!(PathBuf))
-                .global(true),
-        )
         .infer_long_args(true)
         .infer_subcommands(true)
         .get_matches();
