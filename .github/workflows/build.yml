@@ -1,0 +1,91 @@
+name: build
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [ 'main' ]
+    tags: [ 'v*' ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  cli-image:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+    - uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3
+
+    - uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
+      id: meta
+      with:
+        images: ghcr.io/lnsd/seahaven-project
+        tags: |
+          type=ref,event=tag
+          type=sha
+
+    - uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_GITHUB_TOKEN }}
+
+    - uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6
+      with:
+        file: seahaven-cli/Dockerfile
+        context: .
+        platforms: linux/amd64,linux/arm64
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        push: ${{ github.event_name != 'pull_request' }}
+        pull: true
+        cache-from: type=registry,ref=ghcr.io/lnsd/seahaven-project:buildcache
+        cache-to: type=registry,ref=ghcr.io/lnsd/seahaven-project:buildcache,mode=max
+
+  cli-artifacts:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: macos-latest
+            target: aarch64-apple-darwin
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Set up Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@9399c7bb15d4c7d47b27263d024f0a4978346ba4 # v1
+        with:
+          target: ${{ matrix.target }}
+          rustflags: ''
+          cache: false
+
+      - name: Cache Rust build files
+        uses: leafwing-studios/cargo-cache@a0709d80dd96c8734ac8f186c1f238c8f528d198 # v2
+        with:
+          sweep-cache: true
+
+      - name: Build executable (debug)
+        run: cargo build --package seahaven-cli --bin truman --target=${{ matrix.target }}
+
+      - name: Build executable (release)
+        if: ${{ github.event_name != 'pull_request' }}
+        run: cargo build --package seahaven-cli --bin truman --target=${{ matrix.target }} --release
+
+      - name: Upload artifacts (debug)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: truman-${{ matrix.target }}-debug
+          path: target/${{ matrix.target }}/debug/truman
+          if-no-files-found: error
+
+      - name: Upload artifacts (release)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ github.event_name != 'pull_request' }}
+        with:
+          name: truman-${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/truman
+          if-no-files-found: error
