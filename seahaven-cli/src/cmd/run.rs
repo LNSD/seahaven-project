@@ -24,8 +24,17 @@ pub fn cmd() -> clap::Command {
 /// The `run` command implementation
 pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     // Check for requirements
+    // - No min version for just
     let just_exe = seahaven_just::exe::resolve_cli_executable()
         .map_err(|err| anyhow::anyhow!("Failed to resolve just executable: {err}"))?;
+
+    tracing::debug!("just executable: {}", just_exe);
+
+    let just_version = seahaven_just::version::fetch(&just_exe)
+        .await
+        .map_err(|err| anyhow::anyhow!("Failed to determine just version: {err}"))?;
+
+    tracing::debug!("just version: {}", just_version);
 
     // Load the setup file
     let setup_file = matches

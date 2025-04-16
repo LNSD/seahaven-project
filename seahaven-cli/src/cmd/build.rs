@@ -24,9 +24,32 @@ pub fn cmd() -> clap::Command {
 /// The `build` command implementation
 pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     // Check for requirements
-    // TODO: Check for the docker compose and buildx plugins
+    // - No min version for docker
+    // - No min version for docker compose plugin (required)
+    // - No min version for buildx plugin (required)
     let docker_exe = seahaven_docker::exe::resolve_cli_executable()
         .map_err(|err| anyhow::anyhow!("Failed to resolve docker executable: {err}"))?;
+
+    tracing::debug!("docker executable: {}", docker_exe);
+
+    let docker_version = seahaven_docker::version::fetch(&docker_exe)
+        .await
+        .map_err(|err| anyhow::anyhow!("Failed to determine docker version: {err}"))?;
+
+    tracing::debug!("docker version: {:?}", docker_version);
+
+    if docker_version.plugin_compose.is_none() {
+        return Err(anyhow::anyhow!(
+            "Failed to determine the docker compose plugin version. Is the docker compose plugin installed?"
+        )
+        .into());
+    }
+    if docker_version.plugin_buildx.is_none() {
+        return Err(anyhow::anyhow!(
+            "Failed to determine the buildx plugin version. Is the buildx plugin installed?"
+        )
+        .into());
+    }
 
     // Load the setup file
     let setup_file = matches
