@@ -23,6 +23,11 @@ pub fn cmd() -> clap::Command {
 
 /// The `run` command implementation
 pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
+    // Check for requirements
+    let just_exe = seahaven_just::exe::resolve_cli_executable()
+        .map_err(|err| anyhow::anyhow!("Failed to resolve just executable: {err}"))?;
+
+    // Load the setup file
     let setup_file = matches
         .get_one::<PathBuf>("file")
         .expect("Failed to get setup file");
@@ -30,7 +35,6 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         return Err(anyhow::anyhow!("Setup file not found: {}", setup_file.display()).into());
     }
 
-    // Load the setup file
     let setup_file = File::open(setup_file)
         .map(BufReader::new)
         .map_err(|err| anyhow::anyhow!("Failed to open setup file: {err}"))?;
@@ -58,7 +62,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     }
 
     // Create and run the just command
-    let mut command = JustCmd::new()
+    let mut command = JustCmd::with_executable(just_exe)
         .with_justfile::<&PathBuf>(matches.get_one::<PathBuf>("justfile"))
         .with_env_file(env_file_path)
         .with_dry_run(matches.get_flag("dry-run"))

@@ -9,7 +9,7 @@ use super::{
     dump::JustDumpCmd,
     version::JustVersionCmd,
 };
-use crate::exe::{Executable, resolve_cli_executable};
+use crate::exe::Executable;
 
 pub struct JustCmd<
     F = JustfileNotSet,
@@ -26,30 +26,7 @@ pub struct JustCmd<
     args_opt: A,
 }
 
-impl Default for JustCmd {
-    /// Create a new just command
-    ///
-    /// # Panics
-    ///
-    /// This function will panic if the just CLI binary is not found.
-    fn default() -> Self {
-        let exe = resolve_cli_executable().expect("Just CLI binary not found");
-        Self::with_executable(exe)
-    }
-}
-
 impl JustCmd {
-    /// Create a new `just` command
-    ///
-    /// This is equivalent to calling [`JustCmd::default()`].
-    ///
-    /// # Panics
-    ///
-    /// This function will panic if the just CLI binary is not found.
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Create a new `just` command with a custom executable
     pub fn with_executable<B>(exe: B) -> Self
     where
