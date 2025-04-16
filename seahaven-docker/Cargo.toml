@@ -8,13 +8,15 @@ repository.workspace = true
 edition.workspace = true
 
 [dependencies]
+anyhow = "1.0.98"
 indoc = "2.0.6"
 semver = { version = "1.0.26", features = ["serde"] }
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
 serde_with = "3.12.0"
 thiserror = "2.0.12"
-tokio = { version = "1.44", default-features = false, features = ["macros", "process"] }
+tokio = { version = "1.44", default-features = false, features = ["macros", "process", "time"] }
+tracing = { version = "0.1.41", default-features = false, features = ["std"] }
 which = "7.0.2"
 
 [dev-dependencies]

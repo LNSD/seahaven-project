@@ -1,8 +1,8 @@
 use std::borrow::Borrow;
 
 use super::{
-    common::IntoCommand, compose::DockerComposeCmd, system::DockerSystemCmd,
-    version::DockerVersionCmd,
+    common::IntoCommand, compose::DockerComposeCmd, root_version::DockerRootVersionCmd,
+    system::DockerSystemCmd, version::DockerVersionCmd,
 };
 use crate::exe::Executable;
 
@@ -19,6 +19,11 @@ impl DockerCmd {
 }
 
 impl DockerCmd {
+    /// Create a new `docker --version` command
+    pub fn get_version(self) -> DockerRootVersionCmd {
+        DockerRootVersionCmd::new(self)
+    }
+
     /// Create a new `docker version` command
     pub fn version(self) -> DockerVersionCmd {
         DockerVersionCmd::new(self)

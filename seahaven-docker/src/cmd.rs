@@ -14,6 +14,7 @@
 //!
 //! The following Docker commands are currently supported:
 //!
+//! - `docker --version`
 //! - `docker version`
 //! - `docker system (info | prune)`
 //! - `docker compose (pull | build | up | down)`
@@ -77,11 +78,13 @@
 mod common;
 pub mod compose;
 mod root;
+mod root_version;
 pub mod system;
 pub mod version;
 
 pub use common::IntoCommand;
 pub use root::DockerCmd;
+pub use root_version::DockerRootVersionCmd;
 
 #[cfg(test)]
 mod tests {
