@@ -2,6 +2,7 @@ use std::{fs::File, io::BufReader, path::PathBuf};
 
 use seahaven_docker::cmd::{DockerCmd, IntoCommand};
 
+use super::common::file_arg;
 use crate::result::{Error, Result};
 
 /// The `pull` command name
@@ -11,6 +12,7 @@ pub const CMD: &str = "pull";
 pub fn cmd() -> clap::Command {
     clap::command!(CMD)
         .about("Pull the images for the development environment")
+        .arg(file_arg())
         .args([
             clap::arg!(--"dry-run" "Execute command in dry run mode")
                 .action(clap::ArgAction::SetTrue),

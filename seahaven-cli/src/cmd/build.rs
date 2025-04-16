@@ -2,6 +2,7 @@ use std::{fs::File, io::BufReader, path::PathBuf};
 
 use seahaven_docker::cmd::{DockerCmd, IntoCommand};
 
+use super::common::file_arg;
 use crate::result::{Error, Result};
 
 /// The `build` command name
@@ -11,6 +12,7 @@ pub const CMD: &str = "build";
 pub fn cmd() -> clap::Command {
     clap::command!(CMD)
         .about("Build the development environment images using docker compose")
+        .arg(file_arg())
         .args([
             clap::arg!(--"dry-run" "Execute command in dry run mode")
                 .action(clap::ArgAction::SetTrue),

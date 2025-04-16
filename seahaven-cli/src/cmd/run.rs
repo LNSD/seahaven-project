@@ -2,8 +2,8 @@ use std::{fs::File, io::BufReader, path::PathBuf};
 
 use seahaven_just::cmd::{IntoCommand, JustCmd};
 
+use super::common::file_arg;
 use crate::result::{Error, Result};
-
 /// The `run` command name
 pub const CMD: &str = "run";
 
@@ -11,6 +11,7 @@ pub const CMD: &str = "run";
 pub fn cmd() -> clap::Command {
     clap::command!(CMD)
         .about("run the development environment images using docker compose")
+        .arg(file_arg())
         .args([
             clap::arg!(--"dry-run" "Execute command in dry run mode")
                 .action(clap::ArgAction::SetTrue),

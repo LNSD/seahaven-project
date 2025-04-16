@@ -1,7 +1,7 @@
 use std::{fs::File, io::BufReader, path::PathBuf};
 
+use super::common::file_arg;
 use crate::result::Result;
-
 /// The `eject` command name
 pub const CMD: &str = "eject";
 
@@ -9,6 +9,7 @@ pub const CMD: &str = "eject";
 pub fn cmd() -> clap::Command {
     clap::command!(CMD)
         .about("Eject the setup.yaml file to get the docker-compose.yaml and .env files")
+        .arg(file_arg())
         .args([clap::arg!(-o --"output-dir" <DIR> "The output directory")
             .default_value(".")
             .value_parser(clap::value_parser!(PathBuf))])

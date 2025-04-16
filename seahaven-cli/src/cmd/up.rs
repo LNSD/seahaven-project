@@ -2,8 +2,8 @@ use std::{fs::File, io::BufReader, path::PathBuf};
 
 use seahaven_docker::cmd::{DockerCmd, IntoCommand};
 
+use super::common::file_arg;
 use crate::result::{Error, Result};
-
 /// The `up` command name
 pub const CMD: &str = "up";
 
@@ -11,6 +11,7 @@ pub const CMD: &str = "up";
 pub fn cmd() -> clap::Command {
     clap::command!(CMD)
         .about("Start the development environment using docker compose")
+        .arg(file_arg().global(true))
         .args([
             clap::arg!(-d --detach "Detached mode: Run containers in the background")
                 .action(clap::ArgAction::SetTrue),
