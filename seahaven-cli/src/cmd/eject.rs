@@ -2,6 +2,7 @@ use std::{fs::File, io::BufReader, path::PathBuf};
 
 use super::common::file_arg;
 use crate::result::Result;
+
 /// The `eject` command name
 pub const CMD: &str = "eject";
 

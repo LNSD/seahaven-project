@@ -1,9 +1,12 @@
 use super::{build, down, eject, init, pull, run, setup, up, version};
 use crate::result::Result;
 
+/// The name of the CLI
+pub const CMD: &str = "truman";
+
 /// Create and execute the DIPs CLI command line interface
 pub async fn cmd_run() -> Result<()> {
-    let matches = clap::command!()
+    let matches = clap::command!(CMD)
         .subcommands([
             build::cmd(),
             down::cmd(),
@@ -17,6 +20,7 @@ pub async fn cmd_run() -> Result<()> {
         ])
         .infer_long_args(true)
         .infer_subcommands(true)
+        .disable_version_flag(true)
         .get_matches();
 
     match matches.subcommand() {
