@@ -1,4 +1,4 @@
-use super::{build, down, eject, init, pull, run, setup, up, version};
+use super::{build, down, eject, init, pull, run, setup, system, up, version};
 use crate::result::Result;
 
 /// The name of the CLI
@@ -15,6 +15,7 @@ pub async fn cmd_run() -> Result<()> {
             pull::cmd(),
             run::cmd(),
             setup::cmd(),
+            system::cmd(),
             up::cmd(),
             version::cmd(),
         ])
@@ -31,6 +32,7 @@ pub async fn cmd_run() -> Result<()> {
         Some((pull::CMD, matches)) => pull::run(matches).await,
         Some((run::CMD, matches)) => run::run(matches).await,
         Some((setup::CMD, matches)) => setup::run(matches).await,
+        Some((system::CMD, matches)) => system::run(matches).await,
         Some((up::CMD, matches)) => up::run(matches).await,
         Some((version::CMD, matches)) => version::run(matches).await,
         _ => Err(anyhow::anyhow!("No command specified").into()),

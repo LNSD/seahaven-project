@@ -7,6 +7,7 @@ mod pull;
 mod root;
 mod run;
 mod setup;
+mod system;
 mod up;
 mod version;
 

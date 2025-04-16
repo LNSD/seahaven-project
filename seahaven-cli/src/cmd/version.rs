@@ -17,9 +17,8 @@ pub fn cmd() -> clap::Command {
                 .action(clap::ArgAction::SetTrue),
             clap::arg!(--full "Print version information in full format")
                 .action(clap::ArgAction::SetTrue),
-            clap::arg!(--check "Check for dependency versions").action(clap::ArgAction::SetTrue),
         ])
-        .group(clap::ArgGroup::new("format").args(["short", "full", "json", "check"]))
+        .group(clap::ArgGroup::new("format").args(["short", "full", "json"]))
 }
 
 pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
@@ -31,11 +30,6 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
 
         info::into_version_info(build_info, docker_version, just_version)
     };
-
-    // Check if dependencies are present
-    if matches.get_flag("check") {
-        return check_dependencies(&info);
-    }
 
     let format = if matches.get_flag("short") {
         Format::Short
@@ -315,40 +309,4 @@ mod info {
     fn format_build_info_target_cpu_features(info: &BuildInfo) -> String {
         info.target.cpu.features.join(", ")
     }
-}
-
-/// Check if all required dependencies are present
-fn check_dependencies(info: &info::VersionInfo) -> Result<()> {
-    let mut missing_deps = Vec::new();
-
-    if let Some(docker) = info.dependencies.docker.as_ref() {
-        if docker.client.is_none() {
-            missing_deps.push("docker-client");
-        }
-        if docker.engine.is_none() {
-            missing_deps.push("docker-engine");
-        }
-        if docker.compose.is_none() {
-            missing_deps.push("docker-compose");
-        }
-        if docker.buildx.is_none() {
-            missing_deps.push("docker-buildx");
-        }
-    } else {
-        missing_deps.push("docker-cli");
-    }
-
-    if info.dependencies.just.is_none() {
-        missing_deps.push("just-cli");
-    }
-
-    if !missing_deps.is_empty() {
-        return Err(anyhow::anyhow!(
-            "The following dependencies are missing: {}",
-            missing_deps.join(", ")
-        )
-        .into());
-    }
-
-    Ok(())
 }
