@@ -1,6 +1,6 @@
 # TODO
 
-- [ ] TBD
+- [ ] #v0_2 Support `.env` files in the project root. See [[#Front-matter vs .env file]] 
 # Notes
 - Equivalent to `docker-compose.yaml` file with the `.env` section (constants section).
 - There are two type of containers: 
@@ -18,14 +18,11 @@
 - The `init` top-level map is optional.
 - #next Multiple setup files can be merged into a single setup file by specifying them in the CLI the same way multiple docker-compose files are merged in the docker compose CLI.
 ---
-## Front-matter env
+## Environment variables
 - ~~The `[constants]` section, as [in meson](https://mesonbuild.com/Machine-files.html#constants), can be referenced in the `[services]` section, and they will be interpolated.~~
 - *envfile* format:  https://www.dotenv.org/docs/security/env (spec?)
 - https://github.com/lucagoslar/serde-envfile
-- https://github.com/Roger/serde-with-expand-env (crate: `shellexpand`)
-### Environment variables
-- Does it still make sense?
-- Should it be part of the top-level keys?
+- https://github.com/Roger/serde-with-expand-env ~~(crate: `shellexpand`)~~
 ## dependency graph
 - A mermaid graph can be displayed for understanding the different services `depends_on` links
 ## tools
@@ -34,6 +31,15 @@
 
 ----
 # Challenges
+## Front-matter env + .env file
+Supporting both implies solving these questions: _Which environment info should prevail in case both are present? Should￼￼ we merge both?_
+
+Front-matter env makes sense for a few variables. When there are several lines variables, it is better to use the `.env` file.
+
+## Format preserving setup.yaml modification
+Serde's YAML parsing library does not allow implementing `cargo edit`-like commands. There is no well stablished format-preserving YAML parser in Rust. 
+
+There is https://crates.io/crates/nondestructive but it is not as well battle-tested as toml-edit.
 ## ~~services/init key collision~~
 - If we merge the `services` and the `init-containers` maps and a service and an init-comtainer share the same name, they will collide:
 ### ~~Option A~~

@@ -1,6 +1,7 @@
 #next 
 
 An ephemeral server (implemented in Rust?/Go?) could be running monitoring the services a-la-test-containers. That should act as the intermediary between the test cases and the environment.
+# Notes
 - MCP server
 - Ryuk (testcontainers reaper functionality)
 - Orchestrator for concurrent test runs. See [[Tests]]
