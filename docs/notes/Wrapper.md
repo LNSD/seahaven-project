@@ -1,3 +1,5 @@
+#v0_3
+# Notes
 - Wrapper configuration file (TOML?) in `.seahaven/` directory
 - Cache directory in `$HOME/.cache/seahaven/`
 - Global configuration directory `$HOME/.config/seahaven/`

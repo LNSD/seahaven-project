@@ -1,4 +1,6 @@
+#next 
+# Notes
 - TUI
-- #next Allure report. Related to [[Tests]]
-- #next Web UI log viewer
+- Allure report like report. Related to [[Tests]]
+- Web UI log viewer
 - Related to [[christoph (Daemon)]] and [[Tests]]
