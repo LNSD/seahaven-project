@@ -10,6 +10,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
+
 COPY ./ ./
 
 RUN cargo build --package seahaven-cli --bin truman --release

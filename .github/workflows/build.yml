@@ -17,20 +17,22 @@ jobs:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
     - uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3
-
-    - uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
-      id: meta
       with:
-        images: ghcr.io/lnsd/seahaven-project
-        tags: |
-          type=ref,event=tag
-          type=sha
+        platforms: linux/amd64,linux/arm64
 
     - uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GHCR_GITHUB_TOKEN }}
+
+    - uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
+      id: meta
+      with:
+        images: ghcr.io/lnsd/seahaven-cli
+        tags: |
+          type=ref,event=tag
+          type=sha
 
     - uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6
       with:
@@ -68,24 +70,31 @@ jobs:
         with:
           sweep-cache: true
 
-      - name: Build executable (debug)
-        run: cargo build --package seahaven-cli --bin truman --target=${{ matrix.target }}
-
       - name: Build executable (release)
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
         run: cargo build --package seahaven-cli --bin truman --target=${{ matrix.target }} --release
 
-      - name: Upload artifacts (debug)
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: truman-${{ matrix.target }}-debug
-          path: target/${{ matrix.target }}/debug/truman
-          if-no-files-found: error
+      - name: Build executable (debug)
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+        run: cargo build --package seahaven-cli --bin truman --target=${{ matrix.target }}
 
+      # Release builds are named after the branch name or tag, e.g.:
+      #  - truman-main-x86_64-unknown-linux-gnu
+      #  - truman-v0.1.0-x86_64-unknown-linux-gnu
       - name: Upload artifacts (release)
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
         with:
-          name: truman-${{ matrix.target }}
+          name: truman-${{ github.ref_name }}-${{ matrix.target }}
           path: target/${{ matrix.target }}/release/truman
+          if-no-files-found: error
+
+      # Debug builds are named after the commit hash, e.g.:
+      # - truman-1309608f033c69824dbf7e2a1f8cb5e3c8deb33d-aarch64-apple-darwin
+      - name: Upload artifacts (debug)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+        with:
+          name: truman-${{ github.sha }}-${{ matrix.target }}
+          path: target/${{ matrix.target }}/debug/truman
           if-no-files-found: error
