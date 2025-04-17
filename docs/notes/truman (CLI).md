@@ -30,12 +30,12 @@ The CLI is an opinionated wrapper around `docker compose` + `just` to facilitate
 - `truman start`
 - `truman stop`
 - `truman restart`
+- `truman new`
 
-## Plugin system
-#next 
-- Add a cargo-like plugin system to support installing commands with the name `truman-<subcommand>`.
-- "Official" plugins should live under the `seahaven-cli/src/bin` directory.
-
+## The package management commands
+#v0_2 
+- `truman new` to bootstrap the creation of a package
+- `truman package <sub-command>` to operate with packages
 ## The system sub-command
 - #v0_1 Check for dependencies option
 - #v0_2 Support `docker system prune`
@@ -67,6 +67,10 @@ See [[Tasks]]
 
 #next 
 - Add justfile tasks shell auto-completion
+## Plugin system
+#next 
+- Add a cargo-like plugin system to support installing commands with the name `truman-<subcommand>`.
+- "Official" plugins should live under the `seahaven-cli/src/bin` directory.
 ## Setup.yaml edit
 #next
 - `truman new` ([[Packages]])

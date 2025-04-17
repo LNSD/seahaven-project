@@ -12,3 +12,5 @@
 - Image (like in `docker-compose.yaml`)
 - Configuration: template, script, etc.
 - Multiple `Dockerfile` build targets : main, wrapper, wrapper-dev, etc.
+# Packages <-> setup.yaml
+Should packages align with the `setup.yaml` services/init entries?
