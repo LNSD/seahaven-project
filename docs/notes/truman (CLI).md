@@ -2,9 +2,9 @@ The CLI is an opinionated wrapper around `docker compose` + `just` to facilitate
 # TODO
 
 #v0_2 
-- [ ] Add support for listing the Justfile tasks like: `truman run --list` and `truman run --summary`
-- [ ] Refactor docker/just wrapper crates and remove resolve_exe fns. Move the logic to the truman CLI and resolve the ENV vars in the sub-commands.
-- [ ] Turn the system `--check-deps` option into a sub-command `truman system check`.
+- [x] Add support for listing the Justfile tasks like: `truman run --list` and `truman run --summary`
+- [x] Refactor docker/just wrapper crates and remove resolve_exe fns. Move the logic to the truman CLI and resolve the ENV vars in the sub-commands.
+- [x] Turn the system `--check-deps` option into a sub-command `truman system check`.
 - [ ] Refactor the command preparation to avoid code duplication.
 - [ ] Intercept any signal and forward it to the docker command
 
@@ -23,12 +23,21 @@ The CLI is an opinionated wrapper around `docker compose` + `just` to facilitate
 - `truman down`
 - `truman build`
 - `truman pull`
+- `truman eject`
+- ~~`truman setup`~~
+- `truman init`
+- `truman run`
+- `truman version`
+- `truman system`
 #v0_2 
-- `truman logs`
-- `truman ps`
+- `truman dump-config`
+- `truman system check`
+- `truman system prune`
 - `truman start`
 - `truman stop`
+- `truman ps`
 - `truman restart`
+- `truman logs`
 - `truman new`
 
 ## The package management commands
@@ -80,4 +89,3 @@ See [[Tasks]]
 #next
 - See [[Tests]]
 - As a `truman`, Cargo-like, CLI plugin. Run a binary in the path named `truman-test` that provides the functionality.
-
