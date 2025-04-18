@@ -1,4 +1,4 @@
-use seahaven_docker::exe::{Executable, resolve_cli_executable};
+use seahaven_docker::exe::resolve;
 
 #[test_with::no_env(CI)]
 #[test]
@@ -7,7 +7,7 @@ fn resolve_invalid_executable() {
     let invalid_exe_name = "non_existent_docker_binary";
 
     //* When
-    let invalid_result = Executable::resolve(invalid_exe_name);
+    let invalid_result = resolve(invalid_exe_name);
 
     //* Then
     assert!(
@@ -20,7 +20,7 @@ fn resolve_invalid_executable() {
 #[test]
 fn executable_display_and_debug() {
     //* Given
-    let exe = resolve_cli_executable().expect("docker binary not found");
+    let exe = resolve("docker").expect("docker binary not found");
 
     //* When
     let display_str = format!("{}", exe);

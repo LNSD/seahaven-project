@@ -26,12 +26,12 @@
 //! ```rust
 //! use seahaven_docker::{
 //!     cmd::{DockerCmd, IntoCommand},
-//!     exe::resolve_cli_executable,
+//!     exe::resolve,
 //! };
 //!
 //! // Get Docker version information
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-//! let exe = resolve_cli_executable()?;
+//! let exe = resolve("docker")?;
 //! let version_cmd = DockerCmd::with_executable(exe).version();
 //! let mut command = version_cmd.into_command();
 //!
@@ -46,12 +46,12 @@
 //! ```rust
 //! use seahaven_docker::{
 //!     cmd::{DockerCmd, IntoCommand},
-//!     exe::resolve_cli_executable,
+//!     exe::resolve,
 //! };
 //!
 //! // Configure and start services with Docker Compose
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-//! let exe = resolve_cli_executable()?;
+//! let exe = resolve("docker")?;
 //! let mut compose_cmd = DockerCmd::with_executable(exe)
 //!     .compose()
 //!     .up()

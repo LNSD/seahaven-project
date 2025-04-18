@@ -1,5 +1,5 @@
 use crate::{
-    exe::resolve_cli_executable,
+    exe::resolve,
     version::{get_docker_system_info_versions, get_docker_version_versions},
 };
 
@@ -7,7 +7,7 @@ use crate::{
 #[tokio::test]
 async fn resolve_docker_version() {
     //* Given
-    let exe = resolve_cli_executable().expect("docker binary not found");
+    let exe = resolve("docker").expect("docker binary not found");
 
     //* When
     let res = get_docker_version_versions(&exe).await;
@@ -28,7 +28,7 @@ async fn resolve_docker_version() {
 #[tokio::test]
 async fn resolve_docker_plugin_versions() {
     //* Given
-    let exe = resolve_cli_executable().expect("docker binary not found");
+    let exe = resolve("docker").expect("docker binary not found");
 
     //* When
     let res = get_docker_system_info_versions(&exe).await;
