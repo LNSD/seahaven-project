@@ -1,106 +1,25 @@
 use seahaven_cli::result::Result;
 
+mod check;
+
 /// The `system` command name
 pub const CMD: &str = "system";
 
 /// Create the `system` command
 pub fn cmd() -> clap::Command {
     clap::command!(CMD)
-        .about("Manage seahaven system")
-        .args([clap::arg!(--"check-deps" "Check for dependency versions")
-            .action(clap::ArgAction::SetTrue)])
-        .group(clap::ArgGroup::new("check").args(["check-deps"]))
+        .about("Manage Seahaven")
+        .subcommands([check::cmd()])
+        .arg_required_else_help(true)
+        .infer_long_args(true)
+        .infer_subcommands(true)
 }
 
 /// The `system` command implementation
 pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
-    if matches.get_flag("check-deps") {
-        return check_dependencies().await;
-    }
-
-    Err(anyhow::anyhow!("Invalid command").into())
-}
-
-/// Verifies the presence of required system dependencies including Docker components (client,
-/// engine, compose plugin, buildx plugin) and Just CLI.
-///
-/// Returns an error with a list of missing dependencies if any are not found.
-async fn check_dependencies() -> Result<()> {
-    let docker_version = fetch_docker_version().await;
-    let just_version = fetch_just_version().await;
-
-    let mut missing_deps = Vec::new();
-
-    // Check docker dependencies
-    if let Some(docker) = docker_version {
-        if docker.client.is_none() {
-            missing_deps.push("docker-client");
-        }
-        if docker.engine.is_none() {
-            missing_deps.push("docker-engine");
-        }
-        if docker.plugin_compose.is_none() {
-            missing_deps.push("docker-compose");
-        }
-        if docker.plugin_buildx.is_none() {
-            missing_deps.push("docker-buildx");
-        }
-    } else {
-        missing_deps.push("docker-cli");
-    }
-
-    // Check just CLI dependency
-    if just_version.is_none() {
-        missing_deps.push("just-cli");
-    }
-
-    if !missing_deps.is_empty() {
-        return Err(anyhow::anyhow!(
-            "The following dependencies are missing: {}",
-            missing_deps.join(", ")
-        )
-        .into());
-    }
-
-    Ok(())
-}
-
-/// Resolves the Docker CLI executable path and fetches version information for Docker components.
-/// Returns None if Docker is not found or version check fails.
-async fn fetch_docker_version() -> Option<seahaven_docker::version::Version> {
-    let docker_exe = match seahaven_docker::exe::resolve_cli_executable() {
-        Ok(exe) => exe,
-        Err(err) => {
-            tracing::debug!("Failed to resolve docker executable: {}", err);
-            return None;
-        }
-    };
-
-    match seahaven_docker::version::fetch(&docker_exe).await {
-        Ok(version) => Some(version),
-        Err(err) => {
-            tracing::debug!("Failed to determine docker version: {}", err);
-            None
-        }
-    }
-}
-
-/// Resolves the Just CLI executable path and fetches version information for Just.
-/// Returns None if Just is not found or version check fails.
-async fn fetch_just_version() -> Option<seahaven_just::version::Version> {
-    let just_exe = match seahaven_just::exe::resolve_cli_executable() {
-        Ok(exe) => exe,
-        Err(err) => {
-            tracing::debug!("Failed to resolve just executable: {}", err);
-            return None;
-        }
-    };
-
-    match seahaven_just::version::fetch(&just_exe).await {
-        Ok(version) => Some(version),
-        Err(err) => {
-            tracing::debug!("Failed to determine just version: {}", err);
-            None
-        }
+    match matches.subcommand() {
+        Some((check::CMD, sub_matches)) => check::run(sub_matches).await,
+        Some((cmd, _)) => unreachable!("unrecognized subcommand: {cmd}"),
+        None => unreachable!("No subcommand specified"),
     }
 }

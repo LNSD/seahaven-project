@@ -13,6 +13,7 @@ test *suites='all':
     #!/usr/bin/env sh
     if [ "{{suites}}" = "all" ]; then
         cargo nextest run
+        cargo test --doc
     else
         for suite in {{suites}}; do
             case $suite in
