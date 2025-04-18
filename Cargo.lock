@@ -1649,7 +1649,7 @@ dependencies = [
 [[package]]
 name = "serde-envfile"
 version = "0.2.0"
-source = "git+https://github.com/LNSD/serde-envfile.git?rev=ad00e40#ad00e4029930d238cb1b1465b46e5647a87ded6e"
+source = "git+https://github.com/LNSD/serde-envfile.git?rev=7d02f71#7d02f716d8bc06623a8d03075486298cdcdec1f2"
 dependencies = [
  "cfg-if",
  "dotenvy",
