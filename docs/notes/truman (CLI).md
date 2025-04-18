@@ -2,20 +2,19 @@ The CLI is an opinionated wrapper around `docker compose` + `just` to facilitate
 # TODO
 
 #v0_2 
-- [ ] Intercept any signal and forward it to the docker command
-- [ ] Add a `--output` (a.k.a. `--progress`) global option with `plain`, `json` and `tty` (for TUI). This will require better docker command *stdio* handling 
 - [ ] Add support for listing the Justfile tasks like: `truman run --list` and `truman run --summary`
-- [ ] Group sub-commands by functionality in the help (e.g., compose commands must under the same section, init+setup+eject under another section, etc.)
 - [ ] Refactor docker/just wrapper crates and remove resolve_exe fns. Move the logic to the truman CLI and resolve the ENV vars in the sub-commands.
 - [ ] Turn the system `--check-deps` option into a sub-command `truman system check`.
 - [ ] Refactor the command preparation to avoid code duplication.
+- [ ] Intercept any signal and forward it to the docker command
 
 #v0_3 
-- [ ] TBD
+- [ ] Add a `--output` (a.k.a. `--progress`) global option with `plain`, `json` and `tty` (for TUI). This will require better docker command *stdio* handling 
 # Notes
 - The CLI environment variables must be passed down to the docker-compose commands.
 - Version compatibility with docker-compose must be ensured at startup. The minimum version must be compatible with docker-buildkit.
 - A new session ID must be generated for each CLI execution. The session ID must be a UUID?.
+- ~~Group sub-commands by functionality in the help (e.g., compose commands must under the same section, init+setup+eject under another section, etc.).~~ Help headers not available for sub-commands
 
 ---
 ## CLI commands
