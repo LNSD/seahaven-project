@@ -88,7 +88,7 @@ Truman depends on the following tools:
 > Verify the system dependencies with:
 >
 > ```bash
-> truman system --check-deps
+> truman system check
 > ```
 
 #### Docker
