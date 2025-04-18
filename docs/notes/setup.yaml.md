@@ -1,6 +1,6 @@
 # TODO
 
-- [ ] #v0_2 Support `.env` files in the project root. See [[#Front-matter vs .env file]] 
+- [ ] #v0_2 Support `.env` files in the project root. See [[#Front-matter env + `.env` file support]]
 # Notes
 - Equivalent to `docker-compose.yaml` file with the `.env` section (constants section).
 - There are two type of containers: 
@@ -17,6 +17,7 @@
 - The `services` top-level map is required.
 - The `init` top-level map is optional.
 - #next Multiple setup files can be merged into a single setup file by specifying them in the CLI the same way multiple docker-compose files are merged in the docker compose CLI.
+- #next Support `sops` encrypted `.env` files.
 ---
 ## Environment variables
 - ~~The `[constants]` section, as [in meson](https://mesonbuild.com/Machine-files.html#constants), can be referenced in the `[services]` section, and they will be interpolated.~~
@@ -31,10 +32,26 @@
 
 ----
 # Challenges
-## Front-matter env + .env file
-Supporting both implies solving these questions: _Which environment info should prevail in case both are present? Should￼￼ we merge both?_
+## Front-matter env + `.env` file support
+- The front-matter environment approach makes sense for a few variables. But, it doesn't scale well, so when there are many lines of variables, it is recommended to use an `.env` file.
+- If one wants to encrypt the environment data (e.g., using `sops`) an `.env` file MUST be used.
+----
+> _Which environment info should prevail in case both are present? Should we merge both?_
+#### a) Merge both
+We could treat the front-matter as another file that can be passed to the `docker compose` CLI.
 
-Front-matter env makes sense for a few variables. When there are several lines variables, it is better to use the `.env` file.
+> Merge order in case of conflicts? Front-matter is the first, or the last in the file merge chain?
+
+The front-matter can be used as a fast option to override `.env` values for debugging purposes. So front-matter file values should prevail over the `.env` file values.
+
+> Does Just support multiple `.env` files?`
+
+No, so we should merge all environment variables into a single `.env` file before passing them to Just.
+#### ~~b) Only one format is accepted, the other ignored~~
+It should print a warning.
+#### ~~c) Error out~~
+If both are present, an error should be raised.
+
 
 ## Format preserving setup.yaml modification
 Serde's YAML parsing library does not allow implementing `cargo edit`-like commands. There is no well stablished format-preserving YAML parser in Rust. 
