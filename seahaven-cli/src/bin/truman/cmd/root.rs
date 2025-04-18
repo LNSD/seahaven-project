@@ -14,20 +14,21 @@ pub async fn cmd_run() -> Result<()> {
             "𝑰𝒏 𝒄𝒂𝒔𝒆 𝑰 𝒅𝒐𝒏'𝒕 𝒔𝒆𝒆 𝒚𝒂, 𝒈𝒐𝒐𝒅 𝒂𝒇𝒕𝒆𝒓𝒏𝒐𝒐𝒏, 𝒈𝒐𝒐𝒅 𝒆𝒗𝒆𝒏𝒊𝒏𝒈, 𝒂𝒏𝒅 𝒈𝒐𝒐𝒅 𝒏𝒊𝒈𝒉𝒕!" — Truman Burbank
         "#})
         .subcommands([
-            build::cmd(),
-            down::cmd(),
-            eject::cmd(),
             init::cmd(),
+            build::cmd(),
+            up::cmd(),
+            down::cmd(),
             pull::cmd(),
             run::cmd(),
             setup::cmd(),
+            eject::cmd(),
             system::cmd(),
-            up::cmd(),
             version::cmd(),
         ])
+        .disable_version_flag(true)
+        .arg_required_else_help(true)
         .infer_long_args(true)
         .infer_subcommands(true)
-        .disable_version_flag(true)
         .get_matches();
 
     match matches.subcommand() {
@@ -41,6 +42,7 @@ pub async fn cmd_run() -> Result<()> {
         Some((system::CMD, matches)) => system::run(matches).await,
         Some((up::CMD, matches)) => up::run(matches).await,
         Some((version::CMD, matches)) => version::run(matches).await,
-        _ => Err(anyhow::anyhow!("No command specified").into()),
+        Some((cmd, _)) => unreachable!("Unrecognized subcommand '{cmd}'"),
+        None => unreachable!("No subcommand specified"),
     }
 }
