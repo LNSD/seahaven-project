@@ -1,20 +1,20 @@
 use super::common::IntoCommand;
 
-pub struct JustVersionCmd(tokio::process::Command);
+pub struct JustSummaryCmd(tokio::process::Command);
 
-impl JustVersionCmd {
-    /// Create a new `just --version` command
+impl JustSummaryCmd {
+    /// Create a new `just --summary` command
     pub(crate) fn new(cmd: impl IntoCommand) -> Self {
         Self(cmd.into_command())
     }
 }
 
-impl IntoCommand for JustVersionCmd {
+impl IntoCommand for JustSummaryCmd {
     fn into_command(self) -> tokio::process::Command {
         let mut cmd = self.0;
 
-        // Add the `version` subcommand
-        cmd.arg("--version");
+        // Add the `summary` subcommand
+        cmd.arg("--summary");
 
         cmd
     }
