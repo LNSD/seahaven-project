@@ -4,6 +4,7 @@ use seahaven_cli::result::{Error, Result};
 use seahaven_docker::cmd::{DockerCmd, IntoCommand};
 
 use super::common::file_arg;
+use crate::deps::resolve_docker_executable;
 
 /// The `build` command name
 pub const CMD: &str = "build";
@@ -29,8 +30,8 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     // - No min version for docker
     // - No min version for docker compose plugin (required)
     // - No min version for buildx plugin (required)
-    let docker_exe = seahaven_docker::exe::resolve_cli_executable()
-        .map_err(|err| anyhow::anyhow!("Failed to resolve docker executable: {err}"))?;
+    let docker_exe = resolve_docker_executable()
+        .map_err(|err| anyhow::anyhow!("Failed to resolve docker executable: {}", err))?;
 
     tracing::debug!("docker executable: {}", docker_exe);
 

@@ -1,6 +1,6 @@
 //! Common utilities for tests
 
-use crate::exe::Executable;
+use crate::exe::{Executable, resolve};
 
 /// The path to the `mocker.sh` fixture file
 const MOCKER_SH_PATH: &str = {
@@ -14,7 +14,7 @@ const MOCKER_SH_PATH: &str = {
 ///
 /// The executable is the `mocker.sh` fixture script, which is used to mock the Just CLI.
 pub fn fixture_exe() -> Executable {
-    Executable::resolve(MOCKER_SH_PATH).expect("Failed to resolve the test fixture executable")
+    resolve(MOCKER_SH_PATH).expect("Failed to resolve the test fixture executable")
 }
 
 /// Parses the output of the fixture executable into a [`Vec`] of string slices

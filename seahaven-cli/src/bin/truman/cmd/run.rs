@@ -4,6 +4,7 @@ use seahaven_cli::result::{Error, Result};
 use seahaven_just::cmd::{IntoCommand, JustCmd};
 
 use super::common::file_arg;
+use crate::deps::resolve_just_executable;
 
 /// The `run` command name
 pub const CMD: &str = "run";
@@ -34,8 +35,8 @@ pub fn cmd() -> clap::Command {
 pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     // Check for requirements
     // - No min version for just
-    let just_exe = seahaven_just::exe::resolve_cli_executable()
-        .map_err(|err| anyhow::anyhow!("Failed to resolve just executable: {err}"))?;
+    let just_exe = resolve_just_executable()
+        .map_err(|err| anyhow::anyhow!("Failed to resolve just executable: {}", err))?;
 
     tracing::debug!("just executable: {}", just_exe);
 

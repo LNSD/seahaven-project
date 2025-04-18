@@ -1,6 +1,8 @@
 use build_info::BuildInfo;
 use seahaven_cli::result::Result;
 
+use crate::deps::{fetch_docker_version, fetch_just_version};
+
 // Generate the build info function.
 build_info::build_info!(fn get_build_info);
 
@@ -118,44 +120,6 @@ enum Format {
     Full,
     /// Print version information in JSON format.
     Json,
-}
-
-/// Fetch the docker version
-async fn fetch_docker_version() -> Option<seahaven_docker::version::Version> {
-    let docker_exe = match seahaven_docker::exe::resolve_cli_executable() {
-        Ok(exe) => exe,
-        Err(err) => {
-            tracing::debug!("Failed to resolve docker executable: {}", err);
-            return None;
-        }
-    };
-
-    match seahaven_docker::version::fetch(&docker_exe).await {
-        Ok(version) => Some(version),
-        Err(err) => {
-            tracing::debug!("Failed to determine docker version: {}", err);
-            None
-        }
-    }
-}
-
-/// Fetch the just version
-async fn fetch_just_version() -> Option<seahaven_just::version::Version> {
-    let just_exe = match seahaven_just::exe::resolve_cli_executable() {
-        Ok(exe) => exe,
-        Err(err) => {
-            tracing::debug!("Failed to resolve just executable: {}", err);
-            return None;
-        }
-    };
-
-    match seahaven_just::version::fetch(&just_exe).await {
-        Ok(version) => Some(version),
-        Err(err) => {
-            tracing::debug!("Failed to determine just version: {}", err);
-            None
-        }
-    }
 }
 
 mod info {

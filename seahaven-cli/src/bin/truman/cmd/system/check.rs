@@ -1,5 +1,7 @@
 use seahaven_cli::result::Result;
 
+use crate::deps::{fetch_docker_version, fetch_just_version};
+
 /// The `check` command name
 pub const CMD: &str = "check";
 
@@ -68,44 +70,4 @@ async fn check_dependencies() -> Result<()> {
     }
 
     Ok(())
-}
-
-/// Resolves the Docker CLI executable path and fetches version information for Docker components.
-/// Returns None if Docker is not found or version check fails.
-async fn fetch_docker_version() -> Option<seahaven_docker::version::Version> {
-    let docker_exe = match seahaven_docker::exe::resolve_cli_executable() {
-        Ok(exe) => exe,
-        Err(err) => {
-            tracing::debug!("Failed to resolve docker executable: {}", err);
-            return None;
-        }
-    };
-
-    match seahaven_docker::version::fetch(&docker_exe).await {
-        Ok(version) => Some(version),
-        Err(err) => {
-            tracing::debug!("Failed to determine docker version: {}", err);
-            None
-        }
-    }
-}
-
-/// Resolves the Just CLI executable path and fetches version information for Just.
-/// Returns None if Just is not found or version check fails.
-async fn fetch_just_version() -> Option<seahaven_just::version::Version> {
-    let just_exe = match seahaven_just::exe::resolve_cli_executable() {
-        Ok(exe) => exe,
-        Err(err) => {
-            tracing::debug!("Failed to resolve just executable: {}", err);
-            return None;
-        }
-    };
-
-    match seahaven_just::version::fetch(&just_exe).await {
-        Ok(version) => Some(version),
-        Err(err) => {
-            tracing::debug!("Failed to determine just version: {}", err);
-            None
-        }
-    }
 }

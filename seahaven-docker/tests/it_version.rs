@@ -1,10 +1,10 @@
-use seahaven_docker::{exe::resolve_cli_executable, version};
+use seahaven_docker::{exe::resolve, version};
 
 #[test_with::no_env(CI)]
 #[tokio::test]
 async fn resolve_docker_version() {
     //* Given
-    let exe = resolve_cli_executable().expect("docker binary not found");
+    let exe = resolve("docker").expect("docker binary not found");
 
     //* When
     let res = version::fetch(&exe).await;

@@ -1,10 +1,10 @@
-use seahaven_just::{exe::resolve_cli_executable, version};
+use seahaven_just::{exe::resolve, version};
 
 #[test_with::no_env(CI)]
 #[tokio::test]
 async fn resolve_just_version() {
     //* Given
-    let exe = resolve_cli_executable().expect("just binary not found");
+    let exe = resolve("just").expect("just binary not found");
 
     //* When
     let res = version::fetch(&exe).await;

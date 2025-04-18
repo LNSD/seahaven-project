@@ -1,4 +1,5 @@
 mod cmd;
+mod deps;
 
 #[tokio::main(flavor = "current_thread")]
 pub async fn main() {
