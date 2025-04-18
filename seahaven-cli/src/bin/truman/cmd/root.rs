@@ -1,6 +1,6 @@
 use seahaven_cli::result::Result;
 
-use super::{build, down, eject, init, pull, run, setup, system, up, version};
+use super::{build, down, dump_config, eject, init, pull, run, system, up, version};
 
 /// The name of the CLI
 pub const CMD: &str = "truman";
@@ -20,8 +20,8 @@ pub async fn cmd_run() -> Result<()> {
             down::cmd(),
             pull::cmd(),
             run::cmd(),
-            setup::cmd(),
             eject::cmd(),
+            dump_config::cmd(),
             system::cmd(),
             version::cmd(),
         ])
@@ -38,7 +38,7 @@ pub async fn cmd_run() -> Result<()> {
         Some((init::CMD, matches)) => init::run(matches).await,
         Some((pull::CMD, matches)) => pull::run(matches).await,
         Some((run::CMD, matches)) => run::run(matches).await,
-        Some((setup::CMD, matches)) => setup::run(matches).await,
+        Some((dump_config::CMD, matches)) => dump_config::run(matches).await,
         Some((system::CMD, matches)) => system::run(matches).await,
         Some((up::CMD, matches)) => up::run(matches).await,
         Some((version::CMD, matches)) => version::run(matches).await,
