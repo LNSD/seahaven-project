@@ -16,6 +16,8 @@
 //!
 //! - `just --version`
 //! - `just --dump`
+//! - `just --list`
+//! - `just --summary`
 //! - `just` with the following options:
 //!   - `--justfile <path>` - Specify an alternate justfile
 //!   - `--dotenv-path <path>` - Specify an alternate environment file
@@ -25,7 +27,9 @@
 
 mod common;
 pub mod dump;
+pub mod list;
 mod root;
+pub mod summary;
 pub mod version;
 
 pub use common::IntoCommand;
@@ -37,6 +41,8 @@ pub use root::{
 mod tests {
     mod common;
     mod it_dump;
+    mod it_list;
     mod it_root;
+    mod it_summary;
     mod it_version;
 }

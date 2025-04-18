@@ -7,6 +7,8 @@ use std::{
 use super::{
     common::{IntoCmdOptValue, IntoCommand},
     dump::JustDumpCmd,
+    list::JustListCmd,
+    summary::JustSummaryCmd,
     version::JustVersionCmd,
 };
 use crate::exe::Executable;
@@ -52,6 +54,16 @@ impl JustCmd {
     /// Create a new `just --dump` command
     pub fn dump(self) -> JustDumpCmd {
         JustDumpCmd::new(self)
+    }
+
+    /// Create a new `just --list` command
+    pub fn list(self) -> JustListCmd {
+        JustListCmd::new(self)
+    }
+
+    /// Create a new `just --summary` command
+    pub fn summary(self) -> JustSummaryCmd {
+        JustSummaryCmd::new(self)
     }
 }
 

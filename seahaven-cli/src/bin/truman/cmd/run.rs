@@ -18,8 +18,15 @@ pub fn cmd() -> clap::Command {
                 .action(clap::ArgAction::SetTrue),
             clap::arg!(--justfile <FILE> "Path to the justfile to use")
                 .value_parser(clap::value_parser!(PathBuf)),
+            clap::arg!(--list "List available recipes")
+                .action(clap::ArgAction::SetTrue)
+                .conflicts_with("summary"),
+            clap::arg!(--summary "Show summary of available recipes")
+                .action(clap::ArgAction::SetTrue)
+                .conflicts_with("list"),
             clap::arg!([ARGUMENTS] ... "Overrides and recipe(s) to run, defaulting to the first recipe in the justfile")
-                .action(clap::ArgAction::Append),
+                .action(clap::ArgAction::Append)
+                .conflicts_with_all(["list", "summary"]),
         ])
 }
 
@@ -73,12 +80,18 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     }
 
     // Create and run the just command
-    let mut command = JustCmd::with_executable(just_exe)
-        .with_justfile::<&PathBuf>(matches.get_one::<PathBuf>("justfile"))
-        .with_env_file(env_file_path)
-        .with_dry_run(matches.get_flag("dry-run"))
-        .with_args(matches.get_many::<String>("ARGUMENTS").unwrap_or_default())
-        .into_command();
+    let mut command = if matches.get_flag("list") {
+        JustCmd::with_executable(just_exe).list().into_command()
+    } else if matches.get_flag("summary") {
+        JustCmd::with_executable(just_exe).summary().into_command()
+    } else {
+        JustCmd::with_executable(just_exe)
+            .with_justfile::<&PathBuf>(matches.get_one::<PathBuf>("justfile"))
+            .with_env_file(env_file_path)
+            .with_dry_run(matches.get_flag("dry-run"))
+            .with_args(matches.get_many::<String>("ARGUMENTS").unwrap_or_default())
+            .into_command()
+    };
 
     tracing::debug!("command: {:?}", command.as_std());
 
