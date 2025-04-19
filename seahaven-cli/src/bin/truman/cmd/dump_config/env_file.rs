@@ -1,6 +1,8 @@
-use std::{fs::File, io::BufReader, path::PathBuf};
+use std::path::PathBuf;
 
 use seahaven_cli::result::Result;
+
+use crate::files::{load_env_files, load_setup_file};
 
 /// The `dump-config env-file` command name
 pub const CMD: &str = "env-file";
@@ -49,12 +51,23 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         .into());
     }
 
-    // Read and parse the setup file
-    let file = File::open(setup_file_path)
-        .map(BufReader::new)
-        .map_err(|err| anyhow::anyhow!("Failed to open setup file: {}", err))?;
-    let env = seahaven_file::fileenv_from_reader(file)
+    // Load the setup file and environment files
+    let (front_matter_env, _content) = load_setup_file(setup_file_path)
         .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?;
+
+    let files_env = load_env_files(matches.get_many::<PathBuf>("env-file").unwrap_or_default())?;
+
+    // Merge the env files and front matter env
+    let env = match (files_env, front_matter_env) {
+        (Some(files_env), None) => Some(files_env),
+        (None, Some(front_matter_env)) => Some(front_matter_env),
+        (Some(files_env), Some(front_matter_env)) => {
+            let mut env = files_env;
+            env.extend(front_matter_env);
+            Some(env)
+        }
+        (None, None) => None,
+    };
 
     // If no environment is present, print a warning and return
     let env = match env {

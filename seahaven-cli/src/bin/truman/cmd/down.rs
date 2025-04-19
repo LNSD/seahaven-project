@@ -1,10 +1,13 @@
-use std::{fs::File, io::BufReader, path::PathBuf};
+use std::{fs::File, path::PathBuf};
 
 use seahaven_cli::result::{Error, Result};
 use seahaven_docker::cmd::{DockerCmd, IntoCommand};
 
-use super::common::file_arg;
-use crate::deps::resolve_docker_executable;
+use super::common::{env_file_arg, file_arg};
+use crate::{
+    deps::resolve_docker_executable,
+    files::{load_env_files, load_setup_file},
+};
 
 /// The `down` command name
 pub const CMD: &str = "down";
@@ -13,7 +16,7 @@ pub const CMD: &str = "down";
 pub fn cmd() -> clap::Command {
     clap::command!(CMD)
         .about("Stop and remove containers, networks, images, and volumes")
-        .arg(file_arg())
+        .args([file_arg(), env_file_arg()])
         .args([
             clap::arg!(-v --volumes "Remove named volumes declared in the volumes section of the Compose file")
                 .action(clap::ArgAction::SetTrue),
@@ -55,16 +58,26 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         return Err(anyhow::anyhow!("Setup file not found: {}", setup_file.display()).into());
     }
 
-    let setup_file = File::open(setup_file)
-        .map(BufReader::new)
-        .map_err(|err| anyhow::anyhow!("Failed to open setup file: {err}"))?;
-    let (env, content) = seahaven_file::from_reader(setup_file)
-        .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {err}"))?
-        .unpack();
+    let (front_matter_env, content) = load_setup_file(setup_file)
+        .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {err}"))?;
+
+    let files_env = load_env_files(matches.get_many::<PathBuf>("env-file").unwrap_or_default())?;
 
     // Transform the content into a compose file
     let compose = seahaven_file::try_into_compose_file(content)
         .map_err(|err| anyhow::anyhow!("Invalid setup file: {err}"))?;
+
+    // Merge the env files and front matter env
+    let env = match (files_env, front_matter_env) {
+        (Some(files_env), None) => Some(files_env),
+        (None, Some(front_matter_env)) => Some(front_matter_env),
+        (Some(files_env), Some(front_matter_env)) => {
+            let mut env = files_env;
+            env.extend(front_matter_env);
+            Some(env)
+        }
+        (None, None) => None,
+    };
 
     // Create a tempfile for the env and the content
     let temp_dir = tempfile::Builder::new()

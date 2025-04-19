@@ -1,6 +1,8 @@
-use std::{fs::File, io::BufReader, path::PathBuf};
+use std::path::PathBuf;
 
 use seahaven_cli::result::Result;
+
+use crate::files::load_setup_file;
 
 /// The `dump-config compose-file` command name
 pub const CMD: &str = "compose-file";
@@ -49,13 +51,9 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         .into());
     }
 
-    // Read and parse the setup file
-    let file = File::open(setup_file_path)
-        .map(BufReader::new)
-        .map_err(|err| anyhow::anyhow!("Failed to open setup file: {}", err))?;
-    let (_env, content) = seahaven_file::from_reader(file)
-        .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?
-        .unpack();
+    // Load the setup file and environment files
+    let (_front_matter_env, content) = load_setup_file(setup_file_path)
+        .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?;
 
     // Transform the content into a compose file
     let compose_file = seahaven_file::try_into_compose_file(content)

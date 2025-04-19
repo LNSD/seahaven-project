@@ -1,5 +1,6 @@
 mod cmd;
 mod deps;
+mod files;
 
 #[tokio::main(flavor = "current_thread")]
 pub async fn main() {

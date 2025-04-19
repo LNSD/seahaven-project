@@ -1,6 +1,6 @@
 # TODO
 
-- [ ] #v0_2 Support `.env` files in the project root. See [[#Front-matter env + `.env` file support]]
+- [x] #v0_2 Support `.env` files in the project root. See [[#Front-matter env + `.env` file support]]
 # Notes
 - Equivalent to `docker-compose.yaml` file with the `.env` section (constants section).
 - There are two type of containers: 
