@@ -1538,6 +1538,7 @@ dependencies = [
  "build-info",
  "build-info-build",
  "clap",
+ "dotenvy",
  "indoc",
  "seahaven-docker",
  "seahaven-file",

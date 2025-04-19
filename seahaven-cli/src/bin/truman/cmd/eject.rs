@@ -1,8 +1,9 @@
-use std::{fs::File, io::BufReader, path::PathBuf};
+use std::path::PathBuf;
 
 use seahaven_cli::result::Result;
 
-use super::common::file_arg;
+use super::common::{env_file_arg, file_arg};
+use crate::files::{load_env_files, load_setup_file};
 
 /// The `eject` command name
 pub const CMD: &str = "eject";
@@ -11,7 +12,7 @@ pub const CMD: &str = "eject";
 pub fn cmd() -> clap::Command {
     clap::command!(CMD)
         .about("Eject the setup.yaml file to get the docker-compose.yaml and .env files")
-        .arg(file_arg())
+        .args([file_arg(), env_file_arg()])
         .args([clap::arg!(-o --"output-dir" <DIR> "The output directory")
             .default_value(".")
             .value_parser(clap::value_parser!(PathBuf))])
@@ -56,17 +57,27 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         return Err(anyhow::anyhow!("Invalid output directory: {}", output_dir.display()).into());
     }
 
-    // Read and parse the setup file
-    let file = File::open(setup_file_path)
-        .map(BufReader::new)
-        .map_err(|err| anyhow::anyhow!("Failed to open setup file: {}", err))?;
-    let (env, content) = seahaven_file::from_reader(file)
-        .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?
-        .unpack();
+    // Load the setup file and environment files
+    let (front_matter_env, content) = load_setup_file(setup_file_path)
+        .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?;
+
+    let files_env = load_env_files(matches.get_many::<PathBuf>("env-file").unwrap_or_default())?;
 
     // Transform the content into a compose file
     let compose_file = seahaven_file::try_into_compose_file(content)
         .map_err(|err| anyhow::anyhow!("Failed to convert setup file to compose file: {}", err))?;
+
+    // Merge the env files and front matter env
+    let env = match (files_env, front_matter_env) {
+        (Some(files_env), None) => Some(files_env),
+        (None, Some(front_matter_env)) => Some(front_matter_env),
+        (Some(files_env), Some(front_matter_env)) => {
+            let mut env = files_env;
+            env.extend(front_matter_env);
+            Some(env)
+        }
+        (None, None) => None,
+    };
 
     // Serialize the compose file to a string
     let compose_content = seahaven_file::seahaven_compose_file::ser::to_string(&compose_file)

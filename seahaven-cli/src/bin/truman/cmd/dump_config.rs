@@ -1,6 +1,6 @@
 use seahaven_cli::result::Result;
 
-use super::common::file_arg;
+use super::common::{env_file_arg, file_arg};
 
 mod compose_file;
 mod env_file;
@@ -44,7 +44,7 @@ pub fn cmd() -> clap::Command {
               docker compose --file <(truman dump-config compose-file) --env-file <(truman dump-config env-file) up
         "#})
         .subcommands([env_file::cmd(), compose_file::cmd()])
-        .arg(file_arg().global(true))
+        .args([file_arg().global(true), env_file_arg().global(true)])
         .arg_required_else_help(true)
         .infer_long_args(true)
         .infer_subcommands(true)
