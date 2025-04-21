@@ -11,14 +11,116 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  cli-image:
-    runs-on: ubuntu-latest
+  # Build CLI artifacts for multiple platforms
+  cli-artifacts:
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-latest
+        - os: macos-latest
+    runs-on: ${{ matrix.os }}
     steps:
+    - id: prepare
+      run: |
+        # Sanitize the ref name
+        echo "::debug::github.ref_name=${{ github.ref_name }}"
+        echo "name=${${{ github.ref_name }}//\//-}" >> $GITHUB_OUTPUT
+
+        # Set the Rust target
+        echo "::debug::matrix.os: ${{ matrix.os }}"
+        case ${{ matrix.os }} in
+          "ubuntu-latest")
+            echo "target=x86_64-unknown-linux-gnu" >> $GITHUB_OUTPUT
+            ;;
+          "macos-latest")
+            echo "target=aarch64-apple-darwin" >> $GITHUB_OUTPUT
+            ;;
+          *)
+            echo "::error::os=${{ matrix.os }}:: Unsupported OS"
+            exit 101
+            ;;
+        esac
+
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+    - name: Set up Rust toolchain
+      uses: actions-rust-lang/setup-rust-toolchain@9399c7bb15d4c7d47b27263d024f0a4978346ba4 # v1
+      with:
+        target: ${{ steps.prepare.outputs.target }}
+        rustflags: ''
+        cache: false
+
+    - name: Cache Rust build files
+      uses: leafwing-studios/cargo-cache@a0709d80dd96c8734ac8f186c1f238c8f528d198 # v2
+      with:
+        sweep-cache: true
+
+    - name: Build executable (release)
+      if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+      run: cargo build --package seahaven-cli --bin truman --target=${{ steps.prepare.outputs.target }} --release
+
+    - name: Build executable (debug)
+      if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+      run: cargo build --package seahaven-cli --bin truman --target=${{ steps.prepare.outputs.target }}
+
+    # Release builds are named after the branch name or tag, e.g.:
+    #  - truman-main-x86_64-unknown-linux-gnu
+    #  - truman-lnsd-feat-seahaven-cli-add-up-command-x86_64-unknown-linux-gnu
+    #  - truman-v0.1.0-x86_64-unknown-linux-gnu
+    - name: Upload artifacts (release)
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+      with:
+        name: truman-${{ steps.prepare.outputs.name }}-${{ steps.prepare.outputs.target }}
+        path: target/${{ steps.prepare.outputs.target }}/release/truman
+        if-no-files-found: error
+
+    # Debug builds are named after the commit hash, e.g.:
+    # - truman-1309608f033c69824dbf7e2a1f8cb5e3c8deb33d-aarch64-apple-darwin
+    - name: Upload artifacts (debug)
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+      with:
+        name: truman-${{ github.sha }}-${{ steps.prepare.outputs.target }}
+        path: target/${{ steps.prepare.outputs.target }}/debug/truman
+        if-no-files-found: error
+
+
+  # Build CLI container image for multiple platforms (build)
+  # https://docs.docker.com/build/ci/github-actions/multi-platform/#distribute-build-across-multiple-runners
+  cli-image-build:
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-24.04
+          platform: linux/amd64
+        - os: ubuntu-24.04-arm
+          platform: linux/arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Prepare metadata
+      id: meta-prepare
+      run: |
+        # Set the platform info
+        platform=${{ matrix.platform }}
+        echo "platform=${platform}" >> "$GITHUB_OUTPUT"
+
+        # Set the platform pair
+        platform_pair=${platform//\//-}
+        echo "platform_pair=${platform_pair}" >> "$GITHUB_OUTPUT"
+
+        # Set the image file name
+        image_file_name=image-seahaven-cli-${platform_pair}
+        echo "image_file_name=${image_file_name}" >> "$GITHUB_OUTPUT"
+
+        echo "Output:"
+        echo " - platform: ${platform}"
+        echo " - platform_pair: ${platform_pair}"
+        echo " - image_file_name: ${image_file_name}"
+
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
     - uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3
-      with:
-        platforms: linux/amd64,linux/arm64
 
     - uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
       with:
@@ -28,73 +130,92 @@ jobs:
 
     - uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
       id: meta
-      with:
-        images: ghcr.io/lnsd/seahaven-cli
-        tags: |
-          type=ref,event=tag
-          type=sha
 
     - uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6
+      id: build
       with:
         file: seahaven-cli/Dockerfile
         context: .
-        platforms: linux/amd64,linux/arm64
-        tags: ${{ steps.meta.outputs.tags }}
+        platforms: ${{ matrix.platform }}
+        tags: ghcr.io/lnsd/seahaven-cli
         labels: ${{ steps.meta.outputs.labels }}
-        push: ${{ github.event_name != 'pull_request' }}
-        pull: true
-        cache-from: type=registry,ref=ghcr.io/lnsd/seahaven-project:buildcache
-        cache-to: type=registry,ref=ghcr.io/lnsd/seahaven-project:buildcache,mode=max
+        provenance: mode=max
+        sbom: true
+        # Push the image to the registry by digest (See: https://docs.docker.com/build/exporters/image-registry/)
+        outputs: type=image,push-by-digest=true,name-canonical=true,push=true
+        # Cache build (See: https://github.com/moby/buildkit#registry-push-image-and-cache-separately)
+        build-args: |
+          BUILDKIT_INLINE_CACHE=1
+        cache-from: type=registry,ref=ghcr.io/lnsd/seahaven-project:buildcache-${{ steps.meta-prepare.outputs.platform_pair }}
+        cache-to: type=registry,ref=ghcr.io/lnsd/seahaven-project:buildcache-${{ steps.meta-prepare.outputs.platform_pair }},mode=max
 
-  cli-artifacts:
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-          - os: macos-latest
-            target: aarch64-apple-darwin
-    runs-on: ${{ matrix.os }}
+    - name: Export digest
+      if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+      run: |
+        mkdir -p ${{ runner.temp }}/digests
+        digest="${{ steps.build.outputs.digest }}"
+        touch "${{ runner.temp }}/digests/${digest#sha256:}"
+
+        echo "Digest: $digest"
+
+    - name: Upload digest
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+      with:
+        path: ${{ runner.temp }}/digests/*
+        name: digests-${{ steps.meta-prepare.outputs.platform_pair }}
+        if-no-files-found: error
+        retention-days: 1
+        overwrite: true
+
+
+  # Build CLI container image for multiple platforms (merge and push)
+  # https://docs.docker.com/build/ci/github-actions/multi-platform/#distribute-build-across-multiple-runners
+  cli-image-push:
+    needs: ["cli-image-build"]
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
-      - name: Set up Rust toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@9399c7bb15d4c7d47b27263d024f0a4978346ba4 # v1
-        with:
-          target: ${{ matrix.target }}
-          rustflags: ''
-          cache: false
+    - name: Download digests
+      uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
+      with:
+        path: ${{ runner.temp }}/digests
+        pattern: digests-*
+        merge-multiple: true
 
-      - name: Cache Rust build files
-        uses: leafwing-studios/cargo-cache@a0709d80dd96c8734ac8f186c1f238c8f528d198 # v2
-        with:
-          sweep-cache: true
+    - uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_GITHUB_TOKEN }}
 
-      - name: Build executable (release)
-        if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
-        run: cargo build --package seahaven-cli --bin truman --target=${{ matrix.target }} --release
+    - uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3
 
-      - name: Build executable (debug)
-        if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
-        run: cargo build --package seahaven-cli --bin truman --target=${{ matrix.target }}
+    - uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
+      id: meta
+      with:
+        images: ghcr.io/lnsd/seahaven-cli
+        tags: |
+          type=sha
+          type=ref,event=tag
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
 
-      # Release builds are named after the branch name or tag, e.g.:
-      #  - truman-main-x86_64-unknown-linux-gnu
-      #  - truman-v0.1.0-x86_64-unknown-linux-gnu
-      - name: Upload artifacts (release)
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
-        with:
-          name: truman-${{ github.ref_name }}-${{ matrix.target }}
-          path: target/${{ matrix.target }}/release/truman
-          if-no-files-found: error
+    - name: Load and push images
+      run: |
+        # Import container images
+        DIGESTS=$(printf "ghcr.io/lnsd/seahaven-cli@sha256:%s " $(basename -a ${{ runner.temp }}/digests/*))
 
-      # Debug builds are named after the commit hash, e.g.:
-      # - truman-1309608f033c69824dbf7e2a1f8cb5e3c8deb33d-aarch64-apple-darwin
-      - name: Upload artifacts (debug)
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
-        with:
-          name: truman-${{ github.sha }}-${{ matrix.target }}
-          path: target/${{ matrix.target }}/debug/truman
-          if-no-files-found: error
+        # Extract tags from metadata and format them as -t arguments
+        TAGS=$(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON")
+
+        echo "TAGS: $TAGS"
+        echo "DIGESTS: $DIGESTS"
+
+        # Create the multi-platform manifest
+        docker buildx imagetools create $TAGS $DIGESTS
+
+    - name: Inspect image
+      run: |
+        docker buildx imagetools inspect ghcr.io/lnsd/seahaven-cli:${{ steps.meta.outputs.version }}
