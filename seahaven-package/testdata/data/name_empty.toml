@@ -1,0 +1,13 @@
+[package]
+name = ""
+description = "A package with an empty name"
+
+# Service target settings
+[[service]]
+name = "chain"
+image = "ghcr.io/foundry-rs/foundry:latest"
+
+[[service.defaults]]
+command = "anvil --host=0.0.0.0 --chain-id=${CHAIN_ID} --base-fee=0"
+ports = [ "${CHAIN_RPC}:8545" ]
+healthcheck = { interval = "1s", retries = 10, test = "cast block" }

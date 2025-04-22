@@ -1,0 +1,13 @@
+#[doc = "Test vector: `{{ data_set }}/{{ name }}`"]
+#[doc = ""]
+#[doc = "```toml"]
+{% for line in content -%}
+#[doc = r##"{{ line }}"##]
+{% endfor -%}
+#[doc = "```"]
+#[doc = ""]
+#[doc = "See file: `{{ data_set }}/{{ name }}.toml`"]
+pub const {{ name | upper | replace("/","_") }}: &str = indoc::indoc! { r###"
+{% for line in content -%}
+{{ line |  indent(2, true) }} {%- if loop.last %}"### };{% endif %}
+{% endfor -%}

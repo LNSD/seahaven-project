@@ -7,6 +7,8 @@ members = [
     "seahaven-file",
     "seahaven-file/testdata",
     "seahaven-just",
+    "seahaven-package",
+    "seahaven-package/testdata",
 ]
 
 [workspace.package]

@@ -1,0 +1,24 @@
+[package]
+name = "seahaven-package"
+description = "The Seahaven package manifest"
+version = "0.1.0"
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+edition.workspace = true
+
+[features]
+parse = ["dep:serde", "semver/serde", "toml/parse", "dep:regress"]
+display = ["dep:serde", "semver/serde", "toml/display"]
+
+[dependencies]
+anyhow = "1.0"
+regress = { version = "0.10.3", optional = true }
+semver = "1.0"
+serde = { version = "1.0", optional = true, features = ["derive"] }
+thiserror = "2.0"
+toml = "0.8.20"
+tracing = "0.1.41"
+
+[dev-dependencies]
+seahaven-package-testdata = { path = "testdata" }

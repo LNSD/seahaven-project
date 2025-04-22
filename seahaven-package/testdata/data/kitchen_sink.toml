@@ -1,0 +1,51 @@
+[package]
+# The name of the package (Required)
+name = "kitchen-sink"
+# The version of the package (Optional)
+version = "0.1.0"
+# The description of the package (Optional)
+description = "A package that does way too much"
+# The readme file for the package (Optional)
+readme = "README.md"
+
+
+# Service target settings. Zero or more are allowed per package.
+[[service]]
+name = "chain"
+image = "ghcr.io/foundry-rs/foundry:latest"
+
+[[service.defaults]]
+command = "anvil --host=0.0.0.0 --chain-id=${CHAIN_ID} --base-fee=0"
+ports = [ "${CHAIN_RPC}:8545" ]
+healthcheck = { interval = "1s", retries = 10, test = "cast block" }
+
+
+# Init target settings. Zero or more are allowed per package.
+[[init]]
+# The name of the init target (Required)
+name = "deploy-core-contracts"
+# Clone the repo and checkout the branch
+source = { git = "https://github.com/LNSD/seahaven-project.git", rev = "d3af235" }
+# The build context for the Dockerfile
+context = "testlib/testdata/app-contracts"
+# The name of the Dockerfile to use within the context
+dockerfile = "Dockerfile"
+
+# The service defaults for the 'deploy-core-contracts' init target
+[[init.defaults]]
+command = "cast deploy"
+
+[[init]]
+name = "deploy-app-contracts"
+# The source for the init target, relative to the package root
+source = "./app-contracts"
+# The name of the Dockerfile to use within the source
+dockerfile = "Dockerfile"
+# The build args for the Dockerfile
+build_args = { CHAIN_ID = 1337 }
+# The build target for the Dockerfile
+target = "debug"
+
+# The service defaults for the 'deploy-app-contracts' init target
+[[init.defaults]]
+command = "cast deploy"
