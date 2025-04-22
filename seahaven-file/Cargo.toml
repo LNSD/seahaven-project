@@ -17,4 +17,4 @@ thiserror = "2.0"
 
 [dev-dependencies]
 indoc = "2.0"
-testlib-file-testdata = { path = "../testlib/file-testdata" }
+seahaven-file-testdata = { path = "testdata" }

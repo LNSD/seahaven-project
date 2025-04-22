@@ -25,7 +25,7 @@ serde_yaml = "0.9"
 thiserror = "2.0"
 
 [dev-dependencies]
-testlib-file-testdata = { path = "../testlib/file-testdata" }
+seahaven-file-testdata = { path = "../seahaven-file/testdata" }
 
 [build-dependencies]
 diffy = { version = "0.4.2", optional = true }

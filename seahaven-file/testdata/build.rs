@@ -5,11 +5,6 @@ use std::{
     path::{Path, PathBuf},
 };
 
-/// The test sets to generate test vectors for
-///
-/// This list of the directories under the `data` directory that contain the test vectors
-const TEST_SETS: &[&str] = &["setup-yaml"];
-
 /// Print a warning message to the console (yellow)
 macro_rules! warning {
     ($($tokens: tt)*) => {
@@ -37,7 +32,7 @@ mod codegen {
     const TEST_VECTOR_RS_TEMPLATE: &str = include_str!("templates/vector.rs.jinja");
 
     /// Test vector mod.rs Jinja template
-    const TEST_VECTOR_MOD_RS_TEMPLATE: &str = include_str!("templates/mod.rs.jinja");
+    const TEST_VECTOR_LIB_RS_TEMPLATE: &str = include_str!("templates/lib.rs.jinja");
 
     /// Initialize the Jinja template engine with the templates
     pub fn engine() -> &'static Codegen {
@@ -47,11 +42,11 @@ mod codegen {
             let mut jinja = minijinja::Environment::new();
             jinja.set_keep_trailing_newline(true);
             jinja
-                .add_template("test_vector", TEST_VECTOR_RS_TEMPLATE)
+                .add_template("test_vector", TEST_VECTOR_RS_TEMPLATE.trim())
                 .expect("failed test_vector template initialization");
             jinja
-                .add_template("test_vector_mod_rs", TEST_VECTOR_MOD_RS_TEMPLATE)
-                .expect("failed test_vector_mod_rs template initialization");
+                .add_template("test_vector_lib_rs", TEST_VECTOR_LIB_RS_TEMPLATE.trim())
+                .expect("failed test_vector_lib_rs template initialization");
             Codegen { jinja }
         })
     }
@@ -81,9 +76,9 @@ mod codegen {
         }
 
         /// Render a test vector mod.rs using the codegen template engine
-        pub fn render_test_vector_mod_rs_include(&self, path: impl AsRef<Path>) -> String {
+        pub fn render_test_vector_lib_rs_include(&self, path: impl AsRef<Path>) -> String {
             self.jinja
-                .get_template("test_vector_mod_rs")
+                .get_template("test_vector_lib_rs")
                 .expect("template not found")
                 .render(minijinja::context! {
                     path => path.as_ref(),
@@ -152,62 +147,56 @@ fn main() {
     // Run code generation only if `codegen` feature is enabled
     if cfg!(feature = "codegen") {
         let data_root_dir = crate_root_dir().join("data");
-        let src_gen_dir = crate_root_dir().join("src").join("gen");
+        let dest_dir = crate_root_dir().join("src");
 
-        for test_set_name in TEST_SETS {
-            let src_dir = data_root_dir.join(test_set_name);
-            if !src_dir.exists() {
-                warning!("Test vectors set `{test_set_name}` does not exist");
-                continue;
-            }
+        if !data_root_dir.exists() {
+            panic!("data directory does not exist: {}", data_root_dir.display());
+        }
 
-            // Create the destination directory
-            let dest_dir = src_gen_dir.join(test_set_name);
-            std::fs::create_dir_all(&dest_dir).expect("failed to create gen directory");
+        // Create the destination directory
+        std::fs::create_dir_all(&dest_dir).expect("failed to create 'src' directory");
 
-            // Open (and overwrite) the test vectors set mod.rs file
-            let mut mod_file = std::fs::OpenOptions::new()
-                .write(true)
-                .create(true)
-                .truncate(true)
-                .open(dest_dir.join("mod.rs"))
-                .unwrap_or_else(|err| panic!("failed to open gen/{test_set_name}/mod.rs: {}", err));
+        // Open (and overwrite) the test vectors set mod.rs file
+        let mut lib_rs_file = std::fs::OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(true)
+            .open(dest_dir.join("lib.rs"))
+            .unwrap_or_else(|err| panic!("failed to open 'src/lib.rs': {}", err));
 
-            // Generate the test vector files
-            for test_vector_file in walk_dir_files(&src_dir) {
-                let test_vector_file_name = test_vector_file.file_name().expect("file has no name");
-                let test_vector_name = &sanitize_filename(test_vector_file_name);
+        // Generate the test vector files
+        for test_vector_file in walk_dir_files(&data_root_dir) {
+            let test_vector_file_name = test_vector_file.file_name().expect("file has no name");
+            let test_vector_name = &sanitize_filename(test_vector_file_name);
 
-                // Load the content of the test vector file
-                let content = match load_file_and_read_lines(test_vector_file) {
-                    Ok(content) => content,
-                    Err(err) => {
-                        warning!(
-                            "failed to read test vector `{test_set_name}/{test_vector_name}` source file: {err}"
-                        );
-                        continue;
-                    }
-                };
+            // Load the content of the test vector file
+            let content = match load_file_and_read_lines(test_vector_file) {
+                Ok(content) => content,
+                Err(err) => {
+                    warning!("failed to read test vector `{test_vector_name}` source file: {err}");
+                    continue;
+                }
+            };
 
-                let gen_file_name = as_rust_filename(test_vector_name);
+            let gen_file_name = as_rust_filename(test_vector_name);
 
-                // Render the content and write to the generated file
-                let rendered_content =
-                    codegen::engine().render_test_vector(test_vector_name, test_set_name, content);
-                let gen_file = dest_dir.join(&gen_file_name);
-                std::fs::write(&gen_file, rendered_content).unwrap_or_else(|err| {
-                    panic!("failed to write test vector `{test_vector_name}` source file: {err}")
-                });
+            // Render the content and write to the generated file
+            let rendered_content = codegen::engine().render_test_vector(
+                test_vector_name,
+                "seahaven-file/testdata/data",
+                content,
+            );
+            let gen_file = dest_dir.join(&gen_file_name);
+            std::fs::write(&gen_file, rendered_content).unwrap_or_else(|err| {
+                panic!("failed to write test vector `{test_vector_name}` source file: {err}")
+            });
 
-                // Append the new line to the `mod.rs` file
-                let rendered_include =
-                    codegen::engine().render_test_vector_mod_rs_include(&gen_file_name);
-                writeln!(mod_file, "{}", rendered_include).unwrap_or_else(|err| {
-                    panic!(
-                        "failed to include generated file into gen/{test_set_name}/mod.rs: {err}"
-                    )
-                });
-            }
+            // Append the new line to the `lib.rs` file
+            let rendered_include =
+                codegen::engine().render_test_vector_lib_rs_include(&gen_file_name);
+            writeln!(lib_rs_file, "{}", rendered_include).unwrap_or_else(|err| {
+                panic!("failed to include generated file into 'src/lib.rs': {err}")
+            });
         }
 
         // Re-run this build script if any of the files under the templates or data directories have changed

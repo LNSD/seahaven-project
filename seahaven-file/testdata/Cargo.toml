@@ -1,5 +1,5 @@
 [package]
-name = "testlib-file-testdata"
+name = "seahaven-file-testdata"
 version = "0.0.0"
 edition.workspace = true
 publish = false

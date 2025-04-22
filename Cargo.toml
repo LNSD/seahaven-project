@@ -5,8 +5,8 @@ members = [
     "seahaven-compose-file",
     "seahaven-docker",
     "seahaven-file",
+    "seahaven-file/testdata",
     "seahaven-just",
-    "testlib/file-testdata",
 ]
 
 [workspace.package]
