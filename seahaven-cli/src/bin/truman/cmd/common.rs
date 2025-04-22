@@ -12,7 +12,6 @@ pub fn file_arg() -> clap::Arg {
 /// The `-e`/`--env-file` argument
 pub fn env_file_arg() -> clap::Arg {
     clap::arg!(-e --"env-file" <ENV_FILE> "Specify an alternate environment file (can be specified multiple times)")
-        .default_value(".env")
         .action(clap::ArgAction::Append)
         .value_parser(clap::value_parser!(PathBuf))
 }
