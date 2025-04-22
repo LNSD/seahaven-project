@@ -3,7 +3,7 @@ use std::{fs::File, path::PathBuf};
 use seahaven_cli::result::{Error, Result};
 use seahaven_docker::cmd::{DockerCmd, IntoCommand};
 
-use super::common::{env_file_arg, file_arg};
+use super::common::{env_file_arg, file_arg, project_directory_arg};
 use crate::{
     deps::resolve_docker_executable,
     files::{load_env_files, load_setup_file},
@@ -16,7 +16,7 @@ pub const CMD: &str = "build";
 pub fn cmd() -> clap::Command {
     clap::command!(CMD)
         .about("Build the development environment images using docker compose")
-        .args([file_arg(), env_file_arg()])
+        .args([file_arg(), env_file_arg(), project_directory_arg()])
         .args([
             clap::arg!(--"dry-run" "Execute command in dry run mode")
                 .action(clap::ArgAction::SetTrue),
@@ -128,11 +128,18 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
             },
         );
 
+    let project_directory = matches
+        .get_one::<PathBuf>("project-directory")
+        .expect("Failed to get project directory");
+
+    tracing::debug!("Project directory: {}", project_directory.display());
+
     // Create and run the docker command
     let mut command = DockerCmd::with_executable(docker_exe)
         .compose()
         .with_file(content_file_path)
         .with_env_file(env_file_path)
+        .with_project_directory(project_directory)
         .with_plain_progress()
         .build()
         .with_dry_run(matches.get_flag("dry-run"))

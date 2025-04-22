@@ -438,3 +438,66 @@ async fn run_docker_compose_with_all_options_including_ansi() {
         ]
     );
 }
+
+#[tokio::test]
+async fn run_docker_compose_with_project_directory() {
+    //* Given
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .with_project_directory("./my-project")
+        .up()
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output = res.expect("Failed to run docker compose with project directory");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(
+        args,
+        ["compose", "--project-directory", "./my-project", "up"]
+    );
+}
+
+#[tokio::test]
+async fn run_docker_compose_with_project_directory_and_other_options() {
+    //* Given
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .with_project_directory("./my-project")
+        .with_file("docker-compose.prod.yml")
+        .with_env_file(".env.prod")
+        .with_plain_progress()
+        .up()
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output =
+        res.expect("Failed to run docker compose with project directory and other options");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(
+        args,
+        [
+            "compose",
+            "--file",
+            "docker-compose.prod.yml",
+            "--project-directory",
+            "./my-project",
+            "--env-file",
+            ".env.prod",
+            "--progress",
+            "plain",
+            "up"
+        ]
+    );
+}

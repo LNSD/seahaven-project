@@ -3,7 +3,7 @@ use std::{fs::File, path::PathBuf};
 use seahaven_cli::result::{Error, Result};
 use seahaven_docker::cmd::{DockerCmd, IntoCommand};
 
-use super::common::{env_file_arg, file_arg};
+use super::common::{env_file_arg, file_arg, project_directory_arg};
 use crate::{
     deps::resolve_docker_executable,
     files::{load_env_files, load_setup_file},
@@ -16,7 +16,7 @@ pub const CMD: &str = "up";
 pub fn cmd() -> clap::Command {
     clap::command!(CMD)
         .about("Start the development environment using docker compose")
-        .args([file_arg(), env_file_arg()])
+        .args([file_arg(), env_file_arg(), project_directory_arg()])
         .args([
             clap::arg!(-d --detach "Detached mode: Run containers in the background")
                 .action(clap::ArgAction::SetTrue),
@@ -110,10 +110,17 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
             .map_err(|err| anyhow::anyhow!("Failed to write docker-compose.yaml file: {err}"))?;
     }
 
+    let project_directory = matches
+        .get_one::<PathBuf>("project-directory")
+        .expect("Failed to get project directory");
+
+    tracing::debug!("Project directory: {}", project_directory.display());
+
     let mut command = DockerCmd::with_executable(docker_exe)
         .compose()
         .with_file(content_file_path)
         .with_env_file(env_file_path)
+        .with_project_directory(project_directory)
         .with_plain_progress()
         .up()
         .with_build(matches.get_flag("build"))
