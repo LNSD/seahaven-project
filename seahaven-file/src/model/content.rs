@@ -93,7 +93,7 @@ pub mod de {
 
 #[cfg(test)]
 mod tests {
-    use testlib_file_testdata::setup_yaml::SINGLE_SERVICE;
+    use seahaven_file_testdata::SINGLE_SERVICE;
 
     use super::{
         de::{from_reader, from_str},

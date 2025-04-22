@@ -67,18 +67,18 @@ jobs:
 
       ## Tests
       - name: Unit tests
-        run: cargo llvm-cov nextest 'tests::' --lcov --output-path unit-lcov.info -- --skip 'tests::it_'
+        run: cargo llvm-cov nextest --all-features 'tests::' --lcov --output-path unit-lcov.info -- --skip 'tests::it_'
 
       - name: Doc tests
         # TODO: Collect doc tests coverage once nextest supports it
         # https://nexte.st/docs/integrations/test-coverage/?h=doc#collecting-coverage-data-from-doctests
-        run: cargo test --doc
+        run: cargo test --all-features --doc
 
       - name: Integration tests (in-tree)
-        run: cargo llvm-cov nextest 'tests::it_' --lcov --output-path it-intree-lcov.info
+        run: cargo llvm-cov nextest --all-features 'tests::it_' --lcov --output-path it-intree-lcov.info
 
       - name: Integration tests (public api)
-        run: cargo llvm-cov nextest --test '*' --lcov --output-path it-public-lcov.info
+        run: cargo llvm-cov nextest --all-features --test '*' --lcov --output-path it-public-lcov.info
 
       - name: Upload unit tests coverage report to codecov
         uses: codecov/codecov-action@ad3126e916f78f00edff4ed0317cf185271ccc2d # v5

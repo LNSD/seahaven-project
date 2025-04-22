@@ -1558,9 +1558,9 @@ version = "0.1.0"
 dependencies = [
  "diffy",
  "reqwest",
+ "seahaven-file-testdata",
  "serde",
  "serde_yaml",
- "testlib-file-testdata",
  "thiserror",
 ]
 
@@ -1588,11 +1588,19 @@ dependencies = [
  "anyhow",
  "indoc",
  "seahaven-compose-file",
+ "seahaven-file-testdata",
  "serde",
  "serde-envfile",
  "serde_yaml",
- "testlib-file-testdata",
  "thiserror",
+]
+
+[[package]]
+name = "seahaven-file-testdata"
+version = "0.0.0"
+dependencies = [
+ "indoc",
+ "minijinja",
 ]
 
 [[package]]
@@ -1881,14 +1889,6 @@ dependencies = [
  "quote",
  "regex",
  "syn",
-]
-
-[[package]]
-name = "testlib-file-testdata"
-version = "0.0.0"
-dependencies = [
- "indoc",
- "minijinja",
 ]
 
 [[package]]

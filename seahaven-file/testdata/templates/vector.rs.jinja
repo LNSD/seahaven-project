@@ -1,12 +1,12 @@
-/// Test vector: `{{ data_set }}/{{ name }}`
-///
-/// ```yaml
+#[doc = "Test vector: `{{ data_set }}/{{ name }}`"]
+#[doc = ""]
+#[doc = "```yaml"]
 {% for line in content -%}
-///{{ line | indent(1, true) }}
+#[doc = r##"{{ line }}"##]
 {% endfor -%}
-/// ```
-///
-/// See file: `{{ data_set }}/{{ name }}.yaml`
+#[doc = "```"]
+#[doc = ""]
+#[doc = "See file: `{{ data_set }}/{{ name }}.yaml`"]
 pub const {{ name | upper | replace("/","_") }}: &str = indoc::indoc! { r###"
 {% for line in content -%}
 {{ line |  indent(2, true) }} {%- if loop.last %}"### };{% endif %}

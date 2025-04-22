@@ -12,15 +12,15 @@ default:
 test *suites='all':
     #!/usr/bin/env sh
     if [ "{{suites}}" = "all" ]; then
-        cargo nextest run
-        cargo test --doc
+        cargo nextest run --all-features
+        cargo test --all-features --doc
     else
         for suite in {{suites}}; do
             case $suite in
-                unit) cargo nextest run 'tests::' -- --skip 'tests::it_' ;;
-                it-in-tree) cargo nextest run 'tests::it_' ;;
-                it-public) cargo nextest run --test '*' ;;
-                doc) cargo test --doc ;;
+                unit) cargo nextest run --all-features 'tests::' -- --skip 'tests::it_' ;;
+                it-in-tree) cargo nextest run --all-features 'tests::it_' ;;
+                it-public) cargo nextest run --all-features --test '*' ;;
+                doc) cargo test --all-features --doc ;;
                 *)
                     echo "Unknown test suite: $suite"
                     exit 1
