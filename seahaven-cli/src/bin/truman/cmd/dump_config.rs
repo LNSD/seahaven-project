@@ -41,7 +41,7 @@ pub fn cmd() -> clap::Command {
 
             Using the configuration with the Docker Compose command; this would be equivalent to running `truman up`:
 
-              docker compose --file <(truman dump-config compose-file) --env-file <(truman dump-config env-file) up
+              docker compose --file <(truman dump-config compose-file) --env-file <(truman dump-config env-file) --project-directory=$PWD up
         "#})
         .subcommands([env_file::cmd(), compose_file::cmd()])
         .args([file_arg().global(true), env_file_arg().global(true)])

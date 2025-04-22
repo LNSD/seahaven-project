@@ -17,6 +17,7 @@ use super::common::{IntoCmdOptValue, IntoCommand};
 pub struct DockerComposeCmd<
     N = NameNotSet,
     F = ProjectFileNotSet,
+    D = ProjectDirNotSet,
     E = EnvFileNotSet,
     P = ProgressNotSet,
     A = AnsiNotSet,
@@ -24,6 +25,7 @@ pub struct DockerComposeCmd<
     cmd: tokio::process::Command,
     name_opt: N,
     project_file_opt: F,
+    project_dir_opt: D,
     env_file_opt: E,
     progress_opt: P,
     ansi_opt: A,
@@ -35,6 +37,7 @@ impl DockerComposeCmd {
             cmd: cmd.into_command(),
             name_opt: NameNotSet,
             project_file_opt: ProjectFileNotSet,
+            project_dir_opt: ProjectDirNotSet,
             env_file_opt: EnvFileNotSet,
             progress_opt: ProgressNotSet,
             ansi_opt: AnsiNotSet,
@@ -42,10 +45,11 @@ impl DockerComposeCmd {
     }
 }
 
-impl<N, F, E, P, A> DockerComposeCmd<N, F, E, P, A>
+impl<N, F, D, E, P, A> DockerComposeCmd<N, F, D, E, P, A>
 where
     N: NameOpt,
     F: ProjectFileOpt,
+    D: ProjectDirOpt,
     E: EnvFileOpt,
     P: ProgressOpt,
     A: AnsiOpt,
@@ -83,10 +87,11 @@ where
     }
 }
 
-impl<N, F, E, P, A> IntoCommand for DockerComposeCmd<N, F, E, P, A>
+impl<N, F, D, E, P, A> IntoCommand for DockerComposeCmd<N, F, D, E, P, A>
 where
     N: NameOpt,
     F: ProjectFileOpt,
+    D: ProjectDirOpt,
     E: EnvFileOpt,
     P: ProgressOpt,
     A: AnsiOpt,
@@ -105,6 +110,11 @@ where
         // --file <path>
         if let Some(file) = self.project_file_opt.into_value() {
             cmd.arg("--file").arg(file.as_os_str());
+        }
+
+        // --project-directory <path>
+        if let Some(project_dir) = self.project_dir_opt.into_value() {
+            cmd.arg("--project-directory").arg(project_dir.as_os_str());
         }
 
         // --env-file <path>
@@ -126,7 +136,7 @@ where
     }
 }
 
-impl<F, E, P, A> DockerComposeCmd<NameNotSet, F, E, P, A> {
+impl<F, D, E, P, A> DockerComposeCmd<NameNotSet, F, D, E, P, A> {
     /// Specify a project name for the Docker Compose deployment.
     ///
     /// The project name is used as a prefix for container names and creates an isolated
@@ -135,7 +145,7 @@ impl<F, E, P, A> DockerComposeCmd<NameNotSet, F, E, P, A> {
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/overview/#use--p-to-specify-a-project-name)
     /// for more information about the `--project-name` option.
-    pub fn with_project_name<S>(self, name: S) -> DockerComposeCmd<NameSet, F, E, P, A>
+    pub fn with_project_name<S>(self, name: S) -> DockerComposeCmd<NameSet, F, D, E, P, A>
     where
         S: AsRef<str>,
     {
@@ -145,6 +155,7 @@ impl<F, E, P, A> DockerComposeCmd<NameNotSet, F, E, P, A> {
             cmd: self.cmd,
             name_opt: NameSet(name),
             project_file_opt: self.project_file_opt,
+            project_dir_opt: self.project_dir_opt,
             env_file_opt: self.env_file_opt,
             progress_opt: self.progress_opt,
             ansi_opt: self.ansi_opt,
@@ -152,12 +163,12 @@ impl<F, E, P, A> DockerComposeCmd<NameNotSet, F, E, P, A> {
     }
 }
 
-impl<N, E, P, A> DockerComposeCmd<N, ProjectFileNotSet, E, P, A> {
+impl<N, D, E, P, A> DockerComposeCmd<N, ProjectFileNotSet, D, E, P, A> {
     /// Specify an alternate compose file.
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/overview/)
     /// for more information about the `--file` option.
-    pub fn with_file<S>(self, file: S) -> DockerComposeCmd<N, ProjectFileSet, E, P, A>
+    pub fn with_file<S>(self, file: S) -> DockerComposeCmd<N, ProjectFileSet, D, E, P, A>
     where
         S: AsRef<OsStr>,
     {
@@ -167,6 +178,7 @@ impl<N, E, P, A> DockerComposeCmd<N, ProjectFileNotSet, E, P, A> {
             cmd: self.cmd,
             name_opt: self.name_opt,
             project_file_opt: ProjectFileSet(file),
+            project_dir_opt: self.project_dir_opt,
             env_file_opt: self.env_file_opt,
             progress_opt: self.progress_opt,
             ansi_opt: self.ansi_opt,
@@ -174,12 +186,38 @@ impl<N, E, P, A> DockerComposeCmd<N, ProjectFileNotSet, E, P, A> {
     }
 }
 
-impl<N, F, P, A> DockerComposeCmd<N, F, EnvFileNotSet, P, A> {
+impl<N, F, E, P, A> DockerComposeCmd<N, F, ProjectDirNotSet, E, P, A> {
+    /// Specify the project directory.
+    ///
+    /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/overview/)
+    /// for more information about the `--project-directory` option.
+    pub fn with_project_directory<S>(
+        self,
+        project_dir: S,
+    ) -> DockerComposeCmd<N, F, ProjectDirSet, E, P, A>
+    where
+        S: AsRef<OsStr>,
+    {
+        let project_dir = PathBuf::from(&project_dir).into_boxed_path();
+
+        DockerComposeCmd {
+            cmd: self.cmd,
+            name_opt: self.name_opt,
+            project_file_opt: self.project_file_opt,
+            project_dir_opt: ProjectDirSet(project_dir),
+            env_file_opt: self.env_file_opt,
+            progress_opt: self.progress_opt,
+            ansi_opt: self.ansi_opt,
+        }
+    }
+}
+
+impl<N, F, D, P, A> DockerComposeCmd<N, F, D, EnvFileNotSet, P, A> {
     /// Specify an alternate environment file.
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/overview/)
     /// for more information about the `--env-file` option.
-    pub fn with_env_file<T>(self, env_file: T) -> DockerComposeCmd<N, F, EnvFileSet, P, A>
+    pub fn with_env_file<T>(self, env_file: T) -> DockerComposeCmd<N, F, D, EnvFileSet, P, A>
     where
         T: AsRef<OsStr>,
     {
@@ -189,6 +227,7 @@ impl<N, F, P, A> DockerComposeCmd<N, F, EnvFileNotSet, P, A> {
             cmd: self.cmd,
             name_opt: self.name_opt,
             project_file_opt: self.project_file_opt,
+            project_dir_opt: self.project_dir_opt,
             env_file_opt: EnvFileSet(file),
             progress_opt: self.progress_opt,
             ansi_opt: self.ansi_opt,
@@ -196,16 +235,17 @@ impl<N, F, P, A> DockerComposeCmd<N, F, EnvFileNotSet, P, A> {
     }
 }
 
-impl<N, F, E, A> DockerComposeCmd<N, F, E, ProgressNotSet, A> {
+impl<N, F, D, E, A> DockerComposeCmd<N, F, D, E, ProgressNotSet, A> {
     /// Set the type of progress output to auto (default).
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/#progress)
     /// for more information.
-    pub fn with_auto_progress(self) -> DockerComposeCmd<N, F, E, ProgressSet, A> {
+    pub fn with_auto_progress(self) -> DockerComposeCmd<N, F, D, E, ProgressSet, A> {
         DockerComposeCmd {
             cmd: self.cmd,
             name_opt: self.name_opt,
             project_file_opt: self.project_file_opt,
+            project_dir_opt: self.project_dir_opt,
             env_file_opt: self.env_file_opt,
             progress_opt: ProgressSet(Progress::Auto),
             ansi_opt: self.ansi_opt,
@@ -216,11 +256,12 @@ impl<N, F, E, A> DockerComposeCmd<N, F, E, ProgressNotSet, A> {
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/#progress)
     /// for more information.
-    pub fn with_tty_progress(self) -> DockerComposeCmd<N, F, E, ProgressSet, A> {
+    pub fn with_tty_progress(self) -> DockerComposeCmd<N, F, D, E, ProgressSet, A> {
         DockerComposeCmd {
             cmd: self.cmd,
             name_opt: self.name_opt,
             project_file_opt: self.project_file_opt,
+            project_dir_opt: self.project_dir_opt,
             env_file_opt: self.env_file_opt,
             progress_opt: ProgressSet(Progress::Tty),
             ansi_opt: self.ansi_opt,
@@ -231,11 +272,12 @@ impl<N, F, E, A> DockerComposeCmd<N, F, E, ProgressNotSet, A> {
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/#progress)
     /// for more information.
-    pub fn with_plain_progress(self) -> DockerComposeCmd<N, F, E, ProgressSet, A> {
+    pub fn with_plain_progress(self) -> DockerComposeCmd<N, F, D, E, ProgressSet, A> {
         DockerComposeCmd {
             cmd: self.cmd,
             name_opt: self.name_opt,
             project_file_opt: self.project_file_opt,
+            project_dir_opt: self.project_dir_opt,
             env_file_opt: self.env_file_opt,
             progress_opt: ProgressSet(Progress::Plain),
             ansi_opt: self.ansi_opt,
@@ -246,11 +288,12 @@ impl<N, F, E, A> DockerComposeCmd<N, F, E, ProgressNotSet, A> {
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/#progress)
     /// for more information.
-    pub fn with_json_progress(self) -> DockerComposeCmd<N, F, E, ProgressSet, A> {
+    pub fn with_json_progress(self) -> DockerComposeCmd<N, F, D, E, ProgressSet, A> {
         DockerComposeCmd {
             cmd: self.cmd,
             name_opt: self.name_opt,
             project_file_opt: self.project_file_opt,
+            project_dir_opt: self.project_dir_opt,
             env_file_opt: self.env_file_opt,
             progress_opt: ProgressSet(Progress::Json),
             ansi_opt: self.ansi_opt,
@@ -261,11 +304,12 @@ impl<N, F, E, A> DockerComposeCmd<N, F, E, ProgressNotSet, A> {
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/#progress)
     /// for more information.
-    pub fn with_quiet_progress(self) -> DockerComposeCmd<N, F, E, ProgressSet, A> {
+    pub fn with_quiet_progress(self) -> DockerComposeCmd<N, F, D, E, ProgressSet, A> {
         DockerComposeCmd {
             cmd: self.cmd,
             name_opt: self.name_opt,
             project_file_opt: self.project_file_opt,
+            project_dir_opt: self.project_dir_opt,
             env_file_opt: self.env_file_opt,
             progress_opt: ProgressSet(Progress::Quiet),
             ansi_opt: self.ansi_opt,
@@ -273,16 +317,17 @@ impl<N, F, E, A> DockerComposeCmd<N, F, E, ProgressNotSet, A> {
     }
 }
 
-impl<N, F, E, P> DockerComposeCmd<N, F, E, P, AnsiNotSet> {
+impl<N, F, D, E, P> DockerComposeCmd<N, F, D, E, P, AnsiNotSet> {
     /// Automatically detect whether to print ANSI control characters (default).
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/)
     /// for more information about the `--ansi` option.
-    pub fn with_ansi_auto(self) -> DockerComposeCmd<N, F, E, P, AnsiSet> {
+    pub fn with_ansi_auto(self) -> DockerComposeCmd<N, F, D, E, P, AnsiSet> {
         DockerComposeCmd {
             cmd: self.cmd,
             name_opt: self.name_opt,
             project_file_opt: self.project_file_opt,
+            project_dir_opt: self.project_dir_opt,
             env_file_opt: self.env_file_opt,
             progress_opt: self.progress_opt,
             ansi_opt: AnsiSet(Ansi::Auto),
@@ -293,11 +338,12 @@ impl<N, F, E, P> DockerComposeCmd<N, F, E, P, AnsiNotSet> {
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/)
     /// for more information about the `--ansi` option.
-    pub fn with_ansi_always(self) -> DockerComposeCmd<N, F, E, P, AnsiSet> {
+    pub fn with_ansi_always(self) -> DockerComposeCmd<N, F, D, E, P, AnsiSet> {
         DockerComposeCmd {
             cmd: self.cmd,
             name_opt: self.name_opt,
             project_file_opt: self.project_file_opt,
+            project_dir_opt: self.project_dir_opt,
             env_file_opt: self.env_file_opt,
             progress_opt: self.progress_opt,
             ansi_opt: AnsiSet(Ansi::Always),
@@ -308,11 +354,12 @@ impl<N, F, E, P> DockerComposeCmd<N, F, E, P, AnsiNotSet> {
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/)
     /// for more information about the `--ansi` option.
-    pub fn with_ansi_never(self) -> DockerComposeCmd<N, F, E, P, AnsiSet> {
+    pub fn with_ansi_never(self) -> DockerComposeCmd<N, F, D, E, P, AnsiSet> {
         DockerComposeCmd {
             cmd: self.cmd,
             name_opt: self.name_opt,
             project_file_opt: self.project_file_opt,
+            project_dir_opt: self.project_dir_opt,
             env_file_opt: self.env_file_opt,
             progress_opt: self.progress_opt,
             ansi_opt: AnsiSet(Ansi::Never),
@@ -367,6 +414,32 @@ impl ProjectFileOpt for ProjectFileSet {}
 impl _priv::Sealed for ProjectFileSet {}
 
 impl IntoCmdOptValue<Box<Path>> for ProjectFileSet {
+    fn into_value(self) -> Option<Box<Path>> {
+        Some(self.0)
+    }
+}
+
+// Project directory markers
+#[allow(private_bounds)]
+pub trait ProjectDirOpt: IntoCmdOptValue<Box<Path>> + _priv::Sealed {}
+
+pub struct ProjectDirNotSet;
+
+impl ProjectDirOpt for ProjectDirNotSet {}
+impl _priv::Sealed for ProjectDirNotSet {}
+
+impl IntoCmdOptValue<Box<Path>> for ProjectDirNotSet {
+    fn into_value(self) -> Option<Box<Path>> {
+        None
+    }
+}
+
+pub struct ProjectDirSet(Box<Path>);
+
+impl ProjectDirOpt for ProjectDirSet {}
+impl _priv::Sealed for ProjectDirSet {}
+
+impl IntoCmdOptValue<Box<Path>> for ProjectDirSet {
     fn into_value(self) -> Option<Box<Path>> {
         Some(self.0)
     }
