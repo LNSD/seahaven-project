@@ -1,0 +1,5 @@
+[package]
+name = "no-targets"
+description = "A package that does nothing"
+
+# No targets are defined

@@ -183,7 +183,7 @@ fn main() {
             // Render the content and write to the generated file
             let rendered_content = codegen::engine().render_test_vector(
                 test_vector_name,
-                "seahaven-file/testdata/data",
+                "seahaven-package/testdata/data",
                 content,
             );
             let gen_file = dest_dir.join(&gen_file_name);
