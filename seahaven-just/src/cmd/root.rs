@@ -5,7 +5,7 @@ use std::{
 };
 
 use super::{
-    common::{IntoCmdOptValue, IntoCommand},
+    common::{IntoCmdFlagValue, IntoCmdOptValue, IntoCommand},
     dump::JustDumpCmd,
     list::JustListCmd,
     summary::JustSummaryCmd,
@@ -94,7 +94,7 @@ where
         }
 
         // --dry-run
-        if matches!(self.dry_run_opt.into_value(), Some(true)) {
+        if self.dry_run_opt.into_flag_value() {
             cmd.arg("--dry-run");
         }
 

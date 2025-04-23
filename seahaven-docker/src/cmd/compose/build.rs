@@ -1,4 +1,4 @@
-use super::{IntoCmdOptValue, IntoCommand};
+use crate::cmd::common::{IntoCmdFlagValue, IntoCmdOptValue, IntoCommand};
 
 pub struct DockerComposeBuildCmd<
     D = DryRunNotSet,
@@ -39,7 +39,7 @@ where
         cmd.arg("build");
 
         // --dry-run
-        if matches!(self.dry_run_opt.into_value(), Some(true)) {
+        if self.dry_run_opt.into_flag_value() {
             cmd.arg("--dry-run");
         }
 
