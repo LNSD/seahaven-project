@@ -4,6 +4,8 @@ mod down;
 mod dump_config;
 mod eject;
 mod init;
+mod logs;
+mod ps;
 mod pull;
 mod root;
 mod run;
