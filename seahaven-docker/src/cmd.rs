@@ -93,6 +93,7 @@ mod tests {
     mod it_compose_build;
     mod it_compose_down;
     mod it_compose_logs;
+    mod it_compose_ps;
     mod it_compose_pull;
     mod it_compose_up;
     mod it_root;
