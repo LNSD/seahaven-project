@@ -1,4 +1,4 @@
-use super::{IntoCmdOptValue, IntoCommand};
+use crate::cmd::common::{IntoCmdFlagValue, IntoCmdOptValue, IntoCommand};
 
 pub struct DockerComposeDownCmd<V = VolumesNotSet, DR = DryRunNotSet, S = ServicesNotSet> {
     cmd: tokio::process::Command,
@@ -31,12 +31,12 @@ where
         cmd.arg("down");
 
         // --volumes
-        if matches!(self.volumes_opt.into_value(), Some(true)) {
+        if self.volumes_opt.into_flag_value() {
             cmd.arg("--volumes");
         }
 
         // --dry-run
-        if matches!(self.dry_run_opt.into_value(), Some(true)) {
+        if self.dry_run_opt.into_flag_value() {
             cmd.arg("--dry-run");
         }
 

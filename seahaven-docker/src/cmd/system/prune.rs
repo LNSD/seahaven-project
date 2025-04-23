@@ -1,4 +1,4 @@
-use super::{IntoCmdOptValue, IntoCommand};
+use crate::cmd::common::{IntoCmdFlagValue, IntoCmdOptValue, IntoCommand};
 
 pub struct DockerSystemPruneCmd<V = VolumesNotSet, A = AllNotSet, F = ForceNotSet> {
     cmd: tokio::process::Command,
@@ -31,17 +31,17 @@ where
         cmd.arg("prune");
 
         // --volumes
-        if matches!(self.volumes_opt.into_value(), Some(true)) {
+        if self.volumes_opt.into_flag_value() {
             cmd.arg("--volumes");
         }
 
         // --all
-        if matches!(self.all_opt.into_value(), Some(true)) {
+        if self.all_opt.into_flag_value() {
             cmd.arg("--all");
         }
 
         // --force
-        if matches!(self.force_opt.into_value(), Some(true)) {
+        if self.force_opt.into_flag_value() {
             cmd.arg("--force");
         }
 

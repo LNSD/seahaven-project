@@ -2,7 +2,7 @@ pub mod info;
 pub mod prune;
 
 use self::{info::DockerSystemInfoCmd, prune::DockerSystemPruneCmd};
-use super::common::{IntoCmdOptValue, IntoCommand};
+use super::common::IntoCommand;
 
 pub struct DockerSystemCmd(tokio::process::Command);
 
