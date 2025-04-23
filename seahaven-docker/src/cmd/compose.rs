@@ -5,12 +5,13 @@ use std::{
 
 pub mod build;
 pub mod down;
+pub mod logs;
 pub mod pull;
 pub mod up;
 
 use self::{
-    build::DockerComposeBuildCmd, down::DockerComposeDownCmd, pull::DockerComposePullCmd,
-    up::DockerComposeUpCmd,
+    build::DockerComposeBuildCmd, down::DockerComposeDownCmd, logs::DockerComposeLogsCmd,
+    pull::DockerComposePullCmd, up::DockerComposeUpCmd,
 };
 use super::common::{IntoCmdOptValue, IntoCommand};
 
@@ -84,6 +85,14 @@ where
     /// for more information.
     pub fn down(self) -> DockerComposeDownCmd {
         DockerComposeDownCmd::new(self)
+    }
+
+    /// View output from containers.
+    ///
+    /// See [`docker compose logs`](https://docs.docker.com/compose/reference/logs/)
+    /// for more information.
+    pub fn logs(self) -> DockerComposeLogsCmd {
+        DockerComposeLogsCmd::new(self)
     }
 }
 
