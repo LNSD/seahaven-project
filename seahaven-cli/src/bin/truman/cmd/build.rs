@@ -23,6 +23,10 @@ pub fn cmd() -> clap::Command {
             clap::arg!(--"build-arg" <KEY_VALUE> "Set build-time variables")
                 .action(clap::ArgAction::Append)
                 .value_parser(clap::builder::ValueParser::new(parse_build_arg)),
+            clap::arg!(--"ssh" [SSH_AUTH] "Set SSH authentications used when building service images (use 'default' for using your default SSH Agent)")
+                .default_value("default")
+                .hide_default_value(true)
+                .action(clap::ArgAction::Set),
             clap::arg!([SERVICE] ... "The services to build").action(clap::ArgAction::Append),
         ])
 }
@@ -144,6 +148,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         .build()
         .with_dry_run(matches.get_flag("dry-run"))
         .with_build_args(build_args)
+        .with_ssh_auth::<&String>(matches.get_one::<String>("ssh"))
         .with_services(matches.get_many::<String>("SERVICE").unwrap_or_default())
         .into_command();
 
