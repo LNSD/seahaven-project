@@ -1,0 +1,37 @@
+# Chain config
+CHAIN_RPC: 8545
+CHAIN_ID: 1337
+CHAIN_NAME: "hardhat"
+
+# App server
+APP_SERVER_ADMIN: 7600
+APP_SERVER_RPC: 7601
+APP_SERVER_METRICS: 7602
+---
+
+services:
+  chain:
+    use: ./chain
+    environment:
+      CHAIN_RPC: ${CHAIN_RPC}
+
+  app-server:
+    image: ghcr.io/example/server:latest
+    depends_on:
+      chain: { condition: service_healthy }
+      deploy-contracts: { condition: service_completed_successfully }
+    ports:
+      - "${APP_SERVER_ADMIN}:7600"
+      - "${APP_SERVER_RPC}:7601"
+      - "${APP_SERVER_METRICS}:7602"
+    healthcheck:
+      { interval: 1s, retries: 10, test: curl -sf http://localhost:${APP_SERVER_ADMIN}/health }
+
+init:
+  deploy-contracts:
+    use: ./contracts#deploy
+    depends_on:
+      chain: { condition: service_healthy }
+    environment:
+      CHAIN_ID: ${CHAIN_ID}
+      CHAIN_RPC: http://chain:${CHAIN_RPC}
