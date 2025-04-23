@@ -194,3 +194,115 @@ async fn run_docker_compose_build_with_dry_run() {
 
     assert_eq!(args, ["compose", "build", "--dry-run"]);
 }
+
+#[tokio::test]
+async fn run_docker_compose_build_with_default_ssh_auth() {
+    //* Given
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .build()
+        .with_default_ssh_auth()
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output = res.expect("Failed to run docker compose build with default SSH auth");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(args, ["compose", "build", "--ssh", "default"]);
+}
+
+#[tokio::test]
+async fn run_docker_compose_build_with_custom_ssh_auth() {
+    //* Given
+    let exe = fixture_exe();
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .build()
+        .with_ssh_auth("id=staging")
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output = res.expect("Failed to run docker compose build with custom SSH auth");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(args, ["compose", "build", "--ssh", "id=staging"]);
+}
+
+#[tokio::test]
+async fn run_docker_compose_build_with_ssh_auth_and_build_args() {
+    //* Given
+    let exe = fixture_exe();
+
+    let build_args = [("NODE_ENV", "production"), ("DEBUG", "false")];
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .build()
+        .with_build_args(build_args)
+        .with_ssh_auth("default")
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output = res.expect("Failed to run docker compose build with SSH auth and build args");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(
+        args,
+        [
+            "compose",
+            "build",
+            "--ssh",
+            "default",
+            "--build-arg",
+            "NODE_ENV=production",
+            "--build-arg",
+            "DEBUG=false",
+        ]
+    );
+}
+
+#[tokio::test]
+async fn run_docker_compose_build_with_ssh_auth_and_services() {
+    //* Given
+    let exe = fixture_exe();
+
+    let services = ["api-service", "web-service"];
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .build()
+        .with_ssh_auth("default")
+        .with_services(services)
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output = res.expect("Failed to run docker compose build with SSH auth and services");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(
+        args,
+        [
+            "compose",
+            "build",
+            "--ssh",
+            "default",
+            "api-service",
+            "web-service"
+        ]
+    );
+}

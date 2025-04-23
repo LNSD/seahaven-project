@@ -1,9 +1,15 @@
 use super::{IntoCmdOptValue, IntoCommand};
 
-pub struct DockerComposeBuildCmd<D = DryRunNotSet, B = BuildArgsNotSet, S = ServicesNotSet> {
+pub struct DockerComposeBuildCmd<
+    D = DryRunNotSet,
+    B = BuildArgsNotSet,
+    A = SshAuthNotSet,
+    S = ServicesNotSet,
+> {
     cmd: tokio::process::Command,
     dry_run_opt: D,
     build_args_opt: B,
+    ssh_auth_opt: A,
     services_opt: S,
 }
 
@@ -13,15 +19,17 @@ impl DockerComposeBuildCmd {
             cmd: cmd.into_command(),
             dry_run_opt: DryRunNotSet,
             build_args_opt: BuildArgsNotSet,
+            ssh_auth_opt: SshAuthNotSet,
             services_opt: ServicesNotSet,
         }
     }
 }
 
-impl<D, B, S> IntoCommand for DockerComposeBuildCmd<D, B, S>
+impl<D, B, A, S> IntoCommand for DockerComposeBuildCmd<D, B, A, S>
 where
     D: DryRunOpt,
     B: BuildArgsOpt,
+    A: SshAuthOpt,
     S: ServicesOpt,
 {
     fn into_command(self) -> tokio::process::Command {
@@ -33,6 +41,11 @@ where
         // --dry-run
         if matches!(self.dry_run_opt.into_value(), Some(true)) {
             cmd.arg("--dry-run");
+        }
+
+        // --ssh
+        if let Some(ssh) = self.ssh_auth_opt.into_value() {
+            cmd.arg("--ssh").arg(ssh);
         }
 
         // --build-arg <key>=<value>
@@ -50,37 +63,30 @@ where
     }
 }
 
-impl<B, S> DockerComposeBuildCmd<DryRunNotSet, B, S>
-where
-    B: BuildArgsOpt,
-    S: ServicesOpt,
-{
+impl<B, A, S> DockerComposeBuildCmd<DryRunNotSet, B, A, S> {
     /// Run the command in dry run mode with the `--dry-run` flag.
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/build/)
     /// for more information.
-    pub fn with_dry_run(self, dry_run: bool) -> DockerComposeBuildCmd<DryRunSet, B, S> {
+    pub fn with_dry_run(self, dry_run: bool) -> DockerComposeBuildCmd<DryRunSet, B, A, S> {
         DockerComposeBuildCmd {
             cmd: self.cmd,
             dry_run_opt: DryRunSet(dry_run),
             build_args_opt: self.build_args_opt,
+            ssh_auth_opt: self.ssh_auth_opt,
             services_opt: self.services_opt,
         }
     }
 }
 
-impl<D, S> DockerComposeBuildCmd<D, BuildArgsNotSet, S>
-where
-    D: DryRunOpt,
-    S: ServicesOpt,
-{
+impl<D, A, S> DockerComposeBuildCmd<D, BuildArgsNotSet, A, S> {
     /// Add multiple build arguments.
     ///
     /// If the build argument key is empty, the key-value pair will be ignored.
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/build/)
     /// for more information.
-    pub fn with_build_args<I, K, V>(self, args: I) -> DockerComposeBuildCmd<D, BuildArgsSet, S>
+    pub fn with_build_args<I, K, V>(self, args: I) -> DockerComposeBuildCmd<D, BuildArgsSet, A, S>
     where
         I: IntoIterator<Item = (K, V)>,
         K: AsRef<str>,
@@ -104,6 +110,7 @@ where
             cmd: self.cmd,
             dry_run_opt: self.dry_run_opt,
             build_args_opt: BuildArgsSet(build_args),
+            ssh_auth_opt: self.ssh_auth_opt,
             services_opt: self.services_opt,
         }
     }
@@ -114,7 +121,11 @@ where
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/build/)
     /// for more information.
-    pub fn with_build_arg<K, V>(self, key: K, value: V) -> DockerComposeBuildCmd<D, BuildArgsSet, S>
+    pub fn with_build_arg<K, V>(
+        self,
+        key: K,
+        value: V,
+    ) -> DockerComposeBuildCmd<D, BuildArgsSet, A, S>
     where
         K: AsRef<str>,
         V: AsRef<str>,
@@ -123,44 +134,46 @@ where
     }
 }
 
-impl<D, S> DockerComposeBuildCmd<D, BuildArgsSet, S>
-where
-    D: DryRunOpt,
-    S: ServicesOpt,
-{
-    pub fn with_build_arg<K, V>(self, key: K, value: V) -> DockerComposeBuildCmd<D, BuildArgsSet, S>
+impl<D, B, S> DockerComposeBuildCmd<D, B, SshAuthNotSet, S> {
+    /// Set the SSH authentications used when building the service images.
+    ///
+    /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/build/)
+    /// for more information.
+    pub fn with_ssh_auth<A>(
+        self,
+        ssh: impl Into<Option<A>>,
+    ) -> DockerComposeBuildCmd<D, B, SshAuthSet, S>
     where
-        K: AsRef<str>,
-        V: AsRef<str>,
+        A: AsRef<str>,
     {
-        let BuildArgsSet(mut args) = self.build_args_opt;
-
-        // Filter out empty key build arguments
-        if !key.as_ref().is_empty() {
-            args.push((key.as_ref().to_string(), value.as_ref().to_string()));
-        }
-
+        let ssh_auth = ssh.into().map(|s| s.as_ref().to_string());
         DockerComposeBuildCmd {
             cmd: self.cmd,
             dry_run_opt: self.dry_run_opt,
-            build_args_opt: BuildArgsSet(args),
+            build_args_opt: self.build_args_opt,
+            ssh_auth_opt: SshAuthSet(ssh_auth),
             services_opt: self.services_opt,
         }
     }
+
+    /// Set the SSH authentications used when building the service images to the default, for
+    /// using the default SSH Agent.
+    ///
+    /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/build/)
+    /// for more information.
+    pub fn with_default_ssh_auth(self) -> DockerComposeBuildCmd<D, B, SshAuthSet, S> {
+        self.with_ssh_auth("default")
+    }
 }
 
-impl<D, B> DockerComposeBuildCmd<D, B, ServicesNotSet>
-where
-    D: DryRunOpt,
-    B: BuildArgsOpt,
-{
+impl<D, B, A> DockerComposeBuildCmd<D, B, A, ServicesNotSet> {
     /// Specify which services to build.
     ///
     /// If the service name is empty, it will be ignored.
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/build/)
     /// for more information.
-    pub fn with_services<I, T>(self, services: I) -> DockerComposeBuildCmd<D, B, ServicesSet>
+    pub fn with_services<I, T>(self, services: I) -> DockerComposeBuildCmd<D, B, A, ServicesSet>
     where
         I: IntoIterator<Item = T>,
         T: AsRef<str>,
@@ -182,6 +195,7 @@ where
             cmd: self.cmd,
             dry_run_opt: self.dry_run_opt,
             build_args_opt: self.build_args_opt,
+            ssh_auth_opt: self.ssh_auth_opt,
             services_opt: ServicesSet(services),
         }
     }
@@ -192,7 +206,7 @@ where
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/build/)
     /// for more information.
-    pub fn with_service<T>(self, service: T) -> DockerComposeBuildCmd<D, B, ServicesSet>
+    pub fn with_service<T>(self, service: T) -> DockerComposeBuildCmd<D, B, A, ServicesSet>
     where
         T: AsRef<str>,
     {
@@ -271,6 +285,31 @@ impl _priv::Sealed for ServicesSet {}
 impl IntoCmdOptValue<Box<[String]>> for ServicesSet {
     fn into_value(self) -> Option<Box<[String]>> {
         Some(self.0)
+    }
+}
+
+/// Marker trait for SSH options
+#[allow(private_bounds)]
+pub trait SshAuthOpt: IntoCmdOptValue<String> + _priv::Sealed {}
+
+pub struct SshAuthNotSet;
+impl SshAuthOpt for SshAuthNotSet {}
+impl _priv::Sealed for SshAuthNotSet {}
+
+impl IntoCmdOptValue<String> for SshAuthNotSet {
+    fn into_value(self) -> Option<String> {
+        None
+    }
+}
+
+pub struct SshAuthSet(Option<String>);
+
+impl SshAuthOpt for SshAuthSet {}
+impl _priv::Sealed for SshAuthSet {}
+
+impl IntoCmdOptValue<String> for SshAuthSet {
+    fn into_value(self) -> Option<String> {
+        self.0
     }
 }
 
