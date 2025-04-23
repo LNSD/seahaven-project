@@ -11,7 +11,8 @@ pub const CMD: &str = "dump-config";
 /// Create the `dump-config` command
 pub fn cmd() -> clap::Command {
     clap::command!(CMD)
-        .about(indoc::indoc! {r#"
+        .about("Dump the project's configuration")
+        .long_about(indoc::indoc! {r#"
             Dump the project's configuration
 
             This command allows you to inspect and use the project's configuration files. It's useful for:

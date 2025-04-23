@@ -9,34 +9,27 @@ use crate::{
     files::{load_env_files, load_setup_file},
 };
 
-/// The `build` command name
-pub const CMD: &str = "build";
+/// The `ps` command name
+pub const CMD: &str = "ps";
 
-/// Create the `build` command
+/// Create the `ps` command
 pub fn cmd() -> clap::Command {
     clap::command!(CMD)
-        .about("Build the development environment images using docker compose")
+        .about("List containers")
         .args([file_arg(), env_file_arg(), project_directory_arg()])
         .args([
             clap::arg!(--"dry-run" "Execute command in dry run mode")
                 .action(clap::ArgAction::SetTrue),
-            clap::arg!(--"build-arg" <KEY_VALUE> "Set build-time variables")
-                .action(clap::ArgAction::Append)
-                .value_parser(clap::builder::ValueParser::new(parse_build_arg)),
-            clap::arg!(--ssh [SSH_AUTH] "Set SSH authentications used when building service images (use 'default' for using your default SSH Agent)")
-                .default_missing_value("default")
-                .hide_default_value(true)
-                .action(clap::ArgAction::Set),
-            clap::arg!([SERVICE] ... "The services to build").action(clap::ArgAction::Append),
+            clap::arg!(-a --all "Show all stopped containers").action(clap::ArgAction::SetTrue),
+            clap::arg!([SERVICE] ... "The services to show").action(clap::ArgAction::Append),
         ])
 }
 
-/// The `build` command implementation
+/// The `ps` command implementation
 pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     // Check for requirements
     // - No min version for docker
     // - No min version for docker compose plugin (required)
-    // - No min version for buildx plugin (required)
     let docker_exe = resolve_docker_executable()
         .map_err(|err| anyhow::anyhow!("Failed to resolve docker executable: {}", err))?;
 
@@ -51,12 +44,6 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     if docker_version.plugin_compose.is_none() {
         return Err(anyhow::anyhow!(
             "Failed to determine the docker compose plugin version. Is the docker compose plugin installed?"
-        )
-        .into());
-    }
-    if docker_version.plugin_buildx.is_none() {
-        return Err(anyhow::anyhow!(
-            "Failed to determine the buildx plugin version. Is the buildx plugin installed?"
         )
         .into());
     }
@@ -120,135 +107,41 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
             .map_err(|err| anyhow::anyhow!("Failed to write docker-compose.yaml file: {err}"))?;
     }
 
-    // Process and sanitize the build args
-    let build_args = matches
-        .get_many::<(String, String)>("build-arg")
-        .unwrap_or_default()
-        .fold(
-            std::collections::BTreeMap::new(),
-            |mut acc, (key, value)| {
-                acc.insert(key, value);
-                acc
-            },
-        );
-
     let project_directory = matches
         .get_one::<PathBuf>("project-directory")
         .expect("Failed to get project directory");
 
     tracing::debug!("Project directory: {}", project_directory.display());
 
-    // Create and run the docker command
     let mut command = DockerCmd::with_executable(docker_exe)
         .compose()
         .with_file(content_file_path)
         .with_env_file(env_file_path)
         .with_project_directory(project_directory)
         .with_plain_progress()
-        .build()
+        .ps()
         .with_dry_run(matches.get_flag("dry-run"))
-        .with_build_args(build_args)
-        .with_ssh_auth::<&String>(matches.get_one::<String>("ssh"))
+        .with_all(matches.get_flag("all"))
         .with_services(matches.get_many::<String>("SERVICE").unwrap_or_default())
         .into_command();
 
-    tracing::debug!("command: {:?}", command.as_std());
+    tracing::debug!("Running command: {:?}", command.as_std());
 
     let mut child = command
         .kill_on_drop(true)
         .spawn()
-        .map_err(|err| anyhow::anyhow!("Failed to spawn docker compose build command: {err}"))?;
+        .map_err(|err| anyhow::anyhow!("Failed to spawn docker compose ps command: {err}"))?;
 
     let status = child
         .wait()
         .await
-        .map_err(|err| anyhow::anyhow!("Failed to wait for docker compose build command: {err}"))?;
+        .map_err(|err| anyhow::anyhow!("Failed to wait for docker compose ps command: {err}"))?;
     if !status.success() {
         return Err(
-            Error::new(anyhow::anyhow!("Docker compose build command failed"))
+            Error::new(anyhow::anyhow!("Docker compose ps command failed"))
                 .with_code(status.code().unwrap_or(1)),
         );
     }
 
     Ok(())
-}
-
-/// Parse a build arg
-fn parse_build_arg(arg: &str) -> anyhow::Result<(String, String)> {
-    if let Some((key, value)) = arg.split_once('=') {
-        Ok((key.to_string(), value.to_string()))
-    } else {
-        Err(anyhow::anyhow!("Invalid build arg: {arg}"))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::parse_build_arg;
-
-    #[test]
-    fn parse_build_arg_with_valid_input() {
-        //* Given
-        let input = "FOO=bar";
-
-        //* When
-        let result = parse_build_arg(input);
-
-        //* Then
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), ("FOO".to_string(), "bar".to_string()));
-    }
-
-    #[test]
-    fn parse_build_arg_with_empty_value() {
-        //* Given
-        let input = "FOO=";
-
-        //* When
-        let result = parse_build_arg(input);
-
-        //* Then
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), ("FOO".to_string(), "".to_string()));
-    }
-
-    #[test]
-    fn parse_build_arg_with_multiple_equals() {
-        //* Given
-        let input = "FOO=bar=baz";
-
-        //* When
-        let result = parse_build_arg(input);
-
-        //* Then
-        let (key, value) = result.expect("Failed to parse build arg");
-        assert_eq!(key, "FOO");
-        assert_eq!(value, "bar=baz");
-    }
-
-    #[test]
-    fn parse_build_arg_with_no_equals() {
-        //* Given
-        let input = "FOO";
-
-        //* When
-        let result = parse_build_arg(input);
-
-        //* Then
-        let err = result.expect_err("Expected error");
-        assert!(err.to_string().contains("Invalid build arg"));
-    }
-
-    #[test]
-    fn parse_build_arg_with_empty_string() {
-        //* Given
-        let input = "";
-
-        //* When
-        let result = parse_build_arg(input);
-
-        //* Then
-        let err = result.expect_err("Expected error");
-        assert!(err.to_string().contains("Invalid build arg"));
-    }
 }
