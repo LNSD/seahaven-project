@@ -28,7 +28,7 @@ fn parse_no_targets_toml() {
     //* Then
     assert!(
         err.to_string()
-            .contains("no services or init containers defined")
+            .contains("no service or init containers defined")
     );
 }
 

@@ -1,6 +1,6 @@
 //! Serializing a [Manifest] into TOML.
 
-use super::Manifest;
+use super::model::Manifest;
 
 /// Serializes a [Manifest] as a String of TOML.
 pub fn to_string(manifest: &Manifest) -> Result<String, SerializationError> {

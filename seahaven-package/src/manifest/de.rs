@@ -2,7 +2,7 @@
 
 use serde::de::Error;
 
-use super::{InitContainer, Manifest, PackageMeta, Service};
+use super::model::{InitContainer, Manifest, PackageMeta, Service};
 
 /// Deserializes a string into a [Manifest].
 pub fn from_str(s: &str) -> Result<Manifest, DeserializationError> {
@@ -18,7 +18,7 @@ impl<'de> serde::de::Deserialize<'de> for Manifest {
         struct ManifestInternal {
             package: PackageMeta,
             #[serde(default)]
-            services: Vec<Service>,
+            service: Option<Service>,
             #[serde(default)]
             init: Vec<InitContainer>,
         }
@@ -36,13 +36,13 @@ impl<'de> serde::de::Deserialize<'de> for Manifest {
             )));
         }
 
-        // Check that there are either services or init containers defined
-        if manifest.services.is_empty() && manifest.init.is_empty() {
-            return Err(D::Error::custom("no services or init containers defined"));
+        // Check that there are either a service or init containers defined
+        if manifest.service.is_none() && manifest.init.is_empty() {
+            return Err(D::Error::custom("no service or init containers defined"));
         }
 
-        // Check that all service names are valid
-        for service in &manifest.services {
+        // Check that the service name is valid
+        if let Some(service) = &manifest.service {
             if name_regex.find(&service.name).is_none() {
                 return Err(D::Error::custom(format!(
                     "invalid service name: '{}'",
@@ -63,7 +63,7 @@ impl<'de> serde::de::Deserialize<'de> for Manifest {
 
         Ok(Manifest {
             package: manifest.package,
-            services: manifest.services,
+            service: manifest.service,
             init: manifest.init,
         })
     }

@@ -9,12 +9,12 @@ description = "A package that does way too much"
 readme = "README.md"
 
 
-# Service target settings. Zero or more are allowed per package.
-[[service]]
+# Service target settings. Zero or one are allowed per package.
+[service]
 name = "chain"
 image = "ghcr.io/foundry-rs/foundry:latest"
 
-[[service.defaults]]
+[service.defaults]
 command = "anvil --host=0.0.0.0 --chain-id=${CHAIN_ID} --base-fee=0"
 ports = [ "${CHAIN_RPC}:8545" ]
 healthcheck = { interval = "1s", retries = 10, test = "cast block" }

@@ -3,10 +3,10 @@ name = "invalid/name"
 description = "A package with an invalid name"
 
 # Service target settings
-[[service]]
+[service]
 name = "chain"
 image = "ghcr.io/foundry-rs/foundry:latest"
 
-[[service.defaults]]
+[service.defaults]
 command = "anvil --host=0.0.0.0 --chain-id=${CHAIN_ID} --base-fee=0"
 ports = [ "${CHAIN_RPC}:8545" ]
