@@ -6,12 +6,13 @@ use std::{
 pub mod build;
 pub mod down;
 pub mod logs;
+pub mod ps;
 pub mod pull;
 pub mod up;
 
 use self::{
     build::DockerComposeBuildCmd, down::DockerComposeDownCmd, logs::DockerComposeLogsCmd,
-    pull::DockerComposePullCmd, up::DockerComposeUpCmd,
+    ps::DockerComposePsCmd, pull::DockerComposePullCmd, up::DockerComposeUpCmd,
 };
 use super::common::{IntoCmdOptValue, IntoCommand};
 
@@ -93,6 +94,14 @@ where
     /// for more information.
     pub fn logs(self) -> DockerComposeLogsCmd {
         DockerComposeLogsCmd::new(self)
+    }
+
+    /// List containers for the services defined in the `docker-compose.yml` file.
+    ///
+    /// See [`docker compose ps`](https://docs.docker.com/compose/reference/ps/)
+    /// for more information.
+    pub fn ps(self) -> DockerComposePsCmd {
+        DockerComposePsCmd::new(self)
     }
 }
 
