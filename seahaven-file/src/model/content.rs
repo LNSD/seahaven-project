@@ -4,92 +4,12 @@
 //! It includes the [`Content`] struct that represents the content of a setup file,
 //! along with serialization and deserialization utilities.
 
-/// Represents the content of a Seahaven setup description file.
-///
-/// This struct follows the compose file format with top-level elements
-/// for services, networks, volumes, configs, and secrets. The `services`
-/// field is required while other elements are optional.
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct Content {
-    /// Name top-level element
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
+mod root;
 
-    /// Services top-level element
-    pub services: serde_yaml::Mapping,
+pub mod de;
+pub mod ser;
 
-    /// Init containers top-level element
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub init: Option<serde_yaml::Mapping>,
-
-    /// Networks top-level element
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub networks: Option<serde_yaml::Mapping>,
-
-    /// Volumes top-level element
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub volumes: Option<serde_yaml::Mapping>,
-
-    /// Configs top-level element
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub configs: Option<serde_yaml::Mapping>,
-
-    /// Secrets top-level element
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub secrets: Option<serde_yaml::Mapping>,
-}
-
-/// Module containing serialization functionality
-pub mod ser {
-    use super::Content;
-
-    /// An error that happened when serializing the setup description file content
-    #[derive(Debug, thiserror::Error)]
-    #[error(transparent)]
-    pub struct SerializationError(#[from] serde_yaml::Error);
-
-    /// Serialize a setup description file content to a string
-    pub fn to_string(file: &Content) -> Result<String, SerializationError> {
-        serde_yaml::to_string(file).map_err(SerializationError)
-    }
-
-    /// Serialize a setup description file content to a writer
-    pub fn to_writer<W>(writer: W, file: &Content) -> Result<(), SerializationError>
-    where
-        W: std::io::Write,
-    {
-        serde_yaml::to_writer(writer, file).map_err(SerializationError)
-    }
-}
-
-/// Module containing deserialization functionality
-pub mod de {
-    use super::Content;
-
-    /// An error that happened when deserializing the setup description file content
-    #[derive(Debug, thiserror::Error)]
-    #[error(transparent)]
-    pub struct DeserializationError(#[from] serde_yaml::Error);
-
-    /// Deserialize a setup description file content from a string
-    pub fn from_str(s: &str) -> Result<Content, DeserializationError> {
-        serde_yaml::from_str(s).map_err(DeserializationError)
-    }
-
-    /// Deserialize a setup description file content from a reader
-    pub fn from_reader<R>(reader: R) -> Result<Content, DeserializationError>
-    where
-        R: std::io::Read,
-    {
-        serde_yaml::from_reader(reader).map_err(DeserializationError)
-    }
-}
+pub use root::Content;
 
 #[cfg(test)]
 mod tests {
