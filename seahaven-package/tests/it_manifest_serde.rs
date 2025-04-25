@@ -42,7 +42,7 @@ fn parse_name_empty_toml() {
         .expect_err("Failed to deserialize manifest");
 
     //* Then
-    assert!(err.to_string().contains("invalid package name"));
+    assert!(err.to_string().contains("invalid name"));
 }
 
 #[test]
@@ -55,7 +55,7 @@ fn parse_name_invalid_toml() {
         .expect_err("Failed to deserialize manifest");
 
     //* Then
-    assert!(err.to_string().contains("invalid package name"));
+    assert!(err.to_string().contains("invalid name"));
 }
 
 #[test]
