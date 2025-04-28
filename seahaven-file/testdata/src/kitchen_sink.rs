@@ -75,7 +75,7 @@
 #[doc = r##"      timeout: 5s"##]
 #[doc = r##"      retries: 5"##]
 #[doc = r##""##]
-#[doc = r##"init-containers:"##]
+#[doc = r##"init:"##]
 #[doc = r##"  deploy-contracts:"##]
 #[doc = r##"    build: { context: contracts }"##]
 #[doc = r##"    depends_on:"##]
@@ -180,7 +180,7 @@ pub const KITCHEN_SINK: &str = indoc::indoc! { r###"
         timeout: 5s
         retries: 5
 
-  init-containers:
+  init:
     deploy-contracts:
       build: { context: contracts }
       depends_on:
