@@ -4,7 +4,7 @@ use seahaven_file_testdata::{
     EMPTY_ENV, KITCHEN_SINK, NO_SERVICES, SINGLE_SERVICE, SINGLE_SERVICE_BASIC,
 };
 
-use crate::parsing::{ParsingError, fileenv_from_reader, from_reader};
+use crate::parsing::{ParsingError, env_from_reader, from_reader};
 
 #[test]
 fn single_service() {
@@ -54,7 +54,7 @@ fn no_services_error() {
 
     // * Then
     assert!(
-        matches!(result, Err(ParsingError::ContentDeserializationFailed(_))),
+        matches!(result, Err(ParsingError::ContentParsingFailed(_))),
         "Expected ContentDeserializationFailed error, got {:?}",
         result
     );
@@ -78,7 +78,7 @@ fn empty_env() {
     // Verify the top-level content
     let content = setup_file.content();
     assert!(!content.services.is_empty());
-    assert!(content.volumes.is_some());
+    assert!(!content._rest.is_empty());
 }
 
 #[test]
@@ -105,10 +105,8 @@ fn kitchen_sink() {
     let content = setup_file.content();
     assert!(content.name.is_some());
     assert_eq!(content.services.len(), 3);
-    assert!(content.networks.is_some());
-    assert!(content.volumes.is_some());
-    assert!(content.configs.is_some());
-    assert!(content.secrets.is_some());
+    assert!(content.init.is_some());
+    assert!(!content._rest.is_empty());
 }
 
 #[test]
@@ -117,7 +115,7 @@ fn kitchen_sink_env_file() {
     let input = Cursor::new(KITCHEN_SINK);
 
     // * When
-    let env = fileenv_from_reader(input).expect("Failed to parse KITCHEN_SINK");
+    let env = env_from_reader(input).expect("Failed to parse KITCHEN_SINK");
 
     // * Then
     let env = env.expect("Env file should be present");

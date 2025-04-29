@@ -67,13 +67,15 @@ pub use seahaven_compose_file;
 pub use serde_envfile;
 
 mod convert;
+pub mod env;
 mod matter;
 pub mod model;
 mod parsing;
 
-pub use convert::{Error as ConvertError, try_into_compose_file};
-pub use model::{SetupFile, content::Content, env::Env};
-pub use parsing::{ParsingError, fileenv_from_reader, from_reader};
+pub use convert::try_into_compose_file;
+pub use env::Env;
+pub use model::Content;
+pub use parsing::{File, ParsingError, env_from_reader, from_reader};
 
 #[cfg(test)]
 mod tests {

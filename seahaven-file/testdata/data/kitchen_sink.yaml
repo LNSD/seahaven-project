@@ -72,7 +72,7 @@ services:
       timeout: 5s
       retries: 5
 
-init-containers:
+init:
   deploy-contracts:
     build: { context: contracts }
     depends_on:

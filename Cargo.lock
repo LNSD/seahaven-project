@@ -1613,7 +1613,10 @@ name = "seahaven-file"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "indexmap 2.9.0",
  "indoc",
+ "once_cell",
+ "regress",
  "seahaven-compose-file",
  "seahaven-file-testdata",
  "serde",
