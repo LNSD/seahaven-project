@@ -6,7 +6,10 @@
 
 use indexmap::IndexMap as Map;
 
-use super::name::Name;
+use super::{
+    name::Name,
+    services::{InitContainer, Service},
+};
 
 /// Represents the content of a setup file after parsing, and before validation.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -16,11 +19,11 @@ pub struct DeserializedRoot {
     pub name: Option<Name>,
 
     /// Services top-level element
-    pub services: Map<Name, serde_yaml::Value>,
+    pub services: Map<Name, Service>,
 
     /// Init containers top-level element
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub init: Option<Map<Name, serde_yaml::Value>>,
+    pub init: Option<Map<Name, InitContainer>>,
 
     /// Rest of the file content
     #[serde(flatten, skip_serializing_if = "Map::is_empty")]
@@ -35,11 +38,11 @@ pub struct ValidatedRoot {
     pub name: Option<Name>,
 
     /// Services top-level element
-    pub services: Map<Name, serde_yaml::Value>,
+    pub services: Map<Name, Service>,
 
     /// Init containers top-level element
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub init: Option<Map<Name, serde_yaml::Value>>,
+    pub init: Option<Map<Name, InitContainer>>,
 
     /// Rest of the file content
     #[serde(flatten, skip_serializing_if = "Map::is_empty")]
