@@ -84,13 +84,43 @@ where
 
 /// Convert a [`Content`] into a [`ComposeFile`].
 pub fn into_compose_file(file: Content) -> ComposeFile {
-    let mut compose_file = ComposeFile {
+    // Convert the services into a serde_yaml::Mapping
+    let mut services = file
+        .services
+        .into_iter()
+        .map(|(name, service)| {
+            (
+                serde_yaml::Value::String(name.into_inner()),
+                serde_yaml::Value::Mapping(
+                    service
+                        ._rest
+                        .into_iter()
+                        .map(|(k, v)| (serde_yaml::Value::String(k), v))
+                        .collect(),
+                ),
+            )
+        })
+        .collect::<serde_yaml::Mapping>();
+
+    // Merge the init-containers into the services map
+    if let Some(init) = file.init {
+        services.extend(init.into_iter().map(|(name, service)| {
+            (
+                serde_yaml::Value::String(name.into_inner()),
+                serde_yaml::Value::Mapping(
+                    service
+                        ._rest
+                        .into_iter()
+                        .map(|(k, v)| (serde_yaml::Value::String(k), v))
+                        .collect(),
+                ),
+            )
+        }));
+    }
+
+    ComposeFile {
         name: file.name.map(|name| name.into_inner()),
-        services: file
-            .services
-            .into_iter()
-            .map(|(name, service)| (serde_yaml::Value::String(name.into_inner()), service))
-            .collect(),
+        services,
         networks: file
             ._rest
             .get("networks")
@@ -111,15 +141,5 @@ pub fn into_compose_file(file: Content) -> ComposeFile {
             .get("secrets")
             .and_then(|secrets| secrets.as_mapping())
             .cloned(),
-    };
-
-    // Merge the init-containers into the services map
-    if let Some(init) = file.init {
-        compose_file.services.extend(
-            init.into_iter()
-                .map(|(name, service)| (serde_yaml::Value::String(name.into_inner()), service)),
-        );
     }
-
-    compose_file
 }
