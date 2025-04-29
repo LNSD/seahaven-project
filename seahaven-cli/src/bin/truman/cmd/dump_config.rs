@@ -47,6 +47,7 @@ pub fn cmd() -> clap::Command {
         .subcommands([env_file::cmd(), compose_file::cmd()])
         .args([file_arg().global(true), env_file_arg().global(true)])
         .arg_required_else_help(true)
+        .subcommand_required(true)
         .infer_long_args(true)
         .infer_subcommands(true)
 }
