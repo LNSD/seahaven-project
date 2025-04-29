@@ -6,7 +6,7 @@ use seahaven_docker::cmd::{DockerCmd, IntoCommand};
 use super::common::{env_file_arg, file_arg, project_directory_arg};
 use crate::{
     deps::resolve_docker_executable,
-    files::{load_env_files, load_setup_file},
+    files::{into_compose_file, load_env_files, load_setup_file},
 };
 
 /// The `pull` command name
@@ -61,8 +61,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     let files_env = load_env_files(matches.get_many::<PathBuf>("env-file").unwrap_or_default())?;
 
     // Transform the content into a compose file
-    let compose = seahaven_file::try_into_compose_file(content)
-        .map_err(|err| anyhow::anyhow!("Invalid setup file: {err}"))?;
+    let compose = into_compose_file(content);
 
     // Merge the env files and front matter env
     let env = match (files_env, front_matter_env) {
@@ -95,14 +94,14 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
             .map_err(|err| anyhow::anyhow!("Failed to create docker-compose.yaml file: {err}"))?;
 
         tracing::debug!("Writing .env file: {}", env_file_path.display());
-        seahaven_file::serde_envfile::to_writer(env_file, &env)
+        serde_envfile::to_writer(env_file, &env)
             .map_err(|err| anyhow::anyhow!("Failed to write .env file: {err}"))?;
 
         tracing::debug!(
             "Writing docker-compose.yaml file: {}",
             content_file_path.display()
         );
-        seahaven_file::seahaven_compose_file::ser::to_writer(content_file, &compose)
+        seahaven_compose_file::ser::to_writer(content_file, &compose)
             .map_err(|err| anyhow::anyhow!("Failed to write docker-compose.yaml file: {err}"))?;
     }
 

@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use seahaven_cli::result::Result;
 
-use crate::files::load_setup_file;
+use crate::files::{into_compose_file, load_setup_file};
 
 /// The `dump-config compose-file` command name
 pub const CMD: &str = "compose-file";
@@ -56,11 +56,10 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?;
 
     // Transform the content into a compose file
-    let compose_file = seahaven_file::try_into_compose_file(content)
-        .map_err(|err| anyhow::anyhow!("Failed to convert setup file to compose file: {}", err))?;
+    let compose_file = into_compose_file(content);
 
     // Serialize the compose file to a string
-    let compose_content = seahaven_file::seahaven_compose_file::ser::to_string(&compose_file)
+    let compose_content = seahaven_compose_file::ser::to_string(&compose_file)
         .map_err(|err| anyhow::anyhow!("Failed to serialize compose file: {}", err))?;
 
     println!("{}", compose_content);

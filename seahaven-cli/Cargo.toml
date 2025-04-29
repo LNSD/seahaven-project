@@ -18,11 +18,14 @@ build-info = "0.0.40"
 clap = { version = "4.5", features = ["cargo", "derive"] }
 dotenvy = "0.15.7"
 indoc = "2.0.6"
+seahaven-compose-file = { version = "0.1.0", path = "../seahaven-compose-file", features = ["serde"] }
 seahaven-docker = { version = "0.1.0", path = "../seahaven-docker" }
 seahaven-file = { version = "0.1.0", path = "../seahaven-file" }
 seahaven-just = { version = "0.1.0", path = "../seahaven-just" }
 serde = { version = "1.0.197", features = ["derive"] }
+serde-envfile = { version = "0.2.0", features = ["preserve_order"], git = "https://github.com/LNSD/serde-envfile.git", rev = "7d02f71" }
 serde_json = { version = "1.0.140", features = ["preserve_order"] }
+serde_yaml = "0.9.34"
 tempfile = "3.19.1"
 thiserror = "2.0.12"
 tokio = { version = "1.44", features = ["rt", "macros"] }
