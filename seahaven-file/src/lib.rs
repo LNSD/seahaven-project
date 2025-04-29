@@ -63,16 +63,11 @@
 //!
 //! [compose-spec]: https://github.com/compose-spec/compose-spec/blob/main/spec.md
 
-pub use seahaven_compose_file;
-pub use serde_envfile;
-
-mod convert;
 pub mod env;
 mod matter;
 pub mod model;
 mod parsing;
 
-pub use convert::try_into_compose_file;
 pub use env::Env;
 pub use model::Content;
 pub use parsing::{File, ParsingError, env_from_reader, from_reader};

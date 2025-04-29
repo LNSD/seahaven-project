@@ -79,7 +79,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     };
 
     // Serialize the environment variables to a string
-    let env_content = seahaven_file::serde_envfile::to_string(&env)
+    let env_content = serde_envfile::to_string(&env)
         .map_err(|err| anyhow::anyhow!("Failed to serialize environment variables: {}", err))?;
 
     println!("{}", env_content);

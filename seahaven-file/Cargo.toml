@@ -18,7 +18,6 @@ anyhow = "1.0"
 indexmap = { version = "2.9.0", features = ["serde"] }
 once_cell = { version = "1.21.3", optional = true }
 regress = { version = "0.10.3", optional = true }
-seahaven-compose-file = { version = "0.1.0", path = "../seahaven-compose-file", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
 serde-envfile = { version = "0.2.0", features = ["preserve_order"], git = "https://github.com/LNSD/serde-envfile.git", rev = "7d02f71" }
 serde_yaml = "0.9"

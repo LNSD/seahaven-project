@@ -89,7 +89,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
             .map_err(|err| anyhow::anyhow!("Failed to create .env file: {err}"))?;
 
         tracing::debug!("Writing .env file: {}", env_file_path.display());
-        seahaven_file::serde_envfile::to_writer(env_file, &env)
+        serde_envfile::to_writer(env_file, &env)
             .map_err(|err| anyhow::anyhow!("Failed to write .env file: {err}"))?;
     }
 

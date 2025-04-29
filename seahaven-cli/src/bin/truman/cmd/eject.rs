@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use seahaven_cli::result::Result;
 
 use super::common::{env_file_arg, file_arg};
-use crate::files::{load_env_files, load_setup_file};
+use crate::files::{into_compose_file, load_env_files, load_setup_file};
 
 /// The `eject` command name
 pub const CMD: &str = "eject";
@@ -64,8 +64,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     let files_env = load_env_files(matches.get_many::<PathBuf>("env-file").unwrap_or_default())?;
 
     // Transform the content into a compose file
-    let compose_file = seahaven_file::try_into_compose_file(content)
-        .map_err(|err| anyhow::anyhow!("Failed to convert setup file to compose file: {}", err))?;
+    let compose_file = into_compose_file(content);
 
     // Merge the env files and front matter env
     let env = match (files_env, front_matter_env) {
@@ -80,7 +79,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     };
 
     // Serialize the compose file to a string
-    let compose_content = seahaven_file::seahaven_compose_file::ser::to_string(&compose_file)
+    let compose_content = seahaven_compose_file::ser::to_string(&compose_file)
         .map_err(|err| anyhow::anyhow!("Failed to serialize compose file: {}", err))?;
 
     // Write the docker-compose.yaml file
@@ -95,7 +94,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     // If environment section is present, write the .env file
     if let Some(env) = env {
         // Serialize the environment variables to a string
-        let env_content = seahaven_file::serde_envfile::to_string(&env)
+        let env_content = serde_envfile::to_string(&env)
             .map_err(|err| anyhow::anyhow!("Failed to serialize environment variables: {}", err))?;
 
         // Write the .env file
