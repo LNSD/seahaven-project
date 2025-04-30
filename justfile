@@ -11,6 +11,8 @@ default:
 # Run project tests
 test *suites='all':
     #!/usr/bin/env sh
+    set -e # Exit on error
+
     if [ "{{suites}}" = "all" ]; then
         cargo nextest run --all-features
         cargo test --all-features --doc

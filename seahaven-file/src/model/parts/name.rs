@@ -37,14 +37,22 @@ where
 impl std::cmp::Eq for Name {}
 
 impl std::str::FromStr for Name {
-    type Err = anyhow::Error;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if !parse::is_valid_name(s) {
-            return Err(anyhow::anyhow!("invalid name: '{}'", s));
+        let name = s.to_string();
+        if !parse::is_valid_name(&name) {
+            return Err(Error { name });
         }
-        Ok(Name(s.to_string()))
+        Ok(Name(name))
     }
+}
+
+/// An error that occurs when a name is invalid.
+#[derive(Debug, Clone, thiserror::Error)]
+#[error("invalid name: '{name}'")]
+pub struct Error {
+    pub name: String,
 }
 
 // TODO: #[cfg(feature = "parse")]
@@ -52,7 +60,7 @@ mod parse {
     use once_cell::sync::Lazy;
     use serde::de::Error as _;
 
-    use super::Name;
+    use super::{Error, Name};
 
     impl Name {
         /// Creates a new name from a [`String`].
@@ -70,7 +78,7 @@ mod parse {
         {
             let name = String::deserialize(deserializer)?;
             if !is_valid_name(&name) {
-                return Err(D::Error::custom(format!("invalid name: '{}'", name)));
+                return Err(D::Error::custom(Error { name }));
             }
             Ok(Name::new_unchecked(name))
         }
