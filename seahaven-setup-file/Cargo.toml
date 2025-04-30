@@ -1,5 +1,5 @@
 [package]
-name = "seahaven-file"
+name = "seahaven-setup-file"
 description = "Seahaven setup description file"
 version = "0.1.0"
 authors.workspace = true
@@ -26,4 +26,4 @@ thiserror = "2.0"
 
 [dev-dependencies]
 indoc = "2.0"
-seahaven-file-testdata = { path = "testdata" }
+seahaven-setup-file-testdata = { path = "testdata" }

@@ -4,11 +4,11 @@ members = [
     "seahaven-cli",
     "seahaven-compose-file",
     "seahaven-docker",
-    "seahaven-file",
-    "seahaven-file/testdata",
     "seahaven-just",
     "seahaven-package",
     "seahaven-package/testdata",
+    "seahaven-setup-file",
+    "seahaven-setup-file/testdata",
 ]
 
 [workspace.package]

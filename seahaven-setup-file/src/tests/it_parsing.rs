@@ -1,6 +1,6 @@
 use std::io::Cursor;
 
-use seahaven_file_testdata::{
+use seahaven_setup_file_testdata::{
     EMPTY_ENV, KITCHEN_SINK, NO_SERVICES, SINGLE_SERVICE, SINGLE_SERVICE_BASIC,
 };
 
