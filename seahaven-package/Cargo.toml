@@ -7,19 +7,17 @@ license.workspace = true
 repository.workspace = true
 edition.workspace = true
 
-[features]
-parse = ["dep:serde", "semver/serde", "toml/parse", "dep:regress"]
-display = ["dep:serde", "semver/serde", "toml/display"]
-
 [dependencies]
 anyhow = "1.0"
 once_cell = "1.21.3"
-regress = { version = "0.10.3", optional = true }
+regress = "0.10.3"
 semver = "1.0"
-serde = { version = "1.0", optional = true, features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9.34"
 thiserror = "2.0"
 toml = "0.8.20"
 tracing = "0.1.41"
 
 [dev-dependencies]
+indoc = "2.0.6"
 seahaven-package-testdata = { path = "testdata" }
