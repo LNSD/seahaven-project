@@ -4,7 +4,7 @@ use std::{fs::File, io::BufReader, path::Path};
 
 use seahaven_cli::result::Result;
 use seahaven_compose_file::ComposeFile;
-use seahaven_file::{Content, Env};
+use seahaven_setup_file::{Content, Env};
 
 /// Loads a single file and returns its environment variables and content.
 ///
@@ -21,7 +21,7 @@ where
         )
     })?;
 
-    let res = seahaven_file::from_reader(file)
+    let res = seahaven_setup_file::from_reader(file)
         .map_err(|err| {
             anyhow::anyhow!(
                 "Failed to parse setup file '{}': {}",

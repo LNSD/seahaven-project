@@ -25,7 +25,8 @@ serde_yaml = "0.9"
 thiserror = "2.0"
 
 [dev-dependencies]
-seahaven-file-testdata = { path = "../seahaven-file/testdata" }
+# TODO: Add a testdata crate for the compose file
+seahaven-setup-file-testdata = { path = "../seahaven-setup-file/testdata" }
 
 [build-dependencies]
 diffy = { version = "0.4.2", optional = true }

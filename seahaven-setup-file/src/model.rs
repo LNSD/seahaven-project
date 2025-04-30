@@ -13,7 +13,7 @@ pub use parts::{ValidatedRoot as Content, *};
 
 #[cfg(test)]
 mod tests {
-    use seahaven_file_testdata::SINGLE_SERVICE;
+    use seahaven_setup_file_testdata::SINGLE_SERVICE;
 
     use super::{
         display::{to_string, to_writer},

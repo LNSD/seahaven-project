@@ -33,7 +33,7 @@ impl Env {
     /// # Examples
     ///
     /// ```rust
-    /// use seahaven_file::env::Env;
+    /// use seahaven_setup_file::env::Env;
     ///
     /// let mut env = Env::new();
     /// assert_eq!(env.len(), 0);
@@ -56,7 +56,7 @@ impl Env {
     /// # Examples
     ///
     /// ```
-    /// use seahaven_file::env::Env;
+    /// use seahaven_setup_file::env::Env;
     ///
     /// let mut env = Env::new();
     /// assert!(env.is_empty());
@@ -75,7 +75,7 @@ impl Env {
     /// # Examples
     ///
     /// ```rust
-    /// use seahaven_file::env::Env;
+    /// use seahaven_setup_file::env::Env;
     ///
     /// let mut env = Env::new();
     /// env.insert("DATABASE_URL", "postgres://localhost:5432/mydb");
@@ -99,7 +99,7 @@ impl Env {
     /// # Examples
     ///
     /// ```
-    /// use seahaven_file::env::Env;
+    /// use seahaven_setup_file::env::Env;
     ///
     /// let mut env = Env::new();
     /// env.insert("DATABASE_URL", "postgres://localhost:5432/mydb");
@@ -136,7 +136,7 @@ impl Env {
     /// # Examples
     ///
     /// ```rust
-    /// use seahaven_file::env::Env;
+    /// use seahaven_setup_file::env::Env;
     ///
     /// let mut env_file = Env::new();
     /// assert_eq!(env_file.insert("KEY1", "VALUE1"), None);
@@ -160,7 +160,7 @@ impl Env {
     /// # Examples
     ///
     /// ```rust
-    /// use seahaven_file::env::Env;
+    /// use seahaven_setup_file::env::Env;
     ///
     /// let mut env_file = Env::from_iter([("KEY1", "VALUE1"), ("KEY2", "VALUE2")]);
     /// assert_eq!(env_file.remove("KEY1"), Some("VALUE1".to_string()));
@@ -180,7 +180,7 @@ impl Env {
     /// # Examples
     ///
     /// ```rust
-    /// use seahaven_file::env::Env;
+    /// use seahaven_setup_file::env::Env;
     ///
     /// let mut env_file = Env::from_iter([("KEY1", "VALUE1"), ("KEY2", "VALUE2")]);
     /// assert_eq!(
@@ -219,7 +219,7 @@ where
     /// # Examples
     ///
     /// ```rust
-    /// use seahaven_file::env::Env;
+    /// use seahaven_setup_file::env::Env;
     ///
     /// let env_file = Env::from_iter([("KEY1", "VALUE1"), ("KEY2", "VALUE2")]);
     /// # assert_eq!(env_file.get("KEY1").unwrap(), "VALUE1");
@@ -242,7 +242,7 @@ where
     /// # Examples
     ///
     /// ```rust
-    /// use seahaven_file::env::Env;
+    /// use seahaven_setup_file::env::Env;
     ///
     /// let mut env_file = Env::new();
     /// env_file.extend([("KEY1", "VALUE1"), ("KEY2", "VALUE2")]);
@@ -259,7 +259,7 @@ where
 /// # Examples
 ///
 /// ```rust
-/// use seahaven_file::env::Env;
+/// use seahaven_setup_file::env::Env;
 ///
 /// let env_file = Env::from_iter([("KEY1", "VALUE1"), ("KEY2", "VALUE2")]);
 /// for (key, value) in &env_file {
@@ -280,7 +280,7 @@ impl<'a> IntoIterator for &'a Env {
 /// # Examples
 ///
 /// ```rust
-/// use seahaven_file::env::Env;
+/// use seahaven_setup_file::env::Env;
 ///
 /// let mut env_file = Env::from_iter([("KEY1", "VALUE1"), ("KEY2", "VALUE2")]);
 /// for (key, value) in &mut env_file {
@@ -301,7 +301,7 @@ impl<'a> IntoIterator for &'a mut Env {
 /// # Examples
 ///
 /// ```rust
-/// use seahaven_file::env::Env;
+/// use seahaven_setup_file::env::Env;
 ///
 /// let env_file = Env::from_iter([("KEY1", "VALUE1"), ("KEY2", "VALUE2")]);
 /// for (key, value) in env_file {

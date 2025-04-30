@@ -1569,8 +1569,8 @@ dependencies = [
  "indoc",
  "seahaven-compose-file",
  "seahaven-docker",
- "seahaven-file",
  "seahaven-just",
+ "seahaven-setup-file",
  "serde",
  "serde-envfile",
  "serde_json",
@@ -1588,7 +1588,7 @@ version = "0.1.0"
 dependencies = [
  "diffy",
  "reqwest",
- "seahaven-file-testdata",
+ "seahaven-setup-file-testdata",
  "serde",
  "serde_yaml",
  "thiserror",
@@ -1609,31 +1609,6 @@ dependencies = [
  "tokio",
  "tracing",
  "which",
-]
-
-[[package]]
-name = "seahaven-file"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "indexmap 2.9.0",
- "indoc",
- "once_cell",
- "regress",
- "seahaven-file-testdata",
- "serde",
- "serde-envfile",
- "serde_with",
- "serde_yaml",
- "thiserror",
-]
-
-[[package]]
-name = "seahaven-file-testdata"
-version = "0.0.0"
-dependencies = [
- "indoc",
- "minijinja",
 ]
 
 [[package]]
@@ -1664,6 +1639,31 @@ dependencies = [
 
 [[package]]
 name = "seahaven-package-testdata"
+version = "0.0.0"
+dependencies = [
+ "indoc",
+ "minijinja",
+]
+
+[[package]]
+name = "seahaven-setup-file"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "indexmap 2.9.0",
+ "indoc",
+ "once_cell",
+ "regress",
+ "seahaven-setup-file-testdata",
+ "serde",
+ "serde-envfile",
+ "serde_with",
+ "serde_yaml",
+ "thiserror",
+]
+
+[[package]]
+name = "seahaven-setup-file-testdata"
 version = "0.0.0"
 dependencies = [
  "indoc",

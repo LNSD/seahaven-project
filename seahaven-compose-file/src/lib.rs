@@ -133,7 +133,7 @@ pub mod de {
 mod tests {
     use std::io::{Cursor, ErrorKind, Write};
 
-    use seahaven_file_testdata::SINGLE_SERVICE;
+    use seahaven_setup_file_testdata::SINGLE_SERVICE;
 
     use super::{
         de::{DeserializationError, from_reader, from_str},
