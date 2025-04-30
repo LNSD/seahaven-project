@@ -1627,11 +1627,13 @@ name = "seahaven-package"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "indoc",
  "once_cell",
  "regress",
  "seahaven-package-testdata",
  "semver",
  "serde",
+ "serde_yaml",
  "thiserror",
  "toml",
  "tracing",
