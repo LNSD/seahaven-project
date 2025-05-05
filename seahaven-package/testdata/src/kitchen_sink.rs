@@ -35,8 +35,9 @@
 #[doc = r##"dockerfile = "Dockerfile""##]
 #[doc = r##""##]
 #[doc = r##"# The service defaults for the 'deploy-core-contracts' init target"##]
-#[doc = r##"[[init.defaults]]"##]
+#[doc = r##"[init.defaults]"##]
 #[doc = r##"command = "cast deploy""##]
+#[doc = r##""##]
 #[doc = r##""##]
 #[doc = r##"[[init]]"##]
 #[doc = r##"name = "deploy-app-contracts""##]
@@ -50,7 +51,7 @@
 #[doc = r##"target = "debug""##]
 #[doc = r##""##]
 #[doc = r##"# The service defaults for the 'deploy-app-contracts' init target"##]
-#[doc = r##"[[init.defaults]]"##]
+#[doc = r##"[init.defaults]"##]
 #[doc = r##"command = "cast deploy""##]
 #[doc = "```"]
 #[doc = ""]
@@ -90,8 +91,9 @@ pub const KITCHEN_SINK: &str = indoc::indoc! { r###"
   dockerfile = "Dockerfile"
 
   # The service defaults for the 'deploy-core-contracts' init target
-  [[init.defaults]]
+  [init.defaults]
   command = "cast deploy"
+
 
   [[init]]
   name = "deploy-app-contracts"
@@ -105,5 +107,5 @@ pub const KITCHEN_SINK: &str = indoc::indoc! { r###"
   target = "debug"
 
   # The service defaults for the 'deploy-app-contracts' init target
-  [[init.defaults]]
+  [init.defaults]
   command = "cast deploy""### };

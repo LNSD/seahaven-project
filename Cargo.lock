@@ -1634,7 +1634,6 @@ dependencies = [
  "seahaven-package-testdata",
  "semver",
  "serde",
- "serde_yaml",
  "thiserror",
  "toml",
  "tracing",
