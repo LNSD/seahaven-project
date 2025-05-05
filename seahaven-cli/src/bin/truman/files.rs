@@ -2,7 +2,7 @@
 
 use std::{fs::File, io::BufReader, path::Path};
 
-use seahaven_cli::result::Result;
+use seahaven_cli::{result::Result, transcoding};
 use seahaven_compose_file::ComposeFile;
 use seahaven_setup_file::{Content, Env};
 
@@ -142,4 +142,14 @@ pub fn into_compose_file(file: Content) -> ComposeFile {
             .and_then(|secrets| secrets.as_mapping())
             .cloned(),
     }
+}
+
+/// This function converts the `[service.defaults]` or `[[init.defaults]]` table into
+/// a setup-file's `service` or `init` fields.
+///
+/// Transcodes a [`toml::Value`] to a [`serde_yaml::Value`].
+pub fn transcode_package_target_defaults(
+    value: toml::Value,
+) -> Result<serde_yaml::Value, serde_yaml::Error> {
+    transcoding::transcode(value, serde_yaml::value::Serializer)
 }
