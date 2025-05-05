@@ -158,19 +158,24 @@ mod tests {
         );
     }
 
+    #[derive(Debug, Clone, serde::Deserialize)]
+    struct NamedThing {
+        name: Name,
+    }
+
     #[test]
     fn valid_name_deserialization() {
         //* Given
         let name = VALID_NAME;
 
-        let yaml_string = format!(r#""{name}""#);
+        let toml_string = format!(r#"name = "{name}""#);
 
         //* When
         let result =
-            serde_yaml::from_str::<Name>(&yaml_string).expect("Failed to deserialize name");
+            toml::from_str::<NamedThing>(&toml_string).expect("Failed to deserialize name");
 
         //* Then
-        assert_eq!(result, name);
+        assert_eq!(result.name, name);
     }
 
     #[test]
@@ -178,10 +183,10 @@ mod tests {
         //* Given
         let name = INVALID_NAME;
 
-        let yaml_string = format!(r#""{name}""#);
+        let toml_string = format!(r#"name = "{name}""#);
 
         //* When
-        let result = serde_yaml::from_str::<Name>(&yaml_string);
+        let result = toml::from_str::<NamedThing>(&toml_string);
 
         //* Then
         assert!(result.is_err(), "Expected error for invalid name: '{name}'",);

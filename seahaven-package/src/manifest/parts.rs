@@ -1,7 +1,9 @@
+mod meta;
 mod name;
 mod root;
-mod services;
+mod targets;
 
+pub use meta::PackageMeta;
 pub use name::Name;
-pub use root::{Manifest, PackageMeta};
-pub use services::{InitContainer, Service};
+pub use root::Manifest;
+pub use targets::{InitContainer, Service};

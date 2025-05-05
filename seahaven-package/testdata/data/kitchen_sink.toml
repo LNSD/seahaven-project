@@ -32,8 +32,9 @@ context = "testlib/testdata/app-contracts"
 dockerfile = "Dockerfile"
 
 # The service defaults for the 'deploy-core-contracts' init target
-[[init.defaults]]
+[init.defaults]
 command = "cast deploy"
+
 
 [[init]]
 name = "deploy-app-contracts"
@@ -47,5 +48,5 @@ build_args = { CHAIN_ID = 1337 }
 target = "debug"
 
 # The service defaults for the 'deploy-app-contracts' init target
-[[init.defaults]]
+[init.defaults]
 command = "cast deploy"
