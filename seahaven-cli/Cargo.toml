@@ -21,6 +21,7 @@ indoc = "2.0.6"
 seahaven-compose-file = { version = "0.1.0", path = "../seahaven-compose-file", features = ["serde"] }
 seahaven-docker = { version = "0.1.0", path = "../seahaven-docker" }
 seahaven-just = { version = "0.1.0", path = "../seahaven-just" }
+seahaven-package = { version = "0.1.0", path = "../seahaven-package" }
 seahaven-setup-file = { version = "0.1.0", path = "../seahaven-setup-file" }
 serde = { version = "1.0.197", features = ["derive"] }
 serde-envfile = { version = "0.2.0", features = ["preserve_order"], git = "https://github.com/LNSD/serde-envfile.git", rev = "7d02f71" }

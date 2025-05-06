@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use seahaven_cli::result::Result;
 
-use super::common::{env_file_arg, file_arg};
+use super::common::{env_file_arg, file_arg, project_directory_arg};
 use crate::files::{into_compose_file, load_env_files, load_setup_file};
 
 /// The `eject` command name
@@ -12,7 +12,7 @@ pub const CMD: &str = "eject";
 pub fn cmd() -> clap::Command {
     clap::command!(CMD)
         .about("Eject the setup.yaml file to get the docker-compose.yaml and .env files")
-        .args([file_arg(), env_file_arg()])
+        .args([file_arg(), env_file_arg(), project_directory_arg()])
         .args([clap::arg!(-o --"output-dir" <DIR> "The output directory")
             .default_value(".")
             .value_parser(clap::value_parser!(PathBuf))])
@@ -41,6 +41,13 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         return Ok(());
     }
 
+    // Resolve the project directory
+    let project_directory = matches
+        .get_one::<PathBuf>("project-directory")
+        .expect("Failed to get project directory");
+
+    tracing::debug!("Project directory: {}", project_directory.display());
+
     // Get the setup file path from the command line (required)
     let setup_file_path = matches
         .get_one::<PathBuf>("file")
@@ -58,7 +65,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     }
 
     // Load the setup file and environment files
-    let (front_matter_env, content) = load_setup_file(setup_file_path)
+    let (front_matter_env, content) = load_setup_file(setup_file_path, &output_dir)
         .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?;
 
     let files_env = load_env_files(matches.get_many::<PathBuf>("env-file").unwrap_or_default())?;
