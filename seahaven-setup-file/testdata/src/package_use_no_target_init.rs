@@ -1,4 +1,4 @@
-#[doc = "Test vector: `seahaven-file/testdata/data/package_use`"]
+#[doc = "Test vector: `seahaven-file/testdata/data/package_use_no_target_init`"]
 #[doc = ""]
 #[doc = "```yaml"]
 #[doc = r##"---"##]
@@ -17,7 +17,7 @@
 #[doc = r##"  chain:"##]
 #[doc = r##"    use: ./chain"##]
 #[doc = r##"    environment:"##]
-#[doc = r##"      CHAIN_RPC: ${CHAIN_RPC}"##]
+#[doc = r##"      CHAIN_RPC: "${CHAIN_RPC}""##]
 #[doc = r##""##]
 #[doc = r##"  app-server:"##]
 #[doc = r##"    image: ghcr.io/example/server:latest"##]
@@ -33,7 +33,8 @@
 #[doc = r##""##]
 #[doc = r##"init:"##]
 #[doc = r##"  deploy-contracts:"##]
-#[doc = r##"    use: ./contracts#deploy"##]
+#[doc = r##"    # The following line is invalid because the init container `use` key must specify a target"##]
+#[doc = r##"    use: ./contracts"##]
 #[doc = r##"    depends_on:"##]
 #[doc = r##"      chain: { condition: service_healthy }"##]
 #[doc = r##"    environment:"##]
@@ -41,8 +42,8 @@
 #[doc = r##"      CHAIN_RPC: http://chain:${CHAIN_RPC}"##]
 #[doc = "```"]
 #[doc = ""]
-#[doc = "See file: `seahaven-file/testdata/data/package_use.yaml`"]
-pub const PACKAGE_USE: &str = indoc::indoc! { r###"
+#[doc = "See file: `seahaven-file/testdata/data/package_use_no_target_init.yaml`"]
+pub const PACKAGE_USE_NO_TARGET_INIT: &str = indoc::indoc! { r###"
   ---
   # Chain config
   CHAIN_RPC = 8545
@@ -59,7 +60,7 @@ pub const PACKAGE_USE: &str = indoc::indoc! { r###"
     chain:
       use: ./chain
       environment:
-        CHAIN_RPC: ${CHAIN_RPC}
+        CHAIN_RPC: "${CHAIN_RPC}"
 
     app-server:
       image: ghcr.io/example/server:latest
@@ -75,7 +76,8 @@ pub const PACKAGE_USE: &str = indoc::indoc! { r###"
 
   init:
     deploy-contracts:
-      use: ./contracts#deploy
+      # The following line is invalid because the init container `use` key must specify a target
+      use: ./contracts
       depends_on:
         chain: { condition: service_healthy }
       environment:

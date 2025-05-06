@@ -17,7 +17,7 @@ use serde::ser::Error as _;
 ///
 /// The [`Path`] type enforces strict validation to prevent path traversal attacks and
 /// ensure that all paths are relative to the current working directory.
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Path(Box<StdPath>);
 
 impl Path {
@@ -27,9 +27,9 @@ impl Path {
         Self(std::path::PathBuf::from(path.into()).into_boxed_path())
     }
 
-    /// Consume the [`Path`] and return the inner boxed path.
-    pub fn into_inner(self) -> Box<StdPath> {
-        self.0
+    /// Returns the [`Path`] as a [`std::path::Path`].
+    pub fn as_std(&self) -> &std::path::Path {
+        &self.0
     }
 
     /// Returns an object that implements [`Display`] for safely printing paths that

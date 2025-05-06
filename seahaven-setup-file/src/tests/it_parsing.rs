@@ -1,7 +1,8 @@
 use std::io::Cursor;
 
 use seahaven_setup_file_testdata::{
-    EMPTY_ENV, KITCHEN_SINK, NO_SERVICES, SINGLE_SERVICE, SINGLE_SERVICE_BASIC,
+    EMPTY_ENV, KITCHEN_SINK, NO_SERVICES, PACKAGE_USE, PACKAGE_USE_NO_TARGET_INIT, SINGLE_SERVICE,
+    SINGLE_SERVICE_BASIC,
 };
 
 use crate::parsing::{ParsingError, env_from_reader, from_reader};
@@ -127,4 +128,48 @@ fn kitchen_sink_env_file() {
     assert_eq!(env.get("app_server_admin").unwrap(), "7600");
     assert_eq!(env.get("app_server_rpc").unwrap(), "7601");
     assert_eq!(env.get("app_server_metrics").unwrap(), "7602");
+}
+
+#[test]
+fn package_use() {
+    // * Given
+    let input = Cursor::new(PACKAGE_USE);
+
+    // * When
+    let setup_file = from_reader(input).expect("Failed to parse PACKAGE_USE");
+
+    // * Then
+    let init = setup_file
+        .content()
+        .init
+        .as_ref()
+        .expect("Init should be present");
+    let deploy_contracts = init
+        .get("deploy-contracts")
+        .expect("Deploy contracts should be present");
+    assert!(deploy_contracts.package_use.is_some());
+
+    let package_use = deploy_contracts
+        .package_use
+        .as_ref()
+        .expect("Package use should be present");
+
+    assert_eq!(package_use.target.as_ref().unwrap(), "deploy");
+}
+
+#[test]
+fn package_use_no_target_init_error() {
+    // * Given
+    let input = Cursor::new(PACKAGE_USE_NO_TARGET_INIT);
+
+    // * When
+    let result = from_reader(input);
+
+    // * Then
+    println!("result: {:?}", result);
+    assert!(
+        matches!(result, Err(ParsingError::ContentParsingFailed(_))),
+        "Expected ContentDeserializationFailed error, got {:?}",
+        result
+    );
 }
