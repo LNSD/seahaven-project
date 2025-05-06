@@ -61,6 +61,13 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         .into());
     }
 
+    // Resolve the project directory
+    let project_directory = matches
+        .get_one::<PathBuf>("project-directory")
+        .expect("Failed to get project directory");
+
+    tracing::debug!("Project directory: {}", project_directory.display());
+
     // Load the setup file
     let setup_file = matches
         .get_one::<PathBuf>("file")
@@ -69,7 +76,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         return Err(anyhow::anyhow!("Setup file not found: {}", setup_file.display()).into());
     }
 
-    let (front_matter_env, content) = load_setup_file(setup_file)
+    let (front_matter_env, content) = load_setup_file(setup_file, &project_directory)
         .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {err}"))?;
 
     let files_env = load_env_files(matches.get_many::<PathBuf>("env-file").unwrap_or_default())?;
@@ -130,12 +137,6 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
                 acc
             },
         );
-
-    let project_directory = matches
-        .get_one::<PathBuf>("project-directory")
-        .expect("Failed to get project directory");
-
-    tracing::debug!("Project directory: {}", project_directory.display());
 
     // Create and run the docker command
     let mut command = DockerCmd::with_executable(docker_exe)

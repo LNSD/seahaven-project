@@ -1570,6 +1570,7 @@ dependencies = [
  "seahaven-compose-file",
  "seahaven-docker",
  "seahaven-just",
+ "seahaven-package",
  "seahaven-setup-file",
  "serde",
  "serde-envfile",

@@ -51,8 +51,15 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         .into());
     }
 
+    // Resolve the project directory
+    let project_directory = matches
+        .get_one::<PathBuf>("project-directory")
+        .expect("Failed to get project directory");
+
+    tracing::debug!("Project directory: {}", project_directory.display());
+
     // Load the setup file and environment files
-    let (_front_matter_env, content) = load_setup_file(setup_file_path)
+    let (_front_matter_env, content) = load_setup_file(setup_file_path, &project_directory)
         .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?;
 
     // Transform the content into a compose file

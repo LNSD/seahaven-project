@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use seahaven_cli::result::Result;
 
-use crate::files::{load_env_files, load_setup_file};
+use crate::files::{load_env_files, load_setup_file_env};
 
 /// The `dump-config env-file` command name
 pub const CMD: &str = "env-file";
@@ -52,7 +52,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     }
 
     // Load the setup file and environment files
-    let (front_matter_env, _content) = load_setup_file(setup_file_path)
+    let front_matter_env = load_setup_file_env(setup_file_path)
         .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?;
 
     let files_env = load_env_files(matches.get_many::<PathBuf>("env-file").unwrap_or_default())?;

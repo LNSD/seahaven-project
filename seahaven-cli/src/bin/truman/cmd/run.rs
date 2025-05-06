@@ -6,7 +6,7 @@ use seahaven_just::cmd::{IntoCommand, JustCmd};
 use super::common::{env_file_arg, file_arg};
 use crate::{
     deps::resolve_just_executable,
-    files::{load_env_files, load_setup_file},
+    files::{load_env_files, load_setup_file_env},
 };
 
 /// The `run` command name
@@ -57,7 +57,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         return Err(anyhow::anyhow!("Setup file not found: {}", setup_file.display()).into());
     }
 
-    let (front_matter_env, _content) = load_setup_file(setup_file)
+    let front_matter_env = load_setup_file_env(setup_file)
         .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {err}"))?;
 
     let files_env = load_env_files(matches.get_many::<PathBuf>("env-file").unwrap_or_default())?;
