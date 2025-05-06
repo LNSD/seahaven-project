@@ -91,13 +91,7 @@ pub fn into_compose_file(file: Content) -> ComposeFile {
         .map(|(name, service)| {
             (
                 serde_yaml::Value::String(name.into_inner()),
-                serde_yaml::Value::Mapping(
-                    service
-                        ._rest
-                        .into_iter()
-                        .map(|(k, v)| (serde_yaml::Value::String(k), v))
-                        .collect(),
-                ),
+                serde_yaml::Value::Mapping(service._rest),
             )
         })
         .collect::<serde_yaml::Mapping>();
@@ -107,13 +101,7 @@ pub fn into_compose_file(file: Content) -> ComposeFile {
         services.extend(init.into_iter().map(|(name, service)| {
             (
                 serde_yaml::Value::String(name.into_inner()),
-                serde_yaml::Value::Mapping(
-                    service
-                        ._rest
-                        .into_iter()
-                        .map(|(k, v)| (serde_yaml::Value::String(k), v))
-                        .collect(),
-                ),
+                serde_yaml::Value::Mapping(service._rest),
             )
         }));
     }

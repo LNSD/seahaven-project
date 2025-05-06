@@ -4,7 +4,7 @@ use super::{
 };
 
 /// A package `use` entry.
-#[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Deserialize, serde::Serialize)]
 pub struct PackageUse {
     /// The path to the package
     pub path: Path,

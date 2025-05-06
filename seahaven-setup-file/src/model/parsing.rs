@@ -41,8 +41,8 @@ fn validate_root(parsed: DeserializedRoot) -> Result<Root, ValidationError> {
         ));
     }
 
-    // There MUST be no name overlap between `services` and `init` keys
     if let Some(init) = &parsed.init {
+        // There MUST be no name overlap between `services` and `init` keys
         let bad_keys = init
             .keys()
             .filter(|key| parsed.services.contains_key(*key))
@@ -50,6 +50,27 @@ fn validate_root(parsed: DeserializedRoot) -> Result<Root, ValidationError> {
         if !bad_keys.is_empty() {
             return Err(ValidationError(
                 anyhow::anyhow!("The following names overlap: {:?}", bad_keys).into(),
+            ));
+        }
+
+        // All init containers' `use` keys MUST specify a target
+        let errors = init
+            .iter()
+            .filter_map(|(name, init)| {
+                if init.package_use.as_ref()?.target.is_none() {
+                    Some(name)
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
+        if !errors.is_empty() {
+            return Err(ValidationError(
+                anyhow::anyhow!(
+                    "Init containers' `use` keys must specify a target: {:?}",
+                    errors
+                )
+                .into(),
             ));
         }
     }

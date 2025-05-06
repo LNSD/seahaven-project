@@ -14,7 +14,7 @@ services:
   chain:
     use: ./chain
     environment:
-      CHAIN_RPC: ${CHAIN_RPC}
+      CHAIN_RPC: "${CHAIN_RPC}"
 
   app-server:
     image: ghcr.io/example/server:latest
@@ -30,7 +30,8 @@ services:
 
 init:
   deploy-contracts:
-    use: ./contracts#deploy
+    # The following line is invalid because the init container `use` key must specify a target
+    use: ./contracts
     depends_on:
       chain: { condition: service_healthy }
     environment:
