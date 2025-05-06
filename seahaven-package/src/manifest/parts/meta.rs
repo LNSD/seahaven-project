@@ -1,7 +1,7 @@
 use super::name::Name;
 
 /// The package meta information
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Clone, Eq, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct PackageMeta {
     /// The name of the package
     ///
@@ -25,4 +25,16 @@ pub struct PackageMeta {
     /// This is an optional field.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub readme: Option<String>,
+}
+
+impl PackageMeta {
+    /// Creates a new package meta information with the given name
+    pub fn new(name: Name) -> Self {
+        Self {
+            name,
+            version: None,
+            description: None,
+            readme: None,
+        }
+    }
 }
