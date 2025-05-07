@@ -1,20 +1,11 @@
 //! # Seahaven file processing
 
-use std::{
-    collections::HashMap,
-    fs::File,
-    io::{BufReader, Read},
-    path::Path,
-    sync::Arc,
-};
+use std::{fs::File, io::BufReader, path::Path};
 
 use seahaven_cli::{result::Result, serde_yaml_ext::MappingMergeExt, transcoding};
 use seahaven_compose_file::ComposeFile;
-use seahaven_package::manifest::Manifest;
-use seahaven_setup_file::{
-    Content, Env,
-    model::{PackageUse, Path as PackageUsePath},
-};
+use seahaven_package::loader::{FileLoader, Loader};
+use seahaven_setup_file::{Content, Env};
 
 pub mod env;
 
@@ -43,7 +34,7 @@ pub fn load_setup_file(
         })?
         .unpack();
 
-    let mut manifests_cache = HashMap::new();
+    let package_loader = FileLoader::new(workdir.as_ref().to_path_buf());
 
     // Merge the services' configuration into the service defaults
     for (_, service) in content.services.iter_mut() {
@@ -53,8 +44,13 @@ pub fn load_setup_file(
             None => continue,
         };
 
-        let manifest =
-            load_package_manifest_with_cache(package_use, workdir, &mut manifests_cache)?;
+        let manifest = package_loader.load(&package_use.path).map_err(|err| {
+            anyhow::anyhow!(
+                "Failed to load manifest file '{}': {}",
+                package_use.path.display(),
+                err
+            )
+        })?;
 
         // Check the package use target:
         // - The target must be specified in the manifest (as a service)
@@ -126,8 +122,13 @@ pub fn load_setup_file(
                 None => continue,
             };
 
-            let manifest =
-                load_package_manifest_with_cache(package_use, workdir, &mut manifests_cache)?;
+            let manifest = package_loader.load(&package_use.path).map_err(|err| {
+                anyhow::anyhow!(
+                    "Failed to load manifest file '{}': {}",
+                    package_use.path.display(),
+                    err
+                )
+            })?;
 
             // Check the package use target:
             // - The target must be specified in the manifest (init container)
@@ -233,53 +234,6 @@ pub fn into_compose_file(file: Content) -> ComposeFile {
             .and_then(|secrets| secrets.as_mapping())
             .cloned(),
     }
-}
-
-/// Loads a package manifest file from the given path relative to the provided base path.
-///
-/// The base path should be the working directory path.
-///
-/// If the manifest is already loaded, it is returned from the cache.
-fn load_package_manifest_with_cache(
-    package_use: &PackageUse,
-    workdir: &impl AsRef<Path>,
-    cache: &mut HashMap<PackageUsePath, Arc<Manifest>>,
-) -> Result<Arc<Manifest>> {
-    if let Some(manifest) = cache.get(&package_use.path) {
-        return Ok(manifest.clone());
-    }
-
-    let manifest = load_manifest_file(&package_use.path, workdir).map(Arc::new)?;
-
-    cache.insert(package_use.path.clone(), manifest.clone());
-
-    Ok(manifest)
-}
-
-/// Loads a package manifest file from the given path relative to the provided base path.
-///
-/// The base path should be the working directory path.
-fn load_manifest_file(path: &impl AsRef<Path>, working_dir: &impl AsRef<Path>) -> Result<Manifest> {
-    let path = working_dir.as_ref().join(path.as_ref());
-
-    let mut file = File::open(&path).map(BufReader::new).map_err(|err| {
-        anyhow::anyhow!("Failed to open manifest file '{}': {}", path.display(), err)
-    })?;
-
-    let mut manifest = String::with_capacity(1024);
-    file.read_to_string(&mut manifest).map_err(|err| {
-        anyhow::anyhow!("Failed to read manifest file '{}': {}", path.display(), err)
-    })?;
-
-    let manifest = seahaven_package::manifest::from_str(&manifest).map_err(|err| {
-        anyhow::anyhow!(
-            "Failed to parse manifest file '{}': {}",
-            path.display(),
-            err
-        )
-    })?;
-
-    Ok(manifest)
 }
 
 /// This function converts the `[service.defaults]` or `[[init.defaults]]` table into
