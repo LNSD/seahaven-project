@@ -2,7 +2,10 @@ use std::path::PathBuf;
 
 use seahaven_cli::result::Result;
 
-use crate::files::env::{load_and_merge_envs, load_setup_file_env};
+use crate::files::{
+    env::{load_and_merge_envs, load_setup_file_env},
+    resolve_setup_file_and_project_dir_paths,
+};
 
 /// The `dump-config env-file` command name
 pub const CMD: &str = "env-file";
@@ -16,50 +19,15 @@ pub fn cmd() -> clap::Command {
 ///
 /// This function prints the .env file contents to the console.
 pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
-    // Get the project directory from the command line
-    let project_directory = matches
-        .get_one::<PathBuf>("project-directory")
-        .expect("Failed to get project directory");
-
-    tracing::debug!("Project directory: {}", project_directory.display());
-
-    // Get the setup file path from the command line (required)
-    let setup_file_path = matches
-        .get_one::<PathBuf>("file")
-        .expect("Failed to get setup file path");
-
-    match setup_file_path.try_exists() {
-        Ok(false) => {
-            tracing::debug!(file=%setup_file_path.display(), "Setup file does not exist");
-            return Err(anyhow::anyhow!(
-                "Setup file '{}' does not exist",
-                setup_file_path.display()
-            )
-            .into());
-        }
-        Err(err) => {
-            tracing::debug!(file=%setup_file_path.display(), "Failed to check if setup file exists: {}", err);
-            return Err(anyhow::anyhow!(
-                "Invalid setup file '{}': {}",
-                setup_file_path.display(),
-                err
-            )
-            .into());
-        }
-        _ => (), // The file exists, and we can access it
-    }
-
-    // Check if the provided path is a regular file
-    if !setup_file_path.is_file() {
-        return Err(anyhow::anyhow!(
-            "Invalid setup file '{}': not a file",
-            setup_file_path.display()
-        )
-        .into());
-    }
+    let (setup_file, project_directory) = resolve_setup_file_and_project_dir_paths(
+        matches
+            .get_one::<PathBuf>("file")
+            .expect("Failed to get setup file"),
+        matches.get_one::<PathBuf>("project-directory"),
+    )?;
 
     // Load the setup file and environment files
-    let front_matter_env = load_setup_file_env(setup_file_path)
+    let front_matter_env = load_setup_file_env(&setup_file)
         .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?;
 
     let env = load_and_merge_envs(
