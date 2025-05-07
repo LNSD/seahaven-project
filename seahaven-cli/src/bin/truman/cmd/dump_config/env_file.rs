@@ -37,13 +37,12 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     )?;
 
     // If no environment is present, print a warning and return
-    let env = match env {
-        Some(env) => env,
-        None => {
-            eprintln!("\x1b[33m\x1b[1mWarning\x1b[0m: No env found in the setup file");
-            return Ok(());
-        }
-    };
+    if env.is_empty() {
+        eprintln!(
+            "\x1b[33m\x1b[1mWarning\x1b[0m: No .env files, nor env variables found in the setup file"
+        );
+        return Ok(());
+    }
 
     // Serialize the environment variables to a string
     let env_content = serde_envfile::to_string(&env)

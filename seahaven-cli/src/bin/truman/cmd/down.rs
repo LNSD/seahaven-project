@@ -1,4 +1,4 @@
-use std::{fs::File, path::PathBuf};
+use std::path::PathBuf;
 
 use seahaven_cli::result::{Error, Result};
 use seahaven_docker::cmd::{DockerCmd, IntoCommand};
@@ -7,8 +7,10 @@ use super::common::{env_file_arg, file_arg, project_directory_arg};
 use crate::{
     deps::resolve_docker_executable,
     files::{
-        env::load_and_merge_envs, into_compose_file, resolve_setup_file_and_project_dir_paths,
+        env::load_and_merge_envs,
+        into_compose_file, resolve_setup_file_and_project_dir_paths,
         setup_yaml::load_setup_file,
+        tempdir::{self, HasComposeFilePath as _, HasEnvFilePath as _},
     },
 };
 
@@ -70,43 +72,14 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         front_matter_env,
     )?;
 
-    // Transform the content into a compose file
     let compose = into_compose_file(content);
 
-    // Create a tempfile for the env and the content
-    let temp_dir = tempfile::Builder::new()
-        .prefix("seahaven-")
-        .tempdir()
-        .map_err(|err| anyhow::anyhow!("Failed to create tempdir: {err}"))?;
-    let temp_dir_path = temp_dir.path();
-    tracing::debug!("Compose temporary directory: {}", temp_dir_path.display());
-
-    let env_file_path = temp_dir_path.join(".env");
-    let content_file_path = temp_dir_path.join("docker-compose.yaml");
-
-    {
-        let env_file = File::create(&env_file_path)
-            .map_err(|err| anyhow::anyhow!("Failed to create .env file: {err}"))?;
-
-        let content_file = File::create(&content_file_path)
-            .map_err(|err| anyhow::anyhow!("Failed to create docker-compose.yaml file: {err}"))?;
-
-        tracing::debug!("Writing .env file: {}", env_file_path.display());
-        serde_envfile::to_writer(env_file, &env)
-            .map_err(|err| anyhow::anyhow!("Failed to write .env file: {err}"))?;
-
-        tracing::debug!(
-            "Writing docker-compose.yaml file: {}",
-            content_file_path.display()
-        );
-        seahaven_compose_file::ser::to_writer(content_file, &compose)
-            .map_err(|err| anyhow::anyhow!("Failed to write docker-compose.yaml file: {err}"))?;
-    }
+    let temp = tempdir::new().create_dir()?.write_all(&env, &compose)?;
 
     let mut command = DockerCmd::with_executable(docker_exe)
         .compose()
-        .with_file(content_file_path)
-        .with_env_file(env_file_path)
+        .with_file(temp.compose_file_path())
+        .with_env_file(temp.env_file_path())
         .with_project_directory(project_directory)
         .with_plain_progress()
         .down()
