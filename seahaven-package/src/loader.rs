@@ -140,7 +140,30 @@ impl ManifestFileLoader {
 
 impl ManifestLoader for ManifestFileLoader {
     fn load_manifest(&self, path: &Path) -> Result<Manifest, Error> {
-        let manifest_path = self.root.join(path);
+        let full_path = self.root.join(path);
+
+        // Check if the path exists
+        if !full_path.exists() {
+            return Err(Error::FileOpen {
+                path: full_path.clone(),
+                source: std::io::Error::new(std::io::ErrorKind::NotFound, "Path does not exist"),
+            });
+        }
+
+        // Determine the actual file path to read
+        let manifest_path = if full_path.is_dir() {
+            full_path.join("package.toml")
+        } else {
+            full_path
+        };
+
+        // Check if the file exists
+        if !manifest_path.exists() {
+            return Err(Error::FileOpen {
+                path: manifest_path.clone(),
+                source: std::io::Error::new(std::io::ErrorKind::NotFound, "File does not exist"),
+            });
+        }
 
         let mut file = File::open(&manifest_path)
             .map(BufReader::new)
@@ -149,7 +172,7 @@ impl ManifestLoader for ManifestFileLoader {
                 source: err,
             })?;
 
-        let mut manifest_content = String::with_capacity(1024);
+        let mut manifest_content = String::with_capacity(2048);
         file.read_to_string(&mut manifest_content)
             .map_err(|err| Error::FileRead {
                 path: manifest_path.clone(),
