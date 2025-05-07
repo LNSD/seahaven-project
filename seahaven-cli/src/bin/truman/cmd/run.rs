@@ -3,10 +3,10 @@ use std::{fs::File, path::PathBuf};
 use seahaven_cli::result::{Error, Result};
 use seahaven_just::cmd::{IntoCommand, JustCmd};
 
-use super::common::{env_file_arg, file_arg};
+use super::common::{env_file_arg, file_arg, project_directory_arg};
 use crate::{
     deps::resolve_just_executable,
-    files::{load_env_files, load_setup_file_env},
+    files::env::{load_and_merge_envs, load_setup_file_env},
 };
 
 /// The `run` command name
@@ -16,7 +16,7 @@ pub const CMD: &str = "run";
 pub fn cmd() -> clap::Command {
     clap::command!(CMD)
         .about("run the development environment images using docker compose")
-        .args([file_arg(), env_file_arg()])
+        .args([file_arg(), env_file_arg(), project_directory_arg()])
         .args([
             clap::arg!(--"dry-run" "Execute command in dry run mode")
                 .action(clap::ArgAction::SetTrue),
@@ -49,6 +49,13 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
 
     tracing::debug!("just version: {}", just_version);
 
+    // Resolve the project directory
+    let project_directory = matches
+        .get_one::<PathBuf>("project-directory")
+        .expect("Failed to get project directory");
+
+    tracing::debug!("Project directory: {}", project_directory.display());
+
     // Load the setup file
     let setup_file = matches
         .get_one::<PathBuf>("file")
@@ -60,19 +67,11 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     let front_matter_env = load_setup_file_env(setup_file)
         .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {err}"))?;
 
-    let files_env = load_env_files(matches.get_many::<PathBuf>("env-file").unwrap_or_default())?;
-
-    // Merge the env files and front matter env
-    let env = match (files_env, front_matter_env) {
-        (Some(files_env), None) => Some(files_env),
-        (None, Some(front_matter_env)) => Some(front_matter_env),
-        (Some(files_env), Some(front_matter_env)) => {
-            let mut env = files_env;
-            env.extend(front_matter_env);
-            Some(env)
-        }
-        (None, None) => None,
-    };
+    let env = load_and_merge_envs(
+        matches.get_many::<PathBuf>("env-file"),
+        &project_directory,
+        front_matter_env,
+    )?;
 
     // Create a tempfile for the env and the content
     let temp_dir = tempfile::Builder::new()
@@ -101,6 +100,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     } else {
         JustCmd::with_executable(just_exe)
             .with_justfile::<&PathBuf>(matches.get_one::<PathBuf>("justfile"))
+            .with_working_directory(project_directory)
             .with_env_file(env_file_path)
             .with_dry_run(matches.get_flag("dry-run"))
             .with_args(matches.get_many::<String>("ARGUMENTS").unwrap_or_default())
