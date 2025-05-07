@@ -36,7 +36,7 @@ pub fn load_and_merge_envs(
     file_paths: Option<impl IntoIterator<Item = impl AsRef<Path>>>,
     project_directory: &impl AsRef<Path>,
     front_matter_env: Option<Env>,
-) -> Result<Option<Env>> {
+) -> Result<Env> {
     let paths = file_paths
         .map(|paths| {
             paths
@@ -62,14 +62,12 @@ pub fn load_and_merge_envs(
 
     // Merge the files env with the front matter env
     let env = match (files_env, front_matter_env) {
-        (Some(files_env), None) => Some(files_env),
-        (None, Some(front_matter_env)) => Some(front_matter_env),
-        (Some(files_env), Some(front_matter_env)) => {
+        (files_env, None) => files_env,
+        (files_env, Some(front_matter_env)) => {
             let mut env = files_env;
             env.extend(front_matter_env);
-            Some(env)
+            env
         }
-        (None, None) => None,
     };
 
     Ok(env)
@@ -83,7 +81,7 @@ pub fn load_and_merge_envs(
 ///
 /// Files are loaded in order, with later values overriding earlier ones.
 /// If a file is invalid or unreadable, an error is returned.
-fn load_files<P>(files: impl IntoIterator<Item = P>) -> Result<Option<Env>>
+fn load_files<P>(files: impl IntoIterator<Item = P>) -> Result<Env>
 where
     P: AsRef<Path>,
 {
@@ -116,9 +114,5 @@ where
         }
     }
 
-    if env.is_empty() {
-        return Ok(None);
-    }
-
-    Ok(Some(env))
+    Ok(env)
 }

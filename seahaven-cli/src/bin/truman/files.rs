@@ -8,6 +8,7 @@ use seahaven_setup_file::Content;
 
 pub mod env;
 pub mod setup_yaml;
+pub mod tempdir;
 
 /// Resolves the setup file and project directory paths.
 ///
@@ -102,4 +103,9 @@ pub fn into_compose_file(file: Content) -> ComposeFile {
             .and_then(|secrets| secrets.as_mapping())
             .cloned(),
     }
+}
+
+#[cfg(test)]
+mod tests {
+    mod it_tempdir;
 }

@@ -1,4 +1,4 @@
-use std::{fs::File, path::PathBuf};
+use std::path::PathBuf;
 
 use seahaven_cli::result::{Error, Result};
 use seahaven_just::cmd::{IntoCommand, JustCmd};
@@ -9,6 +9,7 @@ use crate::{
     files::{
         env::{load_and_merge_envs, load_setup_file_env},
         resolve_setup_file_and_project_dir_paths,
+        tempdir::{self, HasEnvFilePath as _},
     },
 };
 
@@ -68,24 +69,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         front_matter_env,
     )?;
 
-    // Create a tempfile for the env and the content
-    let temp_dir = tempfile::Builder::new()
-        .prefix("seahaven-")
-        .tempdir()
-        .map_err(|err| anyhow::anyhow!("Failed to create tempdir: {err}"))?;
-    let temp_dir_path = temp_dir.path();
-    tracing::debug!("Compose temporary directory: {}", temp_dir_path.display());
-
-    let env_file_path = temp_dir_path.join(".env");
-
-    {
-        let env_file = File::create(&env_file_path)
-            .map_err(|err| anyhow::anyhow!("Failed to create .env file: {err}"))?;
-
-        tracing::debug!("Writing .env file: {}", env_file_path.display());
-        serde_envfile::to_writer(env_file, &env)
-            .map_err(|err| anyhow::anyhow!("Failed to write .env file: {err}"))?;
-    }
+    let temp = tempdir::new().create_dir()?.write_env_file(&env)?;
 
     // Create and run the just command
     let mut command = if matches.get_flag("list") {
@@ -96,7 +80,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         JustCmd::with_executable(just_exe)
             .with_justfile::<&PathBuf>(matches.get_one::<PathBuf>("justfile"))
             .with_working_directory(project_directory)
-            .with_env_file(env_file_path)
+            .with_env_file(temp.env_file_path())
             .with_dry_run(matches.get_flag("dry-run"))
             .with_args(matches.get_many::<String>("ARGUMENTS").unwrap_or_default())
             .into_command()

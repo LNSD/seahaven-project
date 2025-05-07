@@ -87,7 +87,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     );
 
     // If environment section is present, write the .env file
-    if let Some(env) = env {
+    if !env.is_empty() {
         // Serialize the environment variables to a string
         let env_content = serde_envfile::to_string(&env)
             .map_err(|err| anyhow::anyhow!("Failed to serialize environment variables: {}", err))?;
@@ -98,7 +98,9 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
             .map_err(|err| anyhow::anyhow!("Failed to write .env file: {}", err))?;
         println!("Created .env file at {}", output_env_file_path.display());
     } else {
-        println!("No environment variables found in the setup file, skipping .env file creation");
+        println!(
+            "No .env file, nor environment variables found in the setup file, skipping .env file creation"
+        );
     }
 
     println!("Setup ejected successfully!");
