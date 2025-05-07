@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use seahaven_cli::result::Result;
 
-use crate::files::{load_env_files, load_setup_file_env};
+use crate::files::env::{load_and_merge_envs, load_setup_file_env};
 
 /// The `dump-config env-file` command name
 pub const CMD: &str = "env-file";
@@ -16,6 +16,13 @@ pub fn cmd() -> clap::Command {
 ///
 /// This function prints the .env file contents to the console.
 pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
+    // Get the project directory from the command line
+    let project_directory = matches
+        .get_one::<PathBuf>("project-directory")
+        .expect("Failed to get project directory");
+
+    tracing::debug!("Project directory: {}", project_directory.display());
+
     // Get the setup file path from the command line (required)
     let setup_file_path = matches
         .get_one::<PathBuf>("file")
@@ -55,19 +62,11 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     let front_matter_env = load_setup_file_env(setup_file_path)
         .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?;
 
-    let files_env = load_env_files(matches.get_many::<PathBuf>("env-file").unwrap_or_default())?;
-
-    // Merge the env files and front matter env
-    let env = match (files_env, front_matter_env) {
-        (Some(files_env), None) => Some(files_env),
-        (None, Some(front_matter_env)) => Some(front_matter_env),
-        (Some(files_env), Some(front_matter_env)) => {
-            let mut env = files_env;
-            env.extend(front_matter_env);
-            Some(env)
-        }
-        (None, None) => None,
-    };
+    let env = load_and_merge_envs(
+        matches.get_many::<PathBuf>("env-file"),
+        &project_directory,
+        front_matter_env,
+    )?;
 
     // If no environment is present, print a warning and return
     let env = match env {

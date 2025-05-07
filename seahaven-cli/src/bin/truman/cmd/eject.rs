@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use seahaven_cli::result::Result;
 
 use super::common::{env_file_arg, file_arg, project_directory_arg};
-use crate::files::{into_compose_file, load_env_files, load_setup_file};
+use crate::files::{env::load_and_merge_envs, into_compose_file, load_setup_file};
 
 /// The `eject` command name
 pub const CMD: &str = "eject";
@@ -68,22 +68,14 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     let (front_matter_env, content) = load_setup_file(setup_file_path, &output_dir)
         .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?;
 
-    let files_env = load_env_files(matches.get_many::<PathBuf>("env-file").unwrap_or_default())?;
+    let env = load_and_merge_envs(
+        matches.get_many::<PathBuf>("env-file"),
+        &project_directory,
+        front_matter_env,
+    )?;
 
     // Transform the content into a compose file
     let compose_file = into_compose_file(content);
-
-    // Merge the env files and front matter env
-    let env = match (files_env, front_matter_env) {
-        (Some(files_env), None) => Some(files_env),
-        (None, Some(front_matter_env)) => Some(front_matter_env),
-        (Some(files_env), Some(front_matter_env)) => {
-            let mut env = files_env;
-            env.extend(front_matter_env);
-            Some(env)
-        }
-        (None, None) => None,
-    };
 
     // Serialize the compose file to a string
     let compose_content = seahaven_compose_file::ser::to_string(&compose_file)

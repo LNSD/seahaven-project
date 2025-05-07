@@ -6,7 +6,7 @@ use seahaven_docker::cmd::{DockerCmd, IntoCommand};
 use super::common::{env_file_arg, file_arg, project_directory_arg};
 use crate::{
     deps::resolve_docker_executable,
-    files::{into_compose_file, load_env_files, load_setup_file},
+    files::{env::load_and_merge_envs, into_compose_file, load_setup_file},
 };
 
 /// The `ps` command name
@@ -66,22 +66,14 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     let (front_matter_env, content) = load_setup_file(setup_file, &project_directory)
         .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {err}"))?;
 
-    let files_env = load_env_files(matches.get_many::<PathBuf>("env-file").unwrap_or_default())?;
+    let env = load_and_merge_envs(
+        matches.get_many::<PathBuf>("env-file"),
+        &project_directory,
+        front_matter_env,
+    )?;
 
     // Transform the content into a compose file
     let compose = into_compose_file(content);
-
-    // Merge the env files and front matter env
-    let env = match (files_env, front_matter_env) {
-        (Some(files_env), None) => Some(files_env),
-        (None, Some(front_matter_env)) => Some(front_matter_env),
-        (Some(files_env), Some(front_matter_env)) => {
-            let mut env = files_env;
-            env.extend(front_matter_env);
-            Some(env)
-        }
-        (None, None) => None,
-    };
 
     // Create a tempfile for the env and the content
     let temp_dir = tempfile::Builder::new()
