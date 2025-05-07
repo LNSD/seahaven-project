@@ -59,18 +59,9 @@ pub fn load_and_merge_envs(
         });
 
     let files_env = load_files(paths)?;
+    let merged_env = merge(files_env, front_matter_env);
 
-    // Merge the files env with the front matter env
-    let env = match (files_env, front_matter_env) {
-        (files_env, None) => files_env,
-        (files_env, Some(front_matter_env)) => {
-            let mut env = files_env;
-            env.extend(front_matter_env);
-            env
-        }
-    };
-
-    Ok(env)
+    Ok(merged_env)
 }
 
 /// Loads all variables found in the files into the environment,
@@ -115,4 +106,47 @@ where
     }
 
     Ok(env)
+}
+
+/// Merges the environment variables from the files with the front matter environment.
+///
+/// If the front matter environment is provided, it will override the environment variables
+fn merge(files_env: Env, front_matter_env: Option<Env>) -> Env {
+    let mut env = files_env;
+    if let Some(front_matter_env) = front_matter_env {
+        env.extend(front_matter_env);
+    }
+    env
+}
+
+#[cfg(test)]
+mod tests {
+    use seahaven_setup_file::Env;
+
+    use super::merge;
+
+    #[test]
+    fn merge_envs_with_front_matter_env() {
+        //* Given
+        let files_env = Env::from_iter([("FOO", "bar")]);
+        let front_matter_env = Env::from_iter([("FOO", "baz")]);
+
+        //* When
+        let merged_env = merge(files_env, Some(front_matter_env));
+
+        //* Then
+        assert_eq!(merged_env.get("FOO").unwrap(), "baz");
+    }
+
+    #[test]
+    fn merge_envs_without_front_matter_env() {
+        //* Given
+        let files_env = Env::from_iter([("FOO", "bar")]);
+
+        //* When
+        let merged_env = merge(files_env, None);
+
+        //* Then
+        assert_eq!(merged_env.get("FOO").unwrap(), "bar");
+    }
 }
