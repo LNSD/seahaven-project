@@ -3,7 +3,10 @@ use std::path::PathBuf;
 use seahaven_cli::result::Result;
 
 use super::common::{env_file_arg, file_arg, project_directory_arg};
-use crate::files::{env::load_and_merge_envs, into_compose_file, load_setup_file};
+use crate::files::{
+    env::load_and_merge_envs, into_compose_file, resolve_setup_file_and_project_dir_paths,
+    setup_yaml::load_setup_file,
+};
 
 /// The `eject` command name
 pub const CMD: &str = "eject";
@@ -41,20 +44,13 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         return Ok(());
     }
 
-    // Resolve the project directory
-    let project_directory = matches
-        .get_one::<PathBuf>("project-directory")
-        .expect("Failed to get project directory");
-
-    tracing::debug!("Project directory: {}", project_directory.display());
-
-    // Get the setup file path from the command line (required)
-    let setup_file_path = matches
-        .get_one::<PathBuf>("file")
-        .expect("Failed to get setup file path");
-    if !setup_file_path.is_file() {
-        return Err(anyhow::anyhow!("Invalid setup file: {}", setup_file_path.display()).into());
-    }
+    // Resolve the setup file and project directory paths
+    let (setup_file, project_directory) = resolve_setup_file_and_project_dir_paths(
+        matches
+            .get_one::<PathBuf>("file")
+            .expect("Failed to get setup file"),
+        matches.get_one::<PathBuf>("project-directory"),
+    )?;
 
     // Get the output directory from the command line (required)
     let output_dir = matches
@@ -65,7 +61,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     }
 
     // Load the setup file and environment files
-    let (front_matter_env, content) = load_setup_file(setup_file_path, &output_dir)
+    let (front_matter_env, content) = load_setup_file(&setup_file, &project_directory)
         .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {}", err))?;
 
     let env = load_and_merge_envs(

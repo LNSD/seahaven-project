@@ -6,7 +6,10 @@ use seahaven_docker::cmd::{DockerCmd, IntoCommand};
 use super::common::{env_file_arg, file_arg, project_directory_arg};
 use crate::{
     deps::resolve_docker_executable,
-    files::{env::load_and_merge_envs, into_compose_file, load_setup_file},
+    files::{
+        env::load_and_merge_envs, into_compose_file, resolve_setup_file_and_project_dir_paths,
+        setup_yaml::load_setup_file,
+    },
 };
 
 /// The `up` command name
@@ -51,22 +54,14 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         .into());
     }
 
-    // Resolve the project directory
-    let project_directory = matches
-        .get_one::<PathBuf>("project-directory")
-        .expect("Failed to get project directory");
+    let (setup_file, project_directory) = resolve_setup_file_and_project_dir_paths(
+        matches
+            .get_one::<PathBuf>("file")
+            .expect("Failed to get setup file"),
+        matches.get_one::<PathBuf>("project-directory"),
+    )?;
 
-    tracing::debug!("Project directory: {}", project_directory.display());
-
-    // Load the setup file
-    let setup_file = matches
-        .get_one::<PathBuf>("file")
-        .expect("Failed to get setup file");
-    if !setup_file.exists() {
-        return Err(anyhow::anyhow!("Setup file not found: {}", setup_file.display()).into());
-    }
-
-    let (front_matter_env, content) = load_setup_file(setup_file, &project_directory)
+    let (front_matter_env, content) = load_setup_file(&setup_file, &project_directory)
         .map_err(|err| anyhow::anyhow!("Failed to parse setup file: {err}"))?;
 
     let env = load_and_merge_envs(
