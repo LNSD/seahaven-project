@@ -562,3 +562,26 @@ async fn run_docker_compose_pull_with_single_service() {
 
     assert_eq!(args, ["compose", "pull", "service1"]);
 }
+
+#[tokio::test]
+async fn run_docker_compose_pull_with_empty_services() {
+    //* Given
+    let exe = fixture_exe();
+
+    let services = ["", "api-service", ""];
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .pull()
+        .with_services(services)
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output = res.expect("Failed to run docker compose pull with empty service");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(args, ["compose", "pull", "api-service"]);
+}

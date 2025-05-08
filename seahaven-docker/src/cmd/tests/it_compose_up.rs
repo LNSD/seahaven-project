@@ -318,3 +318,26 @@ async fn run_docker_compose_up_with_dry_run() {
 
     assert_eq!(args, ["compose", "up", "--dry-run"]);
 }
+
+#[tokio::test]
+async fn run_docker_compose_up_with_empty_services() {
+    //* Given
+    let exe = fixture_exe();
+
+    let services = ["", "api-service", ""];
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .up()
+        .with_services(services)
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output = res.expect("Failed to run docker compose up with empty services");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(args, ["compose", "up", "api-service"]);
+}

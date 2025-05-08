@@ -95,19 +95,47 @@ where
 {
     /// Specify the services to stop and remove.
     ///
+    /// If the service name is empty, it will be ignored.
+    ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/down/)
     /// for more information.
-    pub fn with_services<I>(self, services: I) -> DockerComposeDownCmd<V, DR, ServicesSet>
+    pub fn with_services<I, T>(self, services: I) -> DockerComposeDownCmd<V, DR, ServicesSet>
     where
-        I: IntoIterator,
-        I::Item: Into<String>,
+        I: IntoIterator<Item = T>,
+        T: AsRef<str>,
     {
+        let services = services
+            .into_iter()
+            .filter_map(|s| {
+                // Filter out empty service names
+                let service = s.as_ref();
+                if service.is_empty() {
+                    None
+                } else {
+                    Some(service.to_string())
+                }
+            })
+            .collect();
+
         DockerComposeDownCmd {
             cmd: self.cmd,
             volumes_opt: self.volumes_opt,
             dry_run_opt: self.dry_run_opt,
-            services_opt: ServicesSet(services.into_iter().map(Into::into).collect()),
+            services_opt: ServicesSet(services),
         }
+    }
+
+    /// Specify a single service to include.
+    ///
+    /// If the service name is empty, it will be ignored.
+    ///
+    /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/down/)
+    /// for more information.
+    pub fn with_service<T>(self, service: T) -> DockerComposeDownCmd<V, DR, ServicesSet>
+    where
+        T: AsRef<str>,
+    {
+        self.with_services([service])
     }
 }
 
@@ -169,7 +197,7 @@ impl IntoCmdOptValue<bool> for DryRunSet {
 
 /// A trait that represents the services option for the `docker compose down` command.
 #[allow(private_bounds)]
-pub trait ServicesOpt: IntoCmdOptValue<Vec<String>> + _priv::Sealed {}
+pub trait ServicesOpt: IntoCmdOptValue<Box<[String]>> + _priv::Sealed {}
 
 /// Marker type for no services option specified.
 pub struct ServicesNotSet;
@@ -177,20 +205,20 @@ pub struct ServicesNotSet;
 impl ServicesOpt for ServicesNotSet {}
 impl _priv::Sealed for ServicesNotSet {}
 
-impl IntoCmdOptValue<Vec<String>> for ServicesNotSet {
-    fn into_value(self) -> Option<Vec<String>> {
+impl IntoCmdOptValue<Box<[String]>> for ServicesNotSet {
+    fn into_value(self) -> Option<Box<[String]>> {
         None
     }
 }
 
 /// Marker type for services option specified.
-pub struct ServicesSet(Vec<String>);
+pub struct ServicesSet(Box<[String]>);
 
 impl ServicesOpt for ServicesSet {}
 impl _priv::Sealed for ServicesSet {}
 
-impl IntoCmdOptValue<Vec<String>> for ServicesSet {
-    fn into_value(self) -> Option<Vec<String>> {
+impl IntoCmdOptValue<Box<[String]>> for ServicesSet {
+    fn into_value(self) -> Option<Box<[String]>> {
         Some(self.0)
     }
 }
