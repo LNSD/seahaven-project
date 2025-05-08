@@ -8,11 +8,15 @@ pub mod down;
 pub mod logs;
 pub mod ps;
 pub mod pull;
+pub mod restart;
+pub mod start;
+pub mod stop;
 pub mod up;
 
 use self::{
     build::DockerComposeBuildCmd, down::DockerComposeDownCmd, logs::DockerComposeLogsCmd,
-    ps::DockerComposePsCmd, pull::DockerComposePullCmd, up::DockerComposeUpCmd,
+    ps::DockerComposePsCmd, pull::DockerComposePullCmd, restart::DockerComposeRestartCmd,
+    start::DockerComposeStartCmd, stop::DockerComposeStopCmd, up::DockerComposeUpCmd,
 };
 use super::common::{IntoCmdOptValue, IntoCommand};
 
@@ -70,6 +74,30 @@ where
     /// for more information.
     pub fn build(self) -> DockerComposeBuildCmd {
         DockerComposeBuildCmd::new(self)
+    }
+
+    /// Start the services defined in the `docker-compose.yml` file.
+    ///
+    /// See [`docker compose start`](https://docs.docker.com/compose/reference/start/)
+    /// for more information.
+    pub fn start(self) -> DockerComposeStartCmd {
+        DockerComposeStartCmd::new(self)
+    }
+
+    /// Stop the services defined in the `docker-compose.yml` file.
+    ///
+    /// See [`docker compose stop`](https://docs.docker.com/compose/reference/stop/)
+    /// for more information.
+    pub fn stop(self) -> DockerComposeStopCmd {
+        DockerComposeStopCmd::new(self)
+    }
+
+    /// Restart the services defined in the `docker-compose.yml` file.
+    ///
+    /// See [`docker compose restart`](https://docs.docker.com/compose/reference/restart/)
+    /// for more information.
+    pub fn restart(self) -> DockerComposeRestartCmd {
+        DockerComposeRestartCmd::new(self)
     }
 
     /// Start the services defined in the `docker-compose.yml` file.

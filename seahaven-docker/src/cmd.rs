@@ -95,6 +95,9 @@ mod tests {
     mod it_compose_logs;
     mod it_compose_ps;
     mod it_compose_pull;
+    mod it_compose_restart;
+    mod it_compose_start;
+    mod it_compose_stop;
     mod it_compose_up;
     mod it_root;
     mod it_system;
