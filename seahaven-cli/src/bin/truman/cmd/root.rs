@@ -1,7 +1,8 @@
 use seahaven_cli::result::Result;
 
 use super::{
-    build, down, dump_config, eject, init, logs, ps, pull, run, start, stop, system, up, version,
+    build, down, dump_config, eject, init, logs, ps, pull, restart, run, start, stop, system, up,
+    version,
 };
 
 /// The name of the CLI
@@ -27,6 +28,7 @@ pub async fn cmd_run() -> Result<()> {
             ps::cmd(),
             start::cmd(),
             stop::cmd(),
+            restart::cmd(),
             eject::cmd(),
             dump_config::cmd(),
             system::cmd(),
@@ -49,6 +51,7 @@ pub async fn cmd_run() -> Result<()> {
         Some((run::CMD, matches)) => run::run(matches).await,
         Some((start::CMD, matches)) => start::run(matches).await,
         Some((stop::CMD, matches)) => stop::run(matches).await,
+        Some((restart::CMD, matches)) => restart::run(matches).await,
         Some((dump_config::CMD, matches)) => dump_config::run(matches).await,
         Some((system::CMD, matches)) => system::run(matches).await,
         Some((up::CMD, matches)) => up::run(matches).await,
