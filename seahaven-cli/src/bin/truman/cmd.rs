@@ -10,6 +10,7 @@ mod pull;
 mod root;
 mod run;
 mod start;
+mod stop;
 mod system;
 mod up;
 mod version;
