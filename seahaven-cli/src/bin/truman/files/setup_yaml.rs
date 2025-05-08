@@ -306,7 +306,7 @@ mod tests {
         use super::*;
 
         #[test]
-        fn no_package_use_returns_empty_config() {
+        fn empty_config_when_no_package_use() {
             //* Given
             let mut service = test_setup_file_service(None, Default::default());
             let mock_loader = MockLoader::new();
@@ -320,7 +320,7 @@ mod tests {
         }
 
         #[test]
-        fn valid_target_merges_defaults() {
+        fn merges_defaults_with_valid_target() {
             //* Given
             let mut service =
                 test_setup_file_service("test-package#target-service", Default::default());
@@ -351,7 +351,7 @@ mod tests {
         }
 
         #[test]
-        fn missing_target_returns_error() {
+        fn errors_when_target_not_found() {
             //* Given
             let mut service =
                 test_setup_file_service("test-package#non-existent", Default::default());
@@ -390,7 +390,7 @@ mod tests {
         }
 
         #[test]
-        fn no_target_specified_uses_default_service() {
+        fn uses_default_service_when_no_target() {
             //* Given
             let mut service = test_setup_file_service("test-package", Default::default());
 
@@ -460,7 +460,7 @@ mod tests {
         }
 
         #[test]
-        fn manifest_load_error_returns_error() {
+        fn errors_when_manifest_load_fails() {
             //* Given
             let mut service =
                 test_setup_file_service("test-package#target-service", Default::default());
@@ -494,7 +494,7 @@ mod tests {
         }
 
         #[test]
-        fn no_target_and_no_service_manifest_returns_error() {
+        fn errors_when_no_service_in_manifest() {
             //* Given
             let mut service = test_setup_file_service("test-package", Default::default());
 
@@ -526,12 +526,11 @@ mod tests {
         }
     }
 
-    // Init container-related tests
     mod init_container {
         use super::*;
 
         #[test]
-        fn no_package_use_returns_empty_config() {
+        fn empty_config_when_no_package_use() {
             //* Given
             let mut init = test_setup_file_init_container(None, Default::default());
             let mock_loader = MockLoader::new();
@@ -545,7 +544,7 @@ mod tests {
         }
 
         #[test]
-        fn init_container_valid_target_merges_defaults() {
+        fn merges_defaults_with_valid_target() {
             //* Given
             let mut init =
                 test_setup_file_init_container("test-package#target-init", Default::default());
@@ -579,7 +578,7 @@ mod tests {
         }
 
         #[test]
-        fn missing_target_returns_error() {
+        fn errors_when_target_not_found() {
             //* Given
             let mut init =
                 test_setup_file_init_container("test-package#non-existent", Default::default());
@@ -619,7 +618,7 @@ mod tests {
         }
 
         #[test]
-        fn no_target_specified_returns_error() {
+        fn errors_when_no_target_specified() {
             //* Given
             let mut init = test_setup_file_init_container("test-package", Default::default());
 
@@ -698,7 +697,7 @@ mod tests {
         }
 
         #[test]
-        fn manifest_load_error_returns_error() {
+        fn errors_when_manifest_load_fails() {
             //* Given
             let mut init =
                 test_setup_file_init_container("test-package#target-init", Default::default());
@@ -728,38 +727,6 @@ mod tests {
                     .to_string()
                     .contains("Failed to load manifest file"),
                 "result should contain 'Failed to load manifest file'"
-            );
-        }
-
-        #[test]
-        fn no_target_and_no_service_manifest_returns_error() {
-            //* Given
-            let mut init = test_setup_file_init_container("test-package", Default::default());
-
-            let mock_loader = {
-                let manifest = test_manifest("test-package", None, []);
-
-                let mut loader = MockLoader::new();
-                loader
-                    .expect_load()
-                    .return_once(move |_: &dyn AsRef<Path>| Ok(Arc::new(manifest)));
-                loader
-            };
-
-            //* When
-            let result = load_and_merge_init_container_config(&mut init, &mock_loader);
-
-            //* Then
-            assert!(
-                result.is_err(),
-                "load and merge config should return an error"
-            );
-            assert!(
-                result
-                    .unwrap_err()
-                    .to_string()
-                    .contains("Init container target required"),
-                "result should contain 'Init container target required'"
             );
         }
     }
