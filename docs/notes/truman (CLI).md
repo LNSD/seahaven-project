@@ -5,10 +5,10 @@ The CLI is an opinionated wrapper around `docker compose` + `just` to facilitate
 - [x] Add support for listing the Justfile tasks like: `truman run --list` and `truman run --summary`
 - [x] Refactor docker/just wrapper crates and remove resolve_exe fns. Move the logic to the truman CLI and resolve the ENV vars in the sub-commands.
 - [x] Turn the system `--check-deps` option into a sub-command `truman system check`.
-- [ ] Refactor the command preparation to avoid code duplication.
-- [ ] Intercept any signal and forward it to the docker command
+- [x] Refactor the command preparation to avoid code duplication.
 
-#v0_3 
+#v0_5 
+- [ ] Intercept any signal and forward it to the docker command
 - [ ] Add a `--output` (a.k.a. `--progress`) global option with `plain`, `json` and `tty` (for TUI). This will require better docker command *stdio* handling 
 # Notes
 - The CLI environment variables must be passed down to the docker-compose commands.
@@ -38,10 +38,11 @@ The CLI is an opinionated wrapper around `docker compose` + `just` to facilitate
 - `truman ps`
 - `truman restart`
 - `truman logs`
+#v0_6 
 - `truman new`
 
 ## The package management commands
-#v0_2 
+#v0_6 
 - `truman new` to bootstrap the creation of a package
 - `truman package <sub-command>` to operate with packages
 ## The system sub-command
