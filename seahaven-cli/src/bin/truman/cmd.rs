@@ -9,6 +9,7 @@ mod ps;
 mod pull;
 mod root;
 mod run;
+mod start;
 mod system;
 mod up;
 mod version;
