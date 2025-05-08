@@ -68,10 +68,12 @@ async fn run_docker_compose_down_with_single_service() {
     //* Given
     let exe = fixture_exe();
 
+    let service = "api-service";
+
     let mut cmd = DockerCmd::with_executable(exe)
         .compose()
         .down()
-        .with_services(["api-service"])
+        .with_service(service)
         .into_command();
 
     //* When
@@ -85,7 +87,7 @@ async fn run_docker_compose_down_with_single_service() {
 }
 
 #[tokio::test]
-async fn run_docker_compose_down_with_multiple_services() {
+async fn run_docker_compose_down_with_services() {
     //* Given
     let exe = fixture_exe();
 
@@ -101,7 +103,7 @@ async fn run_docker_compose_down_with_multiple_services() {
     let res = cmd.kill_on_drop(true).output().await;
 
     //* Then
-    let output = res.expect("Failed to run docker compose down with multiple services");
+    let output = res.expect("Failed to run docker compose down with services");
     let args = parse_fixture_exe_output(&output);
 
     assert_eq!(
@@ -171,6 +173,54 @@ async fn run_docker_compose_down_with_services_and_dry_run() {
 }
 
 #[tokio::test]
+async fn run_docker_compose_down_with_volumes_and_single_service() {
+    //* Given
+    let exe = fixture_exe();
+
+    let service = "api-service";
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .down()
+        .with_volumes(true)
+        .with_service(service)
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output = res.expect("Failed to run docker compose down with volumes and single service");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(args, ["compose", "down", "--volumes", "api-service"]);
+}
+
+#[tokio::test]
+async fn run_docker_compose_down_with_dry_run_and_single_service() {
+    //* Given
+    let exe = fixture_exe();
+
+    let service = "api-service";
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .down()
+        .with_dry_run(true)
+        .with_service(service)
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output = res.expect("Failed to run docker compose down with dry run and single service");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(args, ["compose", "down", "--dry-run", "api-service"]);
+}
+
+#[tokio::test]
 async fn run_docker_compose_down_with_all_options() {
     //* Given
     let exe = fixture_exe();
@@ -203,4 +253,27 @@ async fn run_docker_compose_down_with_all_options() {
             "web-service"
         ]
     );
+}
+
+#[tokio::test]
+async fn run_docker_compose_down_with_empty_services() {
+    //* Given
+    let exe = fixture_exe();
+
+    let services = ["", "api-service", ""];
+
+    let mut cmd = DockerCmd::with_executable(exe)
+        .compose()
+        .down()
+        .with_services(services)
+        .into_command();
+
+    //* When
+    let res = cmd.kill_on_drop(true).output().await;
+
+    //* Then
+    let output = res.expect("Failed to run docker compose down with empty services");
+    let args = parse_fixture_exe_output(&output);
+
+    assert_eq!(args, ["compose", "down", "api-service"]);
 }
