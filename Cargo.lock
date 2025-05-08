@@ -1671,7 +1671,7 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "seahaven-cli"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "build-info",
@@ -1699,7 +1699,7 @@ dependencies = [
 
 [[package]]
 name = "seahaven-compose-file"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "diffy",
  "reqwest",
@@ -1711,7 +1711,7 @@ dependencies = [
 
 [[package]]
 name = "seahaven-docker"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "indoc",
@@ -1728,7 +1728,7 @@ dependencies = [
 
 [[package]]
 name = "seahaven-just"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "semver",
  "test-with",
@@ -1739,7 +1739,7 @@ dependencies = [
 
 [[package]]
 name = "seahaven-package"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "indoc",
@@ -1765,7 +1765,7 @@ dependencies = [
 
 [[package]]
 name = "seahaven-setup-file"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "indexmap 2.9.0",
