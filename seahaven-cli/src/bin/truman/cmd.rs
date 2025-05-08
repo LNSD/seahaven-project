@@ -7,6 +7,7 @@ mod init;
 mod logs;
 mod ps;
 mod pull;
+mod restart;
 mod root;
 mod run;
 mod start;

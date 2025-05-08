@@ -114,12 +114,15 @@ where
     ///
     /// See the [Docker Compose documentation](https://docs.docker.com/compose/reference/restart/)
     /// for more information.
-    pub fn with_timeout(self, timeout: u32) -> DockerComposeRestartCmd<DR, ND, TimeoutSet, S> {
+    pub fn with_timeout(
+        self,
+        timeout: impl Into<Option<u32>>,
+    ) -> DockerComposeRestartCmd<DR, ND, TimeoutSet, S> {
         DockerComposeRestartCmd {
             cmd: self.cmd,
             dry_run_opt: self.dry_run_opt,
             no_deps_opt: self.no_deps_opt,
-            timeout_opt: TimeoutSet(timeout),
+            timeout_opt: TimeoutSet(timeout.into()),
             services_opt: self.services_opt,
         }
     }
@@ -248,14 +251,14 @@ impl IntoCmdOptValue<u32> for TimeoutNotSet {
     }
 }
 
-pub struct TimeoutSet(u32);
+pub struct TimeoutSet(Option<u32>);
 
 impl TimeoutOpt for TimeoutSet {}
 impl _priv::Sealed for TimeoutSet {}
 
 impl IntoCmdOptValue<u32> for TimeoutSet {
     fn into_value(self) -> Option<u32> {
-        Some(self.0)
+        self.0
     }
 }
 
