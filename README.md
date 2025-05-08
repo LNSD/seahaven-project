@@ -126,20 +126,20 @@ The CLI tool that helps you manage your local development environment setup with
 Usage: truman [COMMAND]
 
 Commands:
-  init         Initialize a new Seahaven project
   build        Build the development environment images using docker compose
-  up           Start the development environment using docker compose
+  dump-config  Dump the project's configuration
   down         Stop and remove containers, networks, images, and volumes
-  pull         Pull the images for the development environment
-  run          run the development environment images using docker compose
+  eject        Eject the setup.yaml file to get the docker-compose.yaml and .env files
+  init         Initialize a new Seahaven project
   logs         View output from the containers
   ps           List containers
+  pull         Pull the images for the development environment
+  restart      Restart service containers using docker compose
+  run          run the development environment images using docker compose
   start        Start services using docker compose
   stop         Stop the development environment using docker compose
-  restart      Restart service containers using docker compose
-  eject        Eject the setup.yaml file to get the docker-compose.yaml and .env files
-  dump-config  Dump the project's configuration
   system       Manage Seahaven
+  up           Start the development environment using docker compose
   version      Print version information
   help         Print this message or the help of the given subcommand(s)
 
