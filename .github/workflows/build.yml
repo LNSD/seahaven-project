@@ -23,8 +23,8 @@ jobs:
     - id: prepare
       run: |
         # Sanitize the ref name
-        echo "::debug::github.ref_name=${{ github.ref_name }}"
-        echo "name=${${{ github.ref_name }}//\//-}" >> $GITHUB_OUTPUT
+        echo "::debug::GITHUB_REF_NAME=${GITHUB_REF_NAME}"
+        echo "name=${GITHUB_REF_NAME//\//-}" >> $GITHUB_OUTPUT
 
         # Set the Rust target
         echo "::debug::matrix.os: ${{ matrix.os }}"
