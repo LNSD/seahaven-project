@@ -1,1 +1,0 @@
-As a reference: https://rfc.vac.dev/vac/template
