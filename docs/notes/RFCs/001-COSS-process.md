@@ -1,1 +1,0 @@
-A consensus-oriented specification system (COSS) for building interoperable technical specifications. Ref: https://rfc.vac.dev/vac/1/coss

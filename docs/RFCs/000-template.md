@@ -3,7 +3,7 @@ title: RFC template
 name: RFC template
 slug: 000-template
 status: draft
-tags: meta
+tags: [meta]
 editor: "Lorenzo Delgado <lnsdev@proton.me>"
 contributors: [ "Lorenzo Delgado <lnsdev@proton.me>" ]
 ---
@@ -93,13 +93,13 @@ behind the proposal while remaining focused on the specific problem space.
 This section forms the foundation for the rest of the RFC by establishing the need
 for the proposed changes.
 
-## Design/Explanation
+## Design
 This section SHOULD explain how the proposed change works, how it affects the existing system, 
 and any relevant design decisions.
 It MAY include diagrams, pseudocode, or high-level logic when necessary.
 
-## Proposed Implementation (optional)
-This section provides concrete implementation details and guidance for developers who will work 
+## Proposed Implementation
+This optional section provides concrete implementation details and guidance for developers who will work 
 on the proposed changes.
 
 It SHOULD include:
