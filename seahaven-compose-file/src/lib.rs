@@ -131,7 +131,7 @@ pub mod de {
 
 #[cfg(all(test, feature = "serde"))]
 mod tests {
-    use std::io::{Cursor, ErrorKind, Write};
+    use std::io::{Cursor, Write};
 
     use seahaven_setup_file_testdata::SINGLE_SERVICE;
 
@@ -183,10 +183,7 @@ mod tests {
         struct FailingWriter;
         impl Write for FailingWriter {
             fn write(&mut self, _buf: &[u8]) -> std::io::Result<usize> {
-                Err(std::io::Error::new(
-                    ErrorKind::Other,
-                    "simulated write failure",
-                ))
+                Err(std::io::Error::other("simulated write failure"))
             }
             fn flush(&mut self) -> std::io::Result<()> {
                 Ok(())
@@ -263,10 +260,7 @@ mod tests {
         struct FailingReader;
         impl std::io::Read for FailingReader {
             fn read(&mut self, _buf: &mut [u8]) -> std::io::Result<usize> {
-                Err(std::io::Error::new(
-                    ErrorKind::Other,
-                    "simulated read failure",
-                ))
+                Err(std::io::Error::other("simulated read failure"))
             }
         }
 
