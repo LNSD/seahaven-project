@@ -294,7 +294,7 @@ mod tests {
 
         impl BufRead for ErrorReader {
             fn fill_buf(&mut self) -> io::Result<&[u8]> {
-                Err(io::Error::new(io::ErrorKind::Other, "mock error"))
+                Err(io::Error::other("mock error"))
             }
 
             fn consume(&mut self, _amt: usize) {
