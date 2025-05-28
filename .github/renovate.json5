@@ -77,6 +77,10 @@
       ],
     },
   ],
+  ignoreDeps: [
+    // Ignore serde_yaml because it is marked as deprecated. No new releases will be made
+    'serde_yaml',
+  ],
   customManagers: [
     {
       customType: 'regex',
