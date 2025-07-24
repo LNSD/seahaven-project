@@ -20,5 +20,5 @@ tracing = { version = "0.1.41", default-features = false, features = ["std"] }
 which = "8.0.0"
 
 [dev-dependencies]
-test-with = { version = "0.14", default-features = false }
+test-with = { version = "0.15", default-features = false }
 tokio = { version = "1.44", features = ["macros", "rt"] }
