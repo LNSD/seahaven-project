@@ -537,7 +537,7 @@ impl std::fmt::Display for Progress {
             Self::Json => "json",
             Self::Quiet => "quiet",
         };
-        write!(f, "{}", s)
+        write!(f, "{s}")
     }
 }
 
@@ -583,7 +583,7 @@ impl std::fmt::Display for Ansi {
             Self::Always => "always",
             Self::Never => "never",
         };
-        write!(f, "{}", s)
+        write!(f, "{s}")
     }
 }
 

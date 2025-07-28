@@ -57,7 +57,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
         Format::Json => {
             let info_json = serde_json::to_string_pretty(&info)
                 .map_err(|err| anyhow::anyhow!("Failed to serialize version info: {}", err))?;
-            println!("{}", info_json);
+            println!("{info_json}");
         }
         Format::Full => {
             indoc::printdoc! {
@@ -219,7 +219,7 @@ mod info {
             Some(git) => {
                 let hash = &git.commit_short_id;
                 if git.dirty {
-                    format!("{}-dirty", hash)
+                    format!("{hash}-dirty")
                 } else {
                     hash.clone()
                 }
@@ -234,7 +234,7 @@ mod info {
             Some(git) => {
                 let hash = &git.commit_id;
                 if git.dirty {
-                    format!("{}-dirty", hash)
+                    format!("{hash}-dirty")
                 } else {
                     hash.clone()
                 }

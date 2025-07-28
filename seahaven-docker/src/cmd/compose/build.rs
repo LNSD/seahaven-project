@@ -51,7 +51,7 @@ where
         // --build-arg <key>=<value>
         if let Some(build_args) = self.build_args_opt.into_value() {
             for (key, value) in build_args {
-                cmd.arg("--build-arg").arg(format!("{}={}", key, value));
+                cmd.arg("--build-arg").arg(format!("{key}={value}"));
             }
         }
 

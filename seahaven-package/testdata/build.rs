@@ -162,7 +162,7 @@ fn main() {
             .create(true)
             .truncate(true)
             .open(dest_dir.join("lib.rs"))
-            .unwrap_or_else(|err| panic!("failed to open 'src/lib.rs': {}", err));
+            .unwrap_or_else(|err| panic!("failed to open 'src/lib.rs': {err}"));
 
         // Generate the test vector files
         for test_vector_file in walk_dir_files(&data_root_dir) {
@@ -194,7 +194,7 @@ fn main() {
             // Append the new line to the `lib.rs` file
             let rendered_include =
                 codegen::engine().render_test_vector_lib_rs_include(&gen_file_name);
-            writeln!(lib_rs_file, "{}", rendered_include).unwrap_or_else(|err| {
+            writeln!(lib_rs_file, "{rendered_include}").unwrap_or_else(|err| {
                 panic!("failed to include generated file into 'src/lib.rs': {err}")
             });
         }
