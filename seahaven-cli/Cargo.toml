@@ -35,7 +35,7 @@ tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 
 [build-dependencies]
-build-info-build = "0.0.40"
+build-info-build = "0.0.41"
 
 [dev-dependencies]
 mockall = "0.13.1"
