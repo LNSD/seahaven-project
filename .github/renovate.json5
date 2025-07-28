@@ -76,6 +76,17 @@
         'async-graphql-{/,}**',
       ],
     },
+    {
+      groupName: 'build-info crates',
+      groupSlug: 'build-info',
+      matchManagers: [
+        'cargo',
+      ],
+      matchPackageNames: [
+        'build-info',
+        'build-info-{/,}**',
+      ],
+    },
   ],
   ignoreDeps: [
     // Ignore serde_yaml because it is marked as deprecated. No new releases will be made
