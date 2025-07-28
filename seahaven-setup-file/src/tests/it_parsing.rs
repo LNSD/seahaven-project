@@ -56,8 +56,7 @@ fn no_services_error() {
     // * Then
     assert!(
         matches!(result, Err(ParsingError::ContentParsingFailed(_))),
-        "Expected ContentDeserializationFailed error, got {:?}",
-        result
+        "Expected ContentDeserializationFailed error, got {result:?}"
     );
 }
 
@@ -166,10 +165,9 @@ fn package_use_no_target_init_error() {
     let result = from_reader(input);
 
     // * Then
-    println!("result: {:?}", result);
+    println!("result: {result:?}");
     assert!(
         matches!(result, Err(ParsingError::ContentParsingFailed(_))),
-        "Expected ContentDeserializationFailed error, got {:?}",
-        result
+        "Expected ContentDeserializationFailed error, got {result:?}"
     );
 }

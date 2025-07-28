@@ -36,7 +36,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     let compose_content = seahaven_compose_file::ser::to_string(&compose_file)
         .map_err(|err| anyhow::anyhow!("Failed to serialize compose file: {}", err))?;
 
-    println!("{}", compose_content);
+    println!("{compose_content}");
 
     Ok(())
 }

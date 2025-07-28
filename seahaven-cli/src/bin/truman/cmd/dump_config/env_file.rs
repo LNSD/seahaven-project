@@ -48,7 +48,7 @@ pub async fn run(matches: &clap::ArgMatches) -> Result<()> {
     let env_content = serde_envfile::to_string(&env)
         .map_err(|err| anyhow::anyhow!("Failed to serialize environment variables: {}", err))?;
 
-    println!("{}", env_content);
+    println!("{env_content}");
 
     Ok(())
 }

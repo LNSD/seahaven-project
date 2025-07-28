@@ -75,7 +75,7 @@ impl std::fmt::Display for Format {
             Self::Custom(s) => s.as_str(),
         };
 
-        write!(f, "{}", s)
+        write!(f, "{s}")
     }
 }
 

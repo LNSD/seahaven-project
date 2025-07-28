@@ -23,8 +23,8 @@ fn executable_display_and_debug() {
     let exe = resolve("docker").expect("docker binary not found");
 
     //* When
-    let display_str = format!("{}", exe);
-    let debug_str = format!("{:?}", exe);
+    let display_str = format!("{exe}");
+    let debug_str = format!("{exe:?}");
 
     //* Then
     assert!(display_str.contains("docker"));
