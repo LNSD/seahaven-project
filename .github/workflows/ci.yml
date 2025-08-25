@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Setup Rust toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@fb51252c7ba57d633bc668f941da052e410add48 # v1
+        uses: actions-rust-lang/setup-rust-toolchain@ab6845274e2ff01cd4462007e1a9d9df1ab49f42 # v1
         with:
           toolchain: nightly
           components: rustfmt
@@ -41,7 +41,7 @@ jobs:
 
       ## Setup
       - name: Setup Rust toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@fb51252c7ba57d633bc668f941da052e410add48 # v1
+        uses: actions-rust-lang/setup-rust-toolchain@ab6845274e2ff01cd4462007e1a9d9df1ab49f42 # v1
         with:
           components: clippy,llvm-tools
           cache: false
