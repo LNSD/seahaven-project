@@ -1,5 +1,5 @@
 ## Rust builder
-FROM rust:1.91.1-slim-bookworm AS rust-builder
+FROM rust:1.92.0-slim-bookworm AS rust-builder
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
